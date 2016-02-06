@@ -3,11 +3,16 @@ using System.ComponentModel;
 using System.Drawing;
 using System.Windows.Forms;
 using TD.SandDock.Design;
-using TD.SandDock.Rendering;
 
 namespace TD.SandDock
 {
-	[Designer(typeof(DocumentContainerDesigner)), ToolboxItem(false)]
+    public enum DocumentContainerWindowOpenPosition
+    {
+        First,
+        Last
+    }
+
+    [Designer(typeof(DocumentContainerDesigner)), ToolboxItem(false)]
 	public class DocumentContainer : DockContainer, IMessageFilter
 	{
 		public DocumentContainer()
@@ -121,6 +126,7 @@ namespace TD.SandDock
 		{
 			get
 			{
+                
 				return base.BackColor;
 			}
 			set
@@ -129,23 +135,11 @@ namespace TD.SandDock
 			}
 		}
 
-		internal bool Boolean_3
-		{
-			get
-			{
-				return this.dockControl_0 != null;
-			}
-		}
+		internal bool Boolean_3 => this.dockControl_0 != null;
 
-		private bool Boolean_4
-		{
-			get
-			{
-				return this.Manager == null || this.Manager.AllowKeyboardNavigation;
-			}
-		}
+        private bool Boolean_4 => this.Manager?.AllowKeyboardNavigation ?? true;
 
-		internal bool Boolean_5
+        internal bool Boolean_5
 		{
 			get
 			{
@@ -158,15 +152,9 @@ namespace TD.SandDock
 			}
 		}
 
-		internal override bool Boolean_6
-		{
-			get
-			{
-				return false;
-			}
-		}
+		internal override bool Boolean_6 => false;
 
-		[Category("Appearance"), DefaultValue(typeof(TD.SandDock.Rendering.BorderStyle), "Flat"), Description("The type of border to be drawn around the control.")]
+        [Category("Appearance"), DefaultValue(typeof(TD.SandDock.Rendering.BorderStyle), "Flat"), Description("The type of border to be drawn around the control.")]
 		internal TD.SandDock.Rendering.BorderStyle BorderStyle_0
 		{
 			get
@@ -180,15 +168,9 @@ namespace TD.SandDock
 			}
 		}
 
-		protected override Size DefaultSize
-		{
-			get
-			{
-				return new Size(300, 300);
-			}
-		}
+		protected override Size DefaultSize => new Size(300, 300);
 
-		public override Rectangle DisplayRectangle
+        public override Rectangle DisplayRectangle
 		{
 			get
 			{
@@ -241,7 +223,7 @@ namespace TD.SandDock
 
 		private bool bool_2;
 
-		private TD.SandDock.Rendering.BorderStyle borderStyle_0 = TD.SandDock.Rendering.BorderStyle.Flat;
+		private Rendering.BorderStyle borderStyle_0 = Rendering.BorderStyle.Flat;
 
 		private DockControl[] dockControl_0;
 

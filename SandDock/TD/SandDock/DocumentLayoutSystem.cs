@@ -14,14 +14,13 @@ namespace TD.SandDock
 			this.class17_5 = new Class17();
 			this.class17_6 = new Class17();
 			this.class17_7 = new Class17();
-			this.timer_0 = new Timer();
-			this.timer_0.Interval = 20;
-			this.timer_0.Tick += new EventHandler(this.timer_0_Tick);
+		    this.timer_0 = new Timer {Interval = 20};
+		    this.timer_0.Tick += this.timer_0_Tick;
 		}
 
 		public DocumentLayoutSystem(int desiredWidth, int desiredHeight) : this()
 		{
-			base.WorkingSize = new SizeF((float)desiredWidth, (float)desiredHeight);
+			base.WorkingSize = new SizeF(desiredWidth, desiredHeight);
 		}
 
 		public DocumentLayoutSystem(SizeF workingSize, DockControl[] windows, DockControl selectedWindow) : this()

@@ -43,7 +43,6 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="SmartQuant.Docking.WinForms\DockControl.cs" />
-    <Compile Include="TD\SandDock\ActiveFilesListEventArgs.cs" />
     <Compile Include="TD\SandDock\Class10.cs" />
     <Compile Include="TD\SandDock\Class11.cs" />
     <Compile Include="TD\SandDock\Class12.cs" />
@@ -79,12 +78,7 @@
     <Compile Include="TD\SandDock\DockContainer.cs">
       <SubType>Component</SubType>
     </Compile>
-    <Compile Include="TD\SandDock\DockControl.cs">
-      <SubType>Component</SubType>
-    </Compile>
-    <Compile Include="TD\SandDock\DockControlCloseAction.cs" />
-    <Compile Include="TD\SandDock\DockControlClosingEventArgs.cs" />
-    <Compile Include="TD\SandDock\DockControlEventArgs.cs" />
+    <Compile Include="TD\SandDock\DockControl.cs" />
     <Compile Include="TD\SandDock\DockingHints.cs" />
     <Compile Include="TD\SandDock\DockingManager.cs" />
     <Compile Include="TD\SandDock\DockingRules.cs" />
@@ -93,7 +87,6 @@
     <Compile Include="TD\SandDock\DocumentContainer.cs">
       <SubType>Component</SubType>
     </Compile>
-    <Compile Include="TD\SandDock\DocumentContainerWindowOpenPosition.cs" />
     <Compile Include="TD\SandDock\DocumentLayoutSystem.cs" />
     <Compile Include="TD\SandDock\DocumentOverflowMode.cs" />
     <Compile Include="TD\SandDock\Form1.cs">
@@ -110,9 +103,7 @@
     <Compile Include="TD\SandDock\LayoutUtilities.cs" />
     <Compile Include="TD\SandDock\ResolveDockControlEventArgs.cs" />
     <Compile Include="TD\SandDock\SandDockLanguage.cs" />
-    <Compile Include="TD\SandDock\SandDockManager.cs">
-      <SubType>Component</SubType>
-    </Compile>
+    <Compile Include="TD\SandDock\SandDockManager.cs" />
     <Compile Include="TD\SandDock\ShowControlContextMenuEventArgs.cs" />
     <Compile Include="TD\SandDock\SplitLayoutSystem.cs" />
     <Compile Include="TD\SandDock\Struct0.cs" />
@@ -122,14 +113,7 @@
     <Compile Include="TD\SandDock\TabControl.cs">
       <SubType>Component</SubType>
     </Compile>
-    <Compile Include="TD\SandDock\TabLayout.cs" />
     <Compile Include="TD\SandDock\TabPage.cs">
-      <SubType>Component</SubType>
-    </Compile>
-    <Compile Include="TD\SandDock\UserDockableWindow.cs">
-      <SubType>Component</SubType>
-    </Compile>
-    <Compile Include="TD\SandDock\UserTabbedDocument.cs">
       <SubType>Component</SubType>
     </Compile>
     <Compile Include="TD\SandDock\WindowMetaData.cs" />
@@ -137,7 +121,6 @@
     <Compile Include="TD\SandDock\Design\DockContainerDesigner.cs" />
     <Compile Include="TD\SandDock\Design\DockControlDesigner.cs" />
     <Compile Include="TD\SandDock\Design\DocumentContainerDesigner.cs" />
-    <Compile Include="TD\SandDock\Rendering\BorderStyle.cs" />
     <Compile Include="TD\SandDock\Rendering\BoxEdges.cs" />
     <Compile Include="TD\SandDock\Rendering\BoxModel.cs" />
     <Compile Include="TD\SandDock\Rendering\Class16.cs" />

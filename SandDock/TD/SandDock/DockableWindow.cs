@@ -1,4 +1,6 @@
 using System;
+using System.ComponentModel;
+using System.ComponentModel.Design;
 using System.Drawing;
 using System.Windows.Forms;
 
@@ -37,4 +39,9 @@ namespace TD.SandDock
 
 		protected override Size DefaultSize => new Size(250, 400);
 	}
+
+    [Designer("Design.UserDockControlDesigner", typeof(IDesigner)), Designer("Design.UserDockControlDocumentDesigner", typeof(IRootDesigner))]
+    public class UserDockableWindow : DockableWindow
+    {
+    }
 }

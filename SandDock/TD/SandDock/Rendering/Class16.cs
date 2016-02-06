@@ -7,11 +7,7 @@ namespace TD.SandDock.Rendering
 {
 	internal class Class16
 	{
-		public Class16()
-		{
-		}
-
-		internal static void smethod_0(Graphics graphics_0, Color color_0)
+	    internal static void smethod_0(Graphics graphics_0, Color color_0)
 		{
 			try
 			{
@@ -19,6 +15,7 @@ namespace TD.SandDock.Rendering
 			}
 			catch
 			{
+			    // ignored
 			}
 		}
 

@@ -22,7 +22,7 @@ namespace TD.SandDock
 			this.LayoutSystem.Event_0 += new EventHandler(this.method_22);
 			this.method_22(this.LayoutSystem, EventArgs.Empty);
 			this.Manager = manager;
-			this.guid_0 = guid;
+			this.Guid_0 = guid;
 			this.form2_0.Controls.Add(this);
 			this.Dock = DockStyle.Fill;
 		}
@@ -160,7 +160,7 @@ namespace TD.SandDock
 		{
 			if (this.controlLayoutSystem_0 != null)
 			{
-				this.controlLayoutSystem_0.Event_0 -= new ControlLayoutSystem.Delegate2(this.method_20);
+				this.controlLayoutSystem_0.Event_0 -= this.method_20;
 			}
 			if (!base.HasSingleControlLayoutSystem)
 			{
@@ -169,7 +169,7 @@ namespace TD.SandDock
 				return;
 			}
 			this.controlLayoutSystem_0 = (ControlLayoutSystem)this.LayoutSystem.LayoutSystems[0];
-			this.controlLayoutSystem_0.Event_0 += new ControlLayoutSystem.Delegate2(this.method_20);
+			this.controlLayoutSystem_0.Event_0 += this.method_20;
 			this.method_20(null, this.controlLayoutSystem_0.SelectedControl);
 		}
 
@@ -184,15 +184,9 @@ namespace TD.SandDock
 		[DllImport("user32.dll")]
 		private static extern bool ShowWindow(IntPtr hWnd, int nCmdShow);
 
-		internal override bool Boolean_6
-		{
-			get
-			{
-				return false;
-			}
-		}
+		internal override bool Boolean_6 => false;
 
-		public DockControl DockControl_0
+	    public DockControl DockControl_0
 		{
 			get
 			{
@@ -205,31 +199,13 @@ namespace TD.SandDock
 			}
 		}
 
-		public Form Form_0
-		{
-			get
-			{
-				return this.form2_0;
-			}
-		}
+		public Form Form_0 => this.form2_0;
 
-		public Guid Guid_0
-		{
-			get
-			{
-				return this.guid_0;
-			}
-		}
+	    public Guid Guid_0 { get; }
 
-		public override bool IsFloating
-		{
-			get
-			{
-				return true;
-			}
-		}
+	    public override bool IsFloating => true;
 
-		public override SplitLayoutSystem LayoutSystem
+	    public override SplitLayoutSystem LayoutSystem
 		{
 			get
 			{
@@ -252,12 +228,9 @@ namespace TD.SandDock
 			}
 			set
 			{
-				if (this.Manager != null && this.Manager.OwnerForm != null)
-				{
-					this.Manager.OwnerForm.RemoveOwnedForm(this.form2_0);
-				}
-				base.Manager = value;
-				if (this.Manager != null && this.Manager.OwnerForm != null)
+			    this.Manager?.OwnerForm?.RemoveOwnedForm(this.form2_0);
+			    base.Manager = value;
+				if (this.Manager?.OwnerForm != null)
 				{
 					this.Manager.OwnerForm.AddOwnedForm(this.form2_0);
 					this.Font = new Font(this.Manager.OwnerForm.Font, this.Manager.OwnerForm.Font.Style);
@@ -303,9 +276,7 @@ namespace TD.SandDock
 
 		private Form2 form2_0;
 
-		private Guid guid_0;
-
-		private const int int_3 = 64;
+	    private const int int_3 = 64;
 
 		private const int int_4 = 16;
 

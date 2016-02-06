@@ -6,11 +6,7 @@ namespace TD.SandDock
 {
 	internal class Class20
 	{
-		public Class20()
-		{
-		}
-
-		//[DllImport("user32.dll", CharSet = CharSet.Auto)]
+	    //[DllImport("user32.dll", CharSet = CharSet.Auto)]
 		//private static extern int GetSysColor(int nIndex);
 
 		//[DllImport("user32.dll")]

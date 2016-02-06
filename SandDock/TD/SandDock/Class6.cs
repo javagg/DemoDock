@@ -41,10 +41,7 @@ namespace TD.SandDock
 		public virtual void Cancel()
 		{
 			this.Dispose();
-			if (this.eventHandler_0 != null)
-			{
-				this.eventHandler_0(this, EventArgs.Empty);
-			}
+            Event_0?.Invoke(this, EventArgs.Empty);
 		}
 
 		public virtual void Commit()
@@ -56,7 +53,7 @@ namespace TD.SandDock
 		{
 			if (this.control_0 != null)
 			{
-				this.control_0.MouseCaptureChanged -= new EventHandler(this.method_0);
+				this.control_0.MouseCaptureChanged -= this.method_0;
 			}
 			this.method_2();
 			if (this.dockingHints_0 == DockingHints.TranslucentFill)
@@ -66,7 +63,7 @@ namespace TD.SandDock
 			}
 			if (this.form_0 != null)
 			{
-				this.form_0.Deactivate -= new EventHandler(this.form_0_Deactivate);
+				this.form_0.Deactivate -= this.form_0_Deactivate;
 			}
 			Application.RemoveMessageFilter(this);
 			this.form_0 = null;
@@ -197,19 +194,7 @@ namespace TD.SandDock
 			return result;
 		}
 
-		public event EventHandler Event_0
-		{
-			[MethodImpl(MethodImplOptions.Synchronized)]
-			add
-			{
-				this.eventHandler_0 = (EventHandler)Delegate.Combine(this.eventHandler_0, value);
-			}
-			[MethodImpl(MethodImplOptions.Synchronized)]
-			remove
-			{
-				this.eventHandler_0 = (EventHandler)Delegate.Remove(this.eventHandler_0, value);
-			}
-		}
+	    public event EventHandler Event_0;
 
 		private bool bool_0;
 
@@ -219,7 +204,7 @@ namespace TD.SandDock
 
 		private DockingHints dockingHints_0 = DockingHints.TranslucentFill;
 
-		private EventHandler eventHandler_0;
+		//private EventHandler eventHandler_0;
 
 		private Form1 form1_0;
 

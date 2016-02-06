@@ -80,7 +80,7 @@ namespace TD.SandDock.Rendering
 		public override TypeConverter.StandardValuesCollection GetStandardValues(ITypeDescriptorContext context)
 		{
 			ArrayList arrayList = new ArrayList();
-			if (context != null && context.Instance is DockContainer)
+			if (context?.Instance is DockContainer)
 			{
 				arrayList.Add("(default)");
 			}

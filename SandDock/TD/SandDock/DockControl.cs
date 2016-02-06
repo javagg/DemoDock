@@ -8,7 +8,38 @@ using TD.SandDock.Rendering;
 
 namespace TD.SandDock
 {
-	[DefaultEvent("Closing"), Designer(typeof(DockControlDesigner)), ToolboxItem(false)]
+    public delegate void DockControlEventHandler(object sender, DockControlEventArgs e);
+
+    public class DockControlEventArgs : EventArgs
+    {
+        internal DockControlEventArgs(DockControl dockControl)
+        {
+            DockControl = dockControl;
+        }
+
+        public DockControl DockControl { get; }
+
+    }
+
+    public delegate void DockControlClosingEventHandler(object sender, DockControlClosingEventArgs e);
+
+    public class DockControlClosingEventArgs : DockControlEventArgs
+    {
+        internal DockControlClosingEventArgs(DockControl dockControl, bool cancel) : base(dockControl)
+        {
+            Cancel = cancel;
+        }
+
+        public bool Cancel { get; set; }
+    }
+
+    public enum DockControlCloseAction
+    {
+        HideOnly,
+        Dispose
+    }
+
+    [DefaultEvent("Closing"), Designer(typeof(DockControlDesigner)), ToolboxItem(false)]
 	public abstract class DockControl : ContainerControl
 	{
 		protected DockControl()
@@ -156,12 +187,9 @@ namespace TD.SandDock
 		}
 
 		[EditorBrowsable(EditorBrowsableState.Never), Obsolete("Use the OpenWith method instead.")]
-		public void DockNextTo(DockControl existingWindow)
-		{
-			this.OpenWith(existingWindow);
-		}
+		public void DockNextTo(DockControl existingWindow) => OpenWith(existingWindow);
 
-		protected virtual Point GetDefaultFloatingLocation()
+	    protected virtual Point GetDefaultFloatingLocation()
 		{
 			Point point;
 			if (this.Boolean_1)
@@ -192,15 +220,9 @@ namespace TD.SandDock
 			base.SetVisibleCore(bool_8);
 		}
 
-		internal void method_1()
-		{
-			if (this.LayoutSystem != null)
-			{
-				this.LayoutSystem.method_16();
-			}
-		}
+		internal void method_1() => this.LayoutSystem?.method_16();
 
-		private void method_10()
+	    private void method_10()
 		{
 			this.method_9();
 			if (this.Manager.DockSystemContainer == null)
@@ -265,11 +287,9 @@ namespace TD.SandDock
 		internal bool method_14(bool bool_8)
 		{
 			DockControlClosingEventArgs dockControlClosingEventArgs = new DockControlClosingEventArgs(this, false);
-			if (this.Manager != null)
-			{
-				this.Manager.OnDockControlClosing(dockControlClosingEventArgs);
-			}
-			if (!dockControlClosingEventArgs.Cancel)
+		    this.Manager?.OnDockControlClosing(dockControlClosingEventArgs);
+
+		    if (!dockControlClosingEventArgs.Cancel)
 			{
 				this.OnClosing(dockControlClosingEventArgs);
 			}
@@ -335,40 +355,27 @@ namespace TD.SandDock
 		{
 			if (!this.bool_1)
 			{
-				if (this.Manager == null || this.Manager.DocumentContainer == null || !this.Manager.DocumentContainer.Boolean_3)
+				if (this.Manager?.DocumentContainer == null || !this.Manager.DocumentContainer.Boolean_3)
 				{
 					this.MetaData.method_0(DateTime.Now);
 				}
-				if (this.Manager != null)
-				{
-					this.Manager.OnDockControlActivated(new DockControlEventArgs(this));
-				}
+			    this.Manager?.OnDockControlActivated(new DockControlEventArgs(this));
 			}
 		}
 
 		internal void method_4(DockContainer dockContainer_0)
 		{
-			if (dockContainer_0 != null && dockContainer_0.Manager != null)
-			{
-				if (dockContainer_0.Manager != this.Manager)
-				{
-					this.Manager = dockContainer_0.Manager;
-				}
-			}
-			this.method_5();
+		    if (dockContainer_0?.Manager != null && dockContainer_0.Manager != this.Manager)
+		    {
+		        this.Manager = dockContainer_0.Manager;
+		    }
+		    this.method_5();
 		}
 
-		internal void method_5()
+	    internal void method_5()
 		{
 			DockSituation dockSituation;
-			if (this.LayoutSystem != null && this.LayoutSystem.DockContainer != null)
-			{
-				dockSituation = LayoutUtilities.smethod_2(this.LayoutSystem.DockContainer);
-			}
-			else
-			{
-				dockSituation = DockSituation.None;
-			}
+			dockSituation = this.LayoutSystem?.DockContainer != null ? LayoutUtilities.smethod_2(this.LayoutSystem.DockContainer) : DockSituation.None;
 			if (dockSituation != DockSituation.None)
 			{
 				this.windowMetaData_0.method_3(dockSituation);
@@ -439,37 +446,25 @@ namespace TD.SandDock
 
 		protected internal virtual void OnAutoHidePopupClosed(EventArgs e)
 		{
-			if (this.eventHandler_3 != null)
-			{
-				this.eventHandler_3(this, e);
-			}
+		    this.eventHandler_3?.Invoke(this, e);
 		}
 
-		protected internal virtual void OnAutoHidePopupOpened(EventArgs e)
-		{
-			if (this.eventHandler_2 != null)
-			{
-				this.eventHandler_2(this, e);
-			}
-		}
+	    protected internal virtual void OnAutoHidePopupOpened(EventArgs e)
+	    {
+	        this.eventHandler_2?.Invoke(this, e);
+	    }
 
-		protected internal virtual void OnClosed(EventArgs e)
-		{
-			if (this.eventHandler_0 != null)
-			{
-				this.eventHandler_0(this, e);
-			}
-		}
+	    protected internal virtual void OnClosed(EventArgs e)
+	    {
+	        this.eventHandler_0?.Invoke(this, e);
+	    }
 
-		protected internal virtual void OnClosing(DockControlClosingEventArgs e)
-		{
-			if (this.dockControlClosingEventHandler_0 != null)
-			{
-				this.dockControlClosingEventHandler_0(this, e);
-			}
-		}
+	    protected internal virtual void OnClosing(DockControlClosingEventArgs e)
+	    {
+	        this.dockControlClosingEventHandler_0?.Invoke(this, e);
+	    }
 
-		protected override void OnCreateControl()
+	    protected override void OnCreateControl()
 		{
 			base.OnCreateControl();
 			this.OnLoad(EventArgs.Empty);
@@ -477,13 +472,10 @@ namespace TD.SandDock
 
 		protected virtual void OnDockSituationChanged(EventArgs e)
 		{
-			if (this.eventHandler_4 != null)
-			{
-				this.eventHandler_4(this, e);
-			}
+		    this.eventHandler_4?.Invoke(this, e);
 		}
 
-		protected override void OnEnter(EventArgs e)
+	    protected override void OnEnter(EventArgs e)
 		{
 			base.OnEnter(e);
 			if (this.LayoutSystem != null)
@@ -513,13 +505,10 @@ namespace TD.SandDock
 
 		protected virtual void OnLoad(EventArgs e)
 		{
-			if (this.eventHandler_1 != null)
-			{
-				this.eventHandler_1(this, e);
-			}
+		    this.eventHandler_1?.Invoke(this, e);
 		}
 
-		protected override void OnPaint(PaintEventArgs e)
+	    protected override void OnPaint(PaintEventArgs e)
 		{
 			base.OnPaint(e);
 			DockControl.smethod_0(this, e.Graphics, this.borderStyle_0);
@@ -542,11 +531,8 @@ namespace TD.SandDock
 			}
 			Color backColor = this.BackColor;
 			Color transparent = Color.Transparent;
-			if (this.Manager != null)
-			{
-				this.Manager.Renderer.ModifyDefaultWindowColors(this, ref backColor, ref transparent);
-			}
-			if (clientRectangle != base.ClientRectangle)
+		    this.Manager?.Renderer.ModifyDefaultWindowColors(this, ref backColor, ref transparent);
+		    if (clientRectangle != base.ClientRectangle)
 			{
 				e.Graphics.SetClip(clientRectangle);
 			}
@@ -870,25 +856,16 @@ namespace TD.SandDock
 					this.controlLayoutSystem_0.DockContainer.method_0(new ShowControlContextMenuEventArgs(this, new Point(0, 0), ContextMenuContext.Keyboard));
 					return true;
 				}
-				if (keyData == Keys.Escape)
-				{
-					if (this.Manager != null)
-					{
-						if (this.DockSituation != DockSituation.Document)
-						{
-							if (this.Manager.OwnerForm != null)
-							{
-								this.Manager.OwnerForm.Activate();
-							}
-							DockControl dockControl = this.Manager.FindMostRecentlyUsedWindow(DockSituation.Document);
-							if (dockControl != null)
-							{
-								dockControl.Activate();
-							}
-							return true;
-						}
-					}
-				}
+			    if (keyData == Keys.Escape && this.Manager != null && this.DockSituation != DockSituation.Document)
+			    {
+			        if (this.Manager.OwnerForm != null)
+			        {
+			            this.Manager.OwnerForm.Activate();
+			        }
+			        DockControl dockControl = this.Manager.FindMostRecentlyUsedWindow(DockSituation.Document);
+			        dockControl?.Activate();
+			        return true;
+			    }
 			}
 			return base.ProcessCmdKey(ref msg, keyData);
 		}
@@ -1185,10 +1162,7 @@ namespace TD.SandDock
 			set
 			{
 				base.BackColor = value;
-				if (this.LayoutSystem != null && this.LayoutSystem.DockContainer != null)
-				{
-					this.LayoutSystem.DockContainer.Invalidate(this.LayoutSystem.Bounds);
-				}
+			    this.LayoutSystem?.DockContainer?.Invalidate(this.LayoutSystem.Bounds);
 			}
 		}
 
@@ -1200,7 +1174,7 @@ namespace TD.SandDock
 				{
 					return this.bindingContext_0;
 				}
-				if (this.Manager != null && this.Manager.DockSystemContainer != null)
+				if (this.Manager?.DockSystemContainer != null)
 				{
 					return this.Manager.DockSystemContainer.BindingContext;
 				}
@@ -1230,15 +1204,9 @@ namespace TD.SandDock
 		}
 
 		[Browsable(false)]
-		internal bool Boolean_1
-		{
-			get
-			{
-				return this.controlLayoutSystem_0 != null && this.controlLayoutSystem_0.DockContainer != null;
-			}
-		}
+		internal bool Boolean_1 => this.controlLayoutSystem_0?.DockContainer != null;
 
-		[Category("Appearance"), DefaultValue(typeof(TD.SandDock.Rendering.BorderStyle), "None"), Description("The type of border to be drawn around the control.")]
+	    [Category("Appearance"), DefaultValue(typeof(TD.SandDock.Rendering.BorderStyle), "None"), Description("The type of border to be drawn around the control.")]
 		public TD.SandDock.Rendering.BorderStyle BorderStyle
 		{
 			get
@@ -1440,10 +1408,7 @@ namespace TD.SandDock
 			{
 				Guid oldGuid = this.guid_0;
 				this.guid_0 = value;
-				if (this.Manager != null)
-				{
-					this.Manager.ReRegisterWindow(this, oldGuid);
-				}
+			    this.Manager?.ReRegisterWindow(this, oldGuid);
 			}
 		}
 
@@ -1520,15 +1485,9 @@ namespace TD.SandDock
 			{
 				if (value != this.sandDockManager_0)
 				{
-					if (this.sandDockManager_0 != null)
-					{
-						this.sandDockManager_0.UnregisterWindow(this);
-					}
-					this.sandDockManager_0 = value;
-					if (this.sandDockManager_0 != null)
-					{
-						this.sandDockManager_0.RegisterWindow(this);
-					}
+				    this.sandDockManager_0?.UnregisterWindow(this);
+				    this.sandDockManager_0 = value;
+				    this.sandDockManager_0?.RegisterWindow(this);
 				}
 			}
 		}
@@ -1609,13 +1568,11 @@ namespace TD.SandDock
 				{
 					this.MetaData.method_2(value);
 				}
-				if (this.LayoutSystem != null && this.LayoutSystem.Control0_0 != null)
-				{
-					if (this.LayoutSystem.Control0_0.ControlLayoutSystem_0 == this.LayoutSystem)
-					{
-						this.LayoutSystem.Control0_0.Int32_1 = value;
-					}
-				}
+			    if (this.LayoutSystem?.Control0_0 != null &&
+			        this.LayoutSystem.Control0_0.ControlLayoutSystem_0 == this.LayoutSystem)
+			    {
+			        this.LayoutSystem.Control0_0.Int32_1 = value;
+			    }
 			}
 		}
 

@@ -8,11 +8,7 @@ namespace TD.SandDock
 {
 	internal class Class22
 	{
-		public Class22()
-		{
-		}
-
-		internal static void smethod_0(SandDockManager sandDockManager_0, XmlNode xmlNode_0)
+	    internal static void smethod_0(SandDockManager sandDockManager_0, XmlNode xmlNode_0)
 		{
 			TypeConverter converter = TypeDescriptor.GetConverter(typeof(long));
 			TypeConverter converter2 = TypeDescriptor.GetConverter(typeof(int));
@@ -143,9 +139,9 @@ namespace TD.SandDock
 
 		private static string smethod_5(int[] int_0)
 		{
-			TypeConverter converter = TypeDescriptor.GetConverter(typeof(int));
-			string[] array = new string[int_0.Length];
-			for (int i = 0; i < int_0.Length; i++)
+			var converter = TypeDescriptor.GetConverter(typeof(int));
+			var array = new string[int_0.Length];
+			for (var i = 0; i < int_0.Length; i++)
 			{
 				array[i] = converter.ConvertToString(null, CultureInfo.InvariantCulture, int_0[i]);
 			}

@@ -10,11 +10,7 @@ namespace TD.SandDock.Rendering
 	[TypeConverter(typeof(Class26))]
 	public class MilborneRenderer : ITabControlRenderer
 	{
-		public MilborneRenderer()
-		{
-		}
-
-		public virtual void DrawFakeTabControlBackgroundExtension(Graphics graphics, Rectangle bounds, Color backColor)
+	    public virtual void DrawFakeTabControlBackgroundExtension(Graphics graphics, Rectangle bounds, Color backColor)
 		{
 			using (SolidBrush solidBrush = new SolidBrush(this.color_7))
 			{

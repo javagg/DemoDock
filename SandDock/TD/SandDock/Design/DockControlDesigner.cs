@@ -12,15 +12,11 @@ namespace TD.SandDock.Design
 {
 	internal class DockControlDesigner : ParentControlDesigner
 	{
-		public DockControlDesigner()
+	    protected override void Dispose(bool disposing)
 		{
-		}
-
-		protected override void Dispose(bool disposing)
-		{
-			this.dockControl_0.ControlAdded -= new ControlEventHandler(this.dockControl_0_ControlRemoved);
-			this.dockControl_0.ControlRemoved -= new ControlEventHandler(this.dockControl_0_ControlRemoved);
-			this.iselectionService_0.SelectionChanged -= new EventHandler(this.iselectionService_0_SelectionChanged);
+			this.dockControl_0.ControlAdded -= this.dockControl_0_ControlRemoved;
+			this.dockControl_0.ControlRemoved -= this.dockControl_0_ControlRemoved;
+			this.iselectionService_0.SelectionChanged -= this.iselectionService_0_SelectionChanged;
 			base.Dispose(disposing);
 		}
 
@@ -76,7 +72,7 @@ namespace TD.SandDock.Design
 					TextRenderer.DrawText(pe.Graphics, "To redock windows, click and drag their tabs or titlebars to other locations on your form.", font, clientRectangle, SystemColors.ControlDarkDark, TextFormatFlags.HorizontalCenter | TextFormatFlags.VerticalCenter | TextFormatFlags.WordBreak);
 				}
 			}
-			if (this.dockControl_0.BorderStyle == TD.SandDock.Rendering.BorderStyle.None)
+			if (this.dockControl_0.BorderStyle == Rendering.BorderStyle.None)
 			{
 				using (Pen pen = new Pen(SystemColors.ControlDark))
 				{
@@ -92,19 +88,17 @@ namespace TD.SandDock.Design
 		protected override void PreFilterProperties(IDictionary properties)
 		{
 			base.PreFilterProperties(properties);
-			string[] array = new string[]
-			{
+			string[] array = {
 				"Collapsed"
 			};
 			string[] array2 = array;
-			for (int i = 0; i < array2.Length; i++)
+			foreach (string key in array2)
 			{
-				string key = array2[i];
-				PropertyDescriptor propertyDescriptor = (PropertyDescriptor)properties[key];
-				if (propertyDescriptor != null)
-				{
-					properties[key] = TypeDescriptor.CreateProperty(typeof(DockControlDesigner), propertyDescriptor, new Attribute[0]);
-				}
+			    var propertyDescriptor = (PropertyDescriptor)properties[key];
+			    if (propertyDescriptor != null)
+			    {
+			        properties[key] = TypeDescriptor.CreateProperty(typeof(DockControlDesigner), propertyDescriptor, new Attribute[0]);
+			    }
 			}
 		}
 
@@ -138,15 +132,9 @@ namespace TD.SandDock.Design
 			}
 		}
 
-		public override SelectionRules SelectionRules
-		{
-			get
-			{
-				return SelectionRules.None;
-			}
-		}
+		public override SelectionRules SelectionRules => SelectionRules.None;
 
-		private static bool bool_0;
+	    private static bool bool_0;
 
 		private bool bool_1;
 

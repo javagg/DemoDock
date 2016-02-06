@@ -3,6 +3,7 @@ using System.Collections;
 using System.ComponentModel;
 using System.Drawing;
 using System.Drawing.Text;
+using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Windows.Forms;
 using TD.SandDock.Design;
@@ -79,15 +80,9 @@ namespace TD.SandDock
 			return this.CreateNewLayoutSystem(new DockControl[0], size);
 		}
 
-		public ControlLayoutSystem CreateNewLayoutSystem(DockControl control, SizeF size)
-		{
-			return this.CreateNewLayoutSystem(new DockControl[]
-			{
-				control
-			}, size);
-		}
+		public ControlLayoutSystem CreateNewLayoutSystem(DockControl control, SizeF size) => CreateNewLayoutSystem(new[]{control}, size);
 
-		public ControlLayoutSystem CreateNewLayoutSystem(DockControl[] controls, SizeF size)
+	    public ControlLayoutSystem CreateNewLayoutSystem(DockControl[] controls, SizeF size)
 		{
 			if (controls == null)
 			{
@@ -112,7 +107,7 @@ namespace TD.SandDock
 					this.rendererBase_0 = null;
 				}
 				this.Manager = null;
-				this.class0_0.Event_0 -= new Class0.Delegate0(this.method_16);
+				this.class0_0.Event_0 -= this.method_16;
 				this.class0_0.Dispose();
 			}
 			base.Dispose(disposing);
@@ -135,25 +130,11 @@ namespace TD.SandDock
 			return layoutSystemBase;
 		}
 
-		public DockControl GetWindowAt(Point position)
-		{
-			ControlLayoutSystem controlLayoutSystem = this.GetLayoutSystemAt(position) as ControlLayoutSystem;
-			if (controlLayoutSystem != null)
-			{
-				return controlLayoutSystem.GetControlAt(position);
-			}
-			return null;
-		}
+		public DockControl GetWindowAt(Point position) => (GetLayoutSystemAt(position) as ControlLayoutSystem)?.GetControlAt(position);
 
-		internal void method_0(ShowControlContextMenuEventArgs showControlContextMenuEventArgs_0)
-		{
-			if (this.Manager != null)
-			{
-				this.Manager.OnShowControlContextMenu(showControlContextMenuEventArgs_0);
-			}
-		}
+	    internal void method_0(ShowControlContextMenuEventArgs showControlContextMenuEventArgs_0) => Manager?.OnShowControlContextMenu(showControlContextMenuEventArgs_0);
 
-		internal object method_1(Type type_0)
+	    internal object method_1(Type type_0)
 		{
 			return this.GetService(type_0);
 		}
@@ -182,34 +163,24 @@ namespace TD.SandDock
 
 		internal void method_11(object sender, EventArgs e)
 		{
-			foreach (LayoutSystemBase layoutSystemBase in this.arrayList_0)
-			{
-				if (layoutSystemBase is ControlLayoutSystem)
-				{
-					ControlLayoutSystem controlLayoutSystem = (ControlLayoutSystem)layoutSystemBase;
-					if (controlLayoutSystem.method_8())
-					{
-						break;
-					}
-				}
-			}
+		    foreach (ControlLayoutSystem controlLayoutSystem in this.arrayList_0.OfType<ControlLayoutSystem>().Where(controlLayoutSystem => controlLayoutSystem.method_8()))
+		    {
+		        break;
+		    }
 		}
 
-		internal void method_12(object sender, EventArgs e)
+	    internal void method_12(object sender, EventArgs e)
 		{
-			foreach (LayoutSystemBase layoutSystemBase in this.arrayList_0)
-			{
-				if (layoutSystemBase is ControlLayoutSystem)
-				{
-					((ControlLayoutSystem)layoutSystemBase).method_9();
-				}
-			}
+		    foreach (ControlLayoutSystem layoutSystemBase in this.arrayList_0.OfType<ControlLayoutSystem>())
+		    {
+		        (layoutSystemBase).method_9();
+		    }
 		}
 
-		private void method_13()
+	    private void method_13()
 		{
-			this.class11_0.Event_0 -= new EventHandler(this.method_14);
-			this.class11_0.Event_1 -= new Class11.ResizingManagerFinishedEventHandler(this.method_15);
+			this.class11_0.Event_0 -= this.method_14;
+			this.class11_0.Event_1 -= this.method_15;
 			this.class11_0 = null;
 		}
 
@@ -226,7 +197,7 @@ namespace TD.SandDock
 
 		private string method_16(Point point_0)
 		{
-			LayoutSystemBase layoutSystemAt = this.GetLayoutSystemAt(point_0);
+			var layoutSystemAt = GetLayoutSystemAt(point_0);
 			if (!(layoutSystemAt is ControlLayoutSystem))
 			{
 				return "";
@@ -238,12 +209,9 @@ namespace TD.SandDock
 		{
 			this.int_1++;
 			this.splitLayoutSystem_0.vmethod_2(null);
-			foreach (LayoutSystemBase layoutSystemBase in this.arrayList_0)
+			foreach (ControlLayoutSystem layoutSystemBase in this.arrayList_0.OfType<ControlLayoutSystem>())
 			{
-				if (layoutSystemBase is ControlLayoutSystem)
-				{
-					((ControlLayoutSystem)layoutSystemBase).Controls.Clear();
-				}
+			    (layoutSystemBase).Controls.Clear();
 			}
 			this.splitLayoutSystem_0 = new SplitLayoutSystem();
 		}
@@ -273,13 +241,13 @@ namespace TD.SandDock
 			if (!bool_2 && this.int_1 == 0)
 			{
 				this.method_9();
-				Application.Idle += new EventHandler(this.method_6);
+				Application.Idle += this.method_6;
 			}
 		}
 
 		private void method_6(object sender, EventArgs e)
 		{
-			Application.Idle -= new EventHandler(this.method_6);
+			Application.Idle -= this.method_6;
 			bool flag = false;
 			while (this.LayoutSystem.Optimize())
 			{
@@ -303,19 +271,9 @@ namespace TD.SandDock
 			}
 		}
 
-		internal bool method_8()
-		{
-			foreach (LayoutSystemBase layoutSystemBase in this.arrayList_0)
-			{
-				if (layoutSystemBase is ControlLayoutSystem)
-				{
-					return false;
-				}
-			}
-			return true;
-		}
+		internal bool method_8() => !this.arrayList_0.OfType<ControlLayoutSystem>().Any();
 
-		internal void method_9()
+	    internal void method_9()
 		{
 			if (this.Boolean_6)
 			{
@@ -361,26 +319,14 @@ namespace TD.SandDock
 
 		protected internal virtual void OnDockingFinished(EventArgs e)
 		{
-			if (this.eventHandler_1 != null)
-			{
-				this.eventHandler_1(this, e);
-			}
-			if (this.Manager != null)
-			{
-				this.Manager.OnDockingFinished(e);
-			}
+            DockingFinished?.Invoke(this, e);
+		    this.Manager?.OnDockingFinished(e);
 		}
 
 		protected internal virtual void OnDockingStarted(EventArgs e)
 		{
-			if (this.eventHandler_0 != null)
-			{
-				this.eventHandler_0(this, e);
-			}
-			if (this.Manager != null)
-			{
-				this.Manager.OnDockingStarted(e);
-			}
+            DockingStarted?.Invoke(this, e);
+		    this.Manager?.OnDockingStarted(e);
 		}
 
 		protected override void OnDoubleClick(EventArgs e)
@@ -388,11 +334,8 @@ namespace TD.SandDock
 			base.OnDoubleClick(e);
 			//if (!this.class2_0.Locked)
 			//{
-				if (this.layoutSystemBase_0 != null)
-				{
-					this.layoutSystemBase_0.OnMouseDoubleClick();
-				}
-				return;
+		    this.layoutSystemBase_0?.OnMouseDoubleClick();
+		    return;
 			//}
 		}
 
@@ -401,10 +344,7 @@ namespace TD.SandDock
 			base.OnDragOver(drgevent);
 			Point position = base.PointToClient(new Point(drgevent.X, drgevent.Y));
 			LayoutSystemBase layoutSystemAt = this.GetLayoutSystemAt(position);
-			if (layoutSystemAt != null)
-			{
-				layoutSystemAt.OnDragOver(drgevent);
-			}
+		    layoutSystemAt?.OnDragOver(drgevent);
 		}
 
 		protected override void OnFontChanged(EventArgs e)
@@ -431,19 +371,13 @@ namespace TD.SandDock
 				this.layoutSystemBase_0.OnMouseDown(e);
 				return;
 			}
-			if (this.rectangle_0.Contains(e.X, e.Y) && this.Manager != null)
-			{
-				if (e.Button == MouseButtons.Left)
-				{
-					if (this.class11_0 != null)
-					{
-						this.class11_0.Dispose();
-					}
-					this.class11_0 = new Class11(this.Manager, this, new Point(e.X, e.Y));
-					this.class11_0.Event_0 += new EventHandler(this.method_14);
-					this.class11_0.Event_1 += new Class11.ResizingManagerFinishedEventHandler(this.method_15);
-				}
-			}
+		    if (this.rectangle_0.Contains(e.X, e.Y) && this.Manager != null && e.Button == MouseButtons.Left)
+		    {
+		        this.class11_0?.Dispose();
+		        this.class11_0 = new Class11(this.Manager, this, new Point(e.X, e.Y));
+		        this.class11_0.Event_0 += this.method_14;
+		        this.class11_0.Event_1 += this.method_15;
+		    }
 		}
 
 		protected override void OnMouseLeave(EventArgs e)
@@ -497,11 +431,8 @@ namespace TD.SandDock
 			{
 				if (this.layoutSystemBase_0 == null)
 				{
-					if (this.class11_0 != null)
-					{
-						this.class11_0.OnMouseMove(new Point(e.X, e.Y));
-					}
-					return;
+				    this.class11_0?.OnMouseMove(new Point(e.X, e.Y));
+				    return;
 				}
 				this.layoutSystemBase_0.OnMouseMove(e);
 				return;
@@ -520,10 +451,7 @@ namespace TD.SandDock
 				this.layoutSystemBase_0.OnMouseUp(e);
 				return;
 			}
-			if (this.class11_0 != null)
-			{
-				this.class11_0.Commit();
-			}
+		    this.class11_0?.Commit();
 		}
 
 		protected override void OnPaint(PaintEventArgs e)
@@ -532,7 +460,7 @@ namespace TD.SandDock
 			{
 				return;
 			}
-			Control container = (this.Manager != null) ? this.Manager.DockSystemContainer : null;
+			Control container = this.Manager?.DockSystemContainer;
 			this.RendererBase_0.StartRenderSession(HotkeyPrefix.None);
 			this.LayoutSystem.vmethod_4(this.RendererBase_0, e.Graphics, this.Font);
 			if (this.AllowResize)
@@ -604,15 +532,9 @@ namespace TD.SandDock
 		}
 
 		[Browsable(false)]
-		protected internal virtual bool AllowResize
-		{
-			get
-			{
-				return this.Manager == null || this.Manager.AllowDockContainerResize;
-			}
-		}
+		protected internal virtual bool AllowResize => this.Manager?.AllowDockContainerResize ?? true;
 
-		[Browsable(false), DefaultValue(typeof(Color), "Control")]
+	    [Browsable(false), DefaultValue(typeof(Color), "Control")]
 		public override Color BackColor
 		{
 			get
@@ -646,15 +568,9 @@ namespace TD.SandDock
 			}
 		}
 
-		internal bool Boolean_1
-		{
-			get
-			{
-				return this.Dock == DockStyle.Left || this.Dock == DockStyle.Right;
-			}
-		}
+		internal bool Boolean_1 => this.Dock == DockStyle.Left || this.Dock == DockStyle.Right;
 
-		internal bool Boolean_2
+	    internal bool Boolean_2
 		{
 			get
 			{
@@ -663,15 +579,9 @@ namespace TD.SandDock
 		}
 
 		[Browsable(false)]
-		internal virtual bool Boolean_6
-		{
-			get
-			{
-				return this.Dock != DockStyle.Fill && this.Dock != DockStyle.None;
-			}
-		}
+		internal virtual bool Boolean_6 => this.Dock != DockStyle.Fill && this.Dock != DockStyle.None;
 
-		public int ContentSize
+	    public int ContentSize
 		{
 			get
 			{
@@ -689,15 +599,9 @@ namespace TD.SandDock
 			}
 		}
 
-		protected override Size DefaultSize
-		{
-			get
-			{
-				return new Size(0, 0);
-			}
-		}
+		protected override Size DefaultSize => new Size(0, 0);
 
-		[Browsable(false)]
+	    [Browsable(false)]
 		public override DockStyle Dock
 		{
 			get
@@ -742,36 +646,14 @@ namespace TD.SandDock
 		}
 
 		[Browsable(false)]
-		public bool HasSingleControlLayoutSystem
-		{
-			get
-			{
-				return this.LayoutSystem.LayoutSystems.Count == 1 && this.LayoutSystem.LayoutSystems[0] is ControlLayoutSystem;
-			}
-		}
+		public bool HasSingleControlLayoutSystem => this.LayoutSystem.LayoutSystems.Count == 1 && this.LayoutSystem.LayoutSystems[0] is ControlLayoutSystem;
 
-		internal int Int32_0
-		{
-			get
-			{
-				if (this.Boolean_1)
-				{
-					return this.rectangle_1.Width;
-				}
-				return this.rectangle_1.Height;
-			}
-		}
+	    internal int Int32_0 => this.Boolean_1 ? this.rectangle_1.Width : this.rectangle_1.Height;
 
-		[Browsable(false)]
-		public virtual bool IsFloating
-		{
-			get
-			{
-				return false;
-			}
-		}
+	    [Browsable(false)]
+		public virtual bool IsFloating => false;
 
-		[Browsable(false)]
+	    [Browsable(false)]
 		public virtual SplitLayoutSystem LayoutSystem
 		{
 			get
@@ -787,21 +669,11 @@ namespace TD.SandDock
 						DockContainer.bool_0 = true;
 						try
 						{
-							if (this.splitLayoutSystem_0 != null)
+						    this.splitLayoutSystem_0?.vmethod_2(null);
+						    if (!this.bool_1)
 							{
-								this.splitLayoutSystem_0.vmethod_2(null);
-							}
-							if (!this.bool_1)
-							{
-								if (this.Boolean_1)
-								{
-									this.int_2 = Convert.ToInt32(value.WorkingSize.Width);
-								}
-								else
-								{
-									this.int_2 = Convert.ToInt32(value.WorkingSize.Height);
-								}
-								this.bool_1 = true;
+							    this.int_2 = Convert.ToInt32(this.Boolean_1 ? value.WorkingSize.Width : value.WorkingSize.Height);
+							    this.bool_1 = true;
 							}
 							this.splitLayoutSystem_0 = value;
 							this.splitLayoutSystem_0.vmethod_2(this);
@@ -827,11 +699,8 @@ namespace TD.SandDock
 			}
 			set
 			{
-				if (this.sandDockManager_0 != null)
-				{
-					this.sandDockManager_0.UnregisterDockContainer(this);
-				}
-				if (value != null && value.DockSystemContainer != null && !this.IsFloating && base.Parent != null)
+			    this.sandDockManager_0?.UnregisterDockContainer(this);
+			    if (value != null && value.DockSystemContainer != null && !this.IsFloating && base.Parent != null)
 				{
 					if (base.Parent != value.DockSystemContainer)
 					{
@@ -847,27 +716,17 @@ namespace TD.SandDock
 			}
 		}
 
-		internal Rectangle Rectangle_0
-		{
-			get
-			{
-				return this.rectangle_0;
-			}
-		}
+		internal Rectangle Rectangle_0 => this.rectangle_0;
 
-		internal virtual RendererBase RendererBase_0
+	    internal virtual RendererBase RendererBase_0
 		{
 			get
 			{
-				if (this.sandDockManager_0 != null && this.sandDockManager_0.Renderer != null)
+			    if (this.sandDockManager_0?.Renderer != null)
 				{
 					return this.sandDockManager_0.Renderer;
 				}
-				if (this.rendererBase_0 == null)
-				{
-					this.rendererBase_0 = new WhidbeyRenderer();
-				}
-				return this.rendererBase_0;
+			    return this.rendererBase_0 ?? (this.rendererBase_0 = new WhidbeyRenderer());
 			}
 		}
 
@@ -884,33 +743,9 @@ namespace TD.SandDock
 			}
 		}
 
-		public event EventHandler DockingFinished
-		{
-			[MethodImpl(MethodImplOptions.Synchronized)]
-			add
-			{
-				this.eventHandler_1 = (EventHandler)Delegate.Combine(this.eventHandler_1, value);
-			}
-			[MethodImpl(MethodImplOptions.Synchronized)]
-			remove
-			{
-				this.eventHandler_1 = (EventHandler)Delegate.Remove(this.eventHandler_1, value);
-			}
-		}
+	    public event EventHandler DockingFinished;
 
-		public event EventHandler DockingStarted
-		{
-			[MethodImpl(MethodImplOptions.Synchronized)]
-			add
-			{
-				this.eventHandler_0 = (EventHandler)Delegate.Combine(this.eventHandler_0, value);
-			}
-			[MethodImpl(MethodImplOptions.Synchronized)]
-			remove
-			{
-				this.eventHandler_0 = (EventHandler)Delegate.Remove(this.eventHandler_0, value);
-			}
-		}
+	    public event EventHandler DockingStarted;
 
 		internal ArrayList arrayList_0;
 
@@ -924,9 +759,9 @@ namespace TD.SandDock
 
 		//private Class2 class2_0;
 
-		private EventHandler eventHandler_0;
+		//private EventHandler eventHandler_0;
 
-		private EventHandler eventHandler_1;
+		//private EventHandler eventHandler_1;
 
 		private const int int_0 = 32;
 

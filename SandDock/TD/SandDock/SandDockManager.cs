@@ -5,6 +5,7 @@ using System.ComponentModel.Design;
 using System.Drawing;
 using System.Globalization;
 using System.IO;
+using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Windows.Forms;
 using System.Xml;
@@ -12,7 +13,26 @@ using TD.SandDock.Rendering;
 
 namespace TD.SandDock
 {
-	[DefaultEvent("ActiveTabbedDocumentChanged"), Designer("TD.SandDock.Design.SandDockManagerDesigner, SandDock.Design"), ToolboxBitmap(typeof(SandDockManager))]
+    public delegate void ActiveFilesListEventHandler(object sender, ActiveFilesListEventArgs e);
+
+    public class ActiveFilesListEventArgs : EventArgs
+    {
+        internal ActiveFilesListEventArgs(DockControl[] windows, Control control, Point position)
+        {
+            Windows = windows;
+            Control = control;
+            Position = position;
+        }
+
+        public Control Control { get; }
+
+        public Point Position { get; }
+
+        public DockControl[] Windows { get; }
+
+    }
+
+    [DefaultEvent("ActiveTabbedDocumentChanged"), Designer("Design.SandDockManagerDesigner"), ToolboxBitmap(typeof(SandDockManager))]
 	public class SandDockManager : Component
 	{
 		public SandDockManager()
@@ -231,77 +251,55 @@ namespace TD.SandDock
 
 		private Control FindDockSystemContainer(IDesignerHost designerHost, Control parent)
 		{
-			IEnumerator enumerator = parent.Controls.GetEnumerator();
-			Control result;
-			try
-			{
-				while (enumerator.MoveNext())
-				{
-					Control control = (Control)enumerator.Current;
-					if (control.Dock == DockStyle.Fill)
-					{
-						if (control.Site != null && control.Site.DesignMode && !control.Controls.IsReadOnly)
-						{
-							result = this.FindDockSystemContainer(designerHost, control);
-							return result;
-						}
-					}
-				}
-				return parent;
-			}
-			finally
-			{
-				IDisposable disposable = enumerator as IDisposable;
-				if (disposable != null)
-				{
-					disposable.Dispose();
-				}
-			}
-			return result;
+		    var ctl =
+		        parent.Controls.Cast<Control>()
+		            .FirstOrDefault(
+		                c => c.Dock == DockStyle.Fill && c.Site != null && c.Site.DesignMode && !c.Controls.IsReadOnly);
+		    return ctl != null ? FindDockSystemContainer(designerHost, ctl) : parent;
+
+   //         IEnumerator enumerator = parent.Controls.GetEnumerator();
+			//Control result;
+			//try
+			//{
+			//	while (enumerator.MoveNext())
+			//	{
+			//	    Control control = (Control)enumerator.Current;
+			//	    if (control.Dock == DockStyle.Fill && control.Site != null && control.Site.DesignMode && !control.Controls.IsReadOnly)
+			//	    {
+			//	        result = this.FindDockSystemContainer(designerHost, control);
+			//	        return result;
+			//	    }
+			//	}
+			//    return parent;
+			//}
+			//finally
+			//{
+			//	IDisposable disposable = enumerator as IDisposable;
+			//	if (disposable != null)
+			//	{
+			//		disposable.Dispose();
+			//	}
+			//}
+			//return result;
 		}
 
-		internal Class5 FindFloatingDockContainer(Guid guid)
-		{
-			Class5[] floatingDockContainerList = this.GetFloatingDockContainerList();
-			for (int i = 0; i < floatingDockContainerList.Length; i++)
-			{
-				Class5 @class = floatingDockContainerList[i];
-				if (@class.Guid_0 == guid)
-				{
-					return @class;
-				}
-			}
-			return null;
-		}
+		internal Class5 FindFloatingDockContainer(Guid guid) => GetFloatingDockContainerList().FirstOrDefault(@class => @class.Guid_0 == guid);
 
-		public DockControl FindMostRecentlyUsedWindow()
-		{
-			return this.FindMostRecentlyUsedWindow((DockSituation)(-1));
-		}
+	    public DockControl FindMostRecentlyUsedWindow() => FindMostRecentlyUsedWindow((DockSituation)(-1));
 
-		public DockControl FindMostRecentlyUsedWindow(DockSituation dockSituation)
-		{
-			return this.FindMostRecentlyUsedWindow(dockSituation, null);
-		}
+	    public DockControl FindMostRecentlyUsedWindow(DockSituation dockSituation) => FindMostRecentlyUsedWindow(dockSituation, null);
 
-		internal DockControl FindMostRecentlyUsedWindow(DockSituation dockSituation, DockControl notThisOne)
+	    internal DockControl FindMostRecentlyUsedWindow(DockSituation dockSituation, DockControl notThisOne)
 		{
 			DateTime t = DateTime.MinValue;
 			DockControl result = null;
 			DockControl[] dockControls = this.GetDockControls();
-			for (int i = 0; i < dockControls.Length; i++)
+			foreach (var dockControl in dockControls.Where(dockControl => dockControl != notThisOne && dockControl.MetaData.LastFocused >= t && (dockSituation == (DockSituation) (-1) || dockControl.DockSituation == dockSituation)))
 			{
-				DockControl dockControl = dockControls[i];
-				if (dockControl != notThisOne && dockControl.MetaData.LastFocused >= t)
-				{
-					if (dockSituation == (DockSituation)(-1) || dockControl.DockSituation == dockSituation)
-					{
-						t = dockControl.MetaData.LastFocused;
-						result = dockControl;
-					}
-				}
+			    t = dockControl.MetaData.LastFocused;
+			    result = dockControl;
 			}
-			return result;
+	        return result;
 		}
 
 		internal Control0 GetAutoHideBar(DockStyle dock)
@@ -376,35 +374,13 @@ namespace TD.SandDock
 			return array;
 		}
 
-		public DockControl[] GetDockControls(DockSituation dockSituation)
-		{
-			ArrayList arrayList = new ArrayList();
-			foreach (DockControl dockControl in this.hashtable_0.Values)
-			{
-				if (dockControl.DockSituation == dockSituation)
-				{
-					arrayList.Add(dockControl);
-				}
-			}
-			return (DockControl[])arrayList.ToArray(typeof(DockControl));
-		}
+		public DockControl[] GetDockControls(DockSituation dockSituation) => this.hashtable_0.Values.Cast<DockControl>().Where(control => control.DockSituation == dockSituation).ToArray();
 
-		private Class5[] GetFloatingDockContainerList()
-		{
-			ArrayList arrayList = new ArrayList();
-			foreach (DockContainer dockContainer in this.arrayList_0)
-			{
-				if (dockContainer.IsFloating)
-				{
-					arrayList.Add(dockContainer);
-				}
-			}
-			return (Class5[])arrayList.ToArray(typeof(Class5));
-		}
+	    private Class5[] GetFloatingDockContainerList() => this.arrayList_0.Cast<DockContainer>().Where(container => container.IsFloating).Cast<Class5>().ToArray();
 
-		private int GetInsideControlIndex(Control container)
+	    private int GetInsideControlIndex(Control container)
 		{
-			int num = 2147483647;
+			int num = int.MaxValue;
 			for (int i = container.Controls.Count - 1; i >= 0; i--)
 			{
 				Control control = container.Controls[i];
@@ -418,7 +394,7 @@ namespace TD.SandDock
 
 		public string GetLayout()
 		{
-			this.EnsureDockSystemContainer();
+			EnsureDockSystemContainer();
 			StringWriter stringWriter = new StringWriter();
 			XmlTextWriter xmlTextWriter = new XmlTextWriter(stringWriter);
 			xmlTextWriter.Formatting = Formatting.Indented;
@@ -504,33 +480,20 @@ namespace TD.SandDock
 			return result;
 		}
 
-		private string GetSettingsKey()
-		{
-			if (this.OwnerForm != null)
-			{
-				return this.OwnerForm.GetType().FullName;
-			}
-			return "default";
-		}
+		private string GetSettingsKey() => this.OwnerForm != null ? this.OwnerForm.GetType().FullName : "default";
 
-		public void LoadLayout()
+	    public void LoadLayout()
 		{
-			LayoutSettings layoutSettings = new LayoutSettings(this.GetSettingsKey());
+			var layoutSettings = new LayoutSettings(this.GetSettingsKey());
 			if (!layoutSettings.IsDefault && layoutSettings.LayoutXml != null && layoutSettings.LayoutXml.Length != 0)
 			{
 				this.SetLayout(layoutSettings.LayoutXml);
 			}
 		}
 
-		protected internal virtual void OnActiveTabbedDocumentChanged(EventArgs e)
-		{
-			if (this.eventHandler_2 != null)
-			{
-				this.eventHandler_2(this, e);
-			}
-		}
+		protected internal virtual void OnActiveTabbedDocumentChanged(EventArgs e) => ActiveTabbedDocumentChanged?.Invoke(this, e);
 
-		private void OnActiveTabbedDocumentDockSituationChanged(object sender, EventArgs e)
+	    private void OnActiveTabbedDocumentDockSituationChanged(object sender, EventArgs e)
 		{
 			DockControl dockControl = (DockControl)sender;
 			if (dockControl.DockSituation != DockSituation.Document)
@@ -553,83 +516,62 @@ namespace TD.SandDock
 
 		protected virtual void OnDockControlAdded(DockControlEventArgs e)
 		{
-			if (this.dockControlEventHandler_1 != null)
-			{
-				this.dockControlEventHandler_1(this, e);
-			}
+		    this.dockControlEventHandler_1?.Invoke(this, e);
 		}
 
-		protected internal virtual void OnDockControlClosing(DockControlClosingEventArgs e)
-		{
-			if (this.dockControlClosingEventHandler_0 != null)
-			{
-				this.dockControlClosingEventHandler_0(this, e);
-			}
-		}
+	    protected internal virtual void OnDockControlClosing(DockControlClosingEventArgs e)
+	    {
+	        this.dockControlClosingEventHandler_0?.Invoke(this, e);
+	    }
 
-		protected virtual void OnDockControlRemoved(DockControlEventArgs e)
-		{
-			if (this.dockControlEventHandler_2 != null)
-			{
-				this.dockControlEventHandler_2(this, e);
-			}
-		}
+	    protected virtual void OnDockControlRemoved(DockControlEventArgs e)
+	    {
+	        this.dockControlEventHandler_2?.Invoke(this, e);
+	    }
 
-		protected internal virtual void OnDockingFinished(EventArgs e)
-		{
-			if (this.eventHandler_1 != null)
-			{
-				this.eventHandler_1(this, e);
-			}
-		}
+	    protected internal virtual void OnDockingFinished(EventArgs e)
+	    {
+	        this.eventHandler_1?.Invoke(this, e);
+	    }
 
-		protected internal virtual void OnDockingStarted(EventArgs e)
-		{
-			if (this.eventHandler_0 != null)
-			{
-				this.eventHandler_0(this, e);
-			}
-		}
+	    protected internal virtual void OnDockingStarted(EventArgs e)
+	    {
+	        this.eventHandler_0?.Invoke(this, e);
+	    }
 
-		private void OnDockSystemContainerResize(object sender, EventArgs e)
+	    private void OnDockSystemContainerResize(object sender, EventArgs e)
 		{
-			if (this.OwnerForm != null)
-			{
-				if (this.OwnerForm.WindowState == FormWindowState.Minimized)
-				{
-					return;
-				}
-			}
-			if (this.DockSystemContainer != null)
-			{
-				Form form = this.DockSystemContainer.FindForm();
-				if (form != null)
-				{
-					if (form.WindowState == FormWindowState.Minimized)
-					{
-						return;
-					}
-					if (form.Parent != null)
-					{
-						Form form2 = form.Parent.FindForm();
-						if (form2 != null)
-						{
-							if (form2.WindowState == FormWindowState.Minimized)
-							{
-								return;
-							}
-							if (form2.ActiveMdiChild != null && form2.ActiveMdiChild != form)
-							{
-								if (form2.ActiveMdiChild.WindowState == FormWindowState.Maximized)
-								{
-									return;
-								}
-							}
-						}
-					}
-				}
-			}
-			Rectangle rectangle = Class7.smethod_1(this.DockSystemContainer);
+	        if (this.OwnerForm?.WindowState == FormWindowState.Minimized)
+	        {
+	            return;
+	        }
+	        Form form = this.DockSystemContainer?.FindForm();
+	        if (form != null)
+	        {
+	            if (form.WindowState == FormWindowState.Minimized)
+	            {
+	                return;
+	            }
+	            if (form.Parent != null)
+	            {
+	                Form form2 = form.Parent.FindForm();
+	                if (form2 != null)
+	                {
+	                    if (form2.WindowState == FormWindowState.Minimized)
+	                    {
+	                        return;
+	                    }
+	                    if (form2.ActiveMdiChild != null && form2.ActiveMdiChild != form)
+	                    {
+	                        if (form2.ActiveMdiChild.WindowState == FormWindowState.Maximized)
+	                        {
+	                            return;
+	                        }
+	                    }
+	                }
+	            }
+	        }
+	        Rectangle rectangle = Class7.smethod_1(this.DockSystemContainer);
 			int num = -rectangle.Width;
 			int num2 = -rectangle.Height;
 			if (this.DockSystemContainer is ToolStripContentPanel && (rectangle.Width <= 0 || rectangle.Height <= 0))
@@ -702,16 +644,13 @@ namespace TD.SandDock
 
 		private void OnOwnerFormActivated(object sender, EventArgs e)
 		{
-			foreach (DockContainer dockContainer in this.arrayList_0)
-			{
-				if (!dockContainer.IsFloating)
-				{
-					dockContainer.method_11(sender, e);
-				}
-			}
+		    foreach (DockContainer dockContainer in this.arrayList_0.Cast<DockContainer>().Where(dockContainer => !dockContainer.IsFloating))
+		    {
+		        dockContainer.method_11(sender, e);
+		    }
 		}
 
-		private void OnOwnerFormClosing(object sender, CancelEventArgs e)
+	    private void OnOwnerFormClosing(object sender, CancelEventArgs e)
 		{
 			if (this.AutoSaveLayout)
 			{
@@ -721,16 +660,13 @@ namespace TD.SandDock
 
 		private void OnOwnerFormDeactivated(object sender, EventArgs e)
 		{
-			foreach (DockContainer dockContainer in this.arrayList_0)
-			{
-				if (!dockContainer.IsFloating)
-				{
-					dockContainer.method_12(sender, e);
-				}
-			}
+		    foreach (DockContainer dockContainer in this.arrayList_0.Cast<DockContainer>().Where(dockContainer => !dockContainer.IsFloating))
+		    {
+		        dockContainer.method_12(sender, e);
+		    }
 		}
 
-		private void OnOwnerFormLoad(object sender, EventArgs e)
+	    private void OnOwnerFormLoad(object sender, EventArgs e)
 		{
 			if (this.AutoSaveLayout)
 			{
@@ -745,29 +681,20 @@ namespace TD.SandDock
 
 		protected virtual void OnResolveDockControl(ResolveDockControlEventArgs e)
 		{
-			if (this.resolveDockControlEventHandler_0 != null)
-			{
-				this.resolveDockControlEventHandler_0(this, e);
-			}
+		    this.resolveDockControlEventHandler_0?.Invoke(this, e);
 		}
 
-		protected internal virtual void OnShowActiveFilesList(ActiveFilesListEventArgs e)
-		{
-			if (this.activeFilesListEventHandler_0 != null)
-			{
-				this.activeFilesListEventHandler_0(this, e);
-			}
-		}
+	    protected internal virtual void OnShowActiveFilesList(ActiveFilesListEventArgs e)
+	    {
+	        this.activeFilesListEventHandler_0?.Invoke(this, e);
+	    }
 
-		protected internal virtual void OnShowControlContextMenu(ShowControlContextMenuEventArgs e)
-		{
-			if (this.showControlContextMenuEventHandler_0 != null)
-			{
-				this.showControlContextMenuEventHandler_0(this, e);
-			}
-		}
+	    protected internal virtual void OnShowControlContextMenu(ShowControlContextMenuEventArgs e)
+	    {
+	        this.showControlContextMenuEventHandler_0?.Invoke(this, e);
+	    }
 
-		private void PropagateNewRenderer()
+	    private void PropagateNewRenderer()
 		{
 			foreach (DockContainer dockContainer in this.arrayList_0)
 			{
@@ -1655,19 +1582,7 @@ namespace TD.SandDock
 			}
 		}
 
-		public event EventHandler ActiveTabbedDocumentChanged
-		{
-			[MethodImpl(MethodImplOptions.Synchronized)]
-			add
-			{
-				this.eventHandler_2 = (EventHandler)Delegate.Combine(this.eventHandler_2, value);
-			}
-			[MethodImpl(MethodImplOptions.Synchronized)]
-			remove
-			{
-				this.eventHandler_2 = (EventHandler)Delegate.Remove(this.eventHandler_2, value);
-			}
-		}
+	    public event EventHandler ActiveTabbedDocumentChanged;
 
 		public event DockControlEventHandler DockControlActivated
 		{
@@ -1849,7 +1764,7 @@ namespace TD.SandDock
 
 		private EventHandler eventHandler_1;
 
-		private EventHandler eventHandler_2;
+		//private EventHandler eventHandler_2;
 
 		private Form form_0;
 

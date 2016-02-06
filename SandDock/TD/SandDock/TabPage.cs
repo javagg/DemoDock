@@ -1,36 +1,32 @@
 using System;
 using System.ComponentModel;
 using System.Drawing;
-using System.Runtime.CompilerServices;
 using System.Windows.Forms;
 
 namespace TD.SandDock
 {
-	[Designer("TD.SandDock.Design.TabPageDesigner, SandDock.Design, Version=1.0.0.1, Culture=neutral, PublicKeyToken=75b7ec17dd7c14c3"), ToolboxItem(false)]
+	[Designer("TD.SandDock.Design.TabPageDesigner, SandDock.Design"), ToolboxItem(false)]
 	public class TabPage : Panel
 	{
 		public TabPage()
 		{
-			base.SetStyle(ControlStyles.SupportsTransparentBackColor, true);
+			SetStyle(ControlStyles.SupportsTransparentBackColor, true);
 		}
 
 		public TabPage(string text) : this()
 		{
-			this.Text = text;
+            Text = text;
 		}
 
 		protected override void CreateHandle()
 		{
 			int newIndex = -1;
-			if (base.Parent != null)
+			if (Parent != null)
 			{
-				newIndex = base.Parent.Controls.IndexOf(this);
+				newIndex = Parent.Controls.IndexOf(this);
 			}
 			base.CreateHandle();
-			if (base.Parent != null)
-			{
-				base.Parent.Controls.SetChildIndex(this, newIndex);
-			}
+		    Parent?.Controls.SetChildIndex(this, newIndex);
 		}
 
 		protected override void Dispose(bool disposing)
@@ -41,15 +37,12 @@ namespace TD.SandDock
 		protected override void OnCreateControl()
 		{
 			base.OnCreateControl();
-			this.OnLoad(EventArgs.Empty);
+			OnLoad(EventArgs.Empty);
 		}
 
 		protected virtual void OnLoad(EventArgs e)
 		{
-			if (this.eventHandler_0 != null)
-			{
-				this.eventHandler_0(this, e);
-			}
+            Load?.Invoke(this,e);
 		}
 
 		protected override void OnPaintBackground(PaintEventArgs pevent)
@@ -58,9 +51,10 @@ namespace TD.SandDock
 			{
 				return;
 			}
-			if (base.Parent is TabControl && ((TabControl)base.Parent).Renderer.ShouldDrawTabControlBackground)
+		    var parent = Parent as TabControl;
+		    if (parent != null && parent.Renderer.ShouldDrawTabControlBackground)
 			{
-				((TabControl)base.Parent).Renderer.DrawTabControlBackground(pevent.Graphics, base.ClientRectangle, this.BackColor, true);
+				parent.Renderer.DrawTabControlBackground(pevent.Graphics, base.ClientRectangle, this.BackColor, true);
 				return;
 			}
 			base.OnPaintBackground(pevent);
@@ -88,10 +82,7 @@ namespace TD.SandDock
 			set
 			{
 				base.BackColor = value;
-				if (base.Parent is TabControl)
-				{
-					base.Parent.Invalidate(this.rectangle_0);
-				}
+                (Parent as TabControl)?.Invalidate(this.TabBounds);
 			}
 		}
 
@@ -159,23 +150,14 @@ namespace TD.SandDock
 					throw new ArgumentException("Value must be greater than or equal to zero.");
 				}
 				this.int_0 = value;
-				if (base.Parent is TabControl)
-				{
-					((TabControl)base.Parent).method_3();
-				}
+			    (Parent as TabControl)?.method_3();
 			}
 		}
 
 		[Browsable(false)]
-		public Rectangle TabBounds
-		{
-			get
-			{
-				return this.rectangle_0;
-			}
-		}
+		public Rectangle TabBounds { get; internal set; }
 
-		[AmbientValue(typeof(Image), null), Category("Appearance"), DefaultValue(typeof(Image), null), Description("The image displayed next to the text on the tab.")]
+	    [AmbientValue(typeof(Image), null), Category("Appearance"), DefaultValue(typeof(Image), null), Description("The image displayed next to the text on the tab.")]
 		public Image TabImage
 		{
 			get
@@ -185,10 +167,7 @@ namespace TD.SandDock
 			set
 			{
 				this.image_0 = value;
-				if (base.Parent is TabControl)
-				{
-					((TabControl)base.Parent).method_3();
-				}
+			    (Parent as TabControl)?.method_3();
 			}
 		}
 
@@ -240,10 +219,7 @@ namespace TD.SandDock
 			set
 			{
 				base.Text = value;
-				if (base.Parent is TabControl)
-				{
-					((TabControl)base.Parent).method_3();
-				}
+			    (Parent as TabControl)?.method_3();
 			}
 		}
 
@@ -260,32 +236,18 @@ namespace TD.SandDock
 			}
 		}
 
-		public event EventHandler Load
-		{
-			[MethodImpl(MethodImplOptions.Synchronized)]
-			add
-			{
-				this.eventHandler_0 = (EventHandler)Delegate.Combine(this.eventHandler_0, value);
-			}
-			[MethodImpl(MethodImplOptions.Synchronized)]
-			remove
-			{
-				this.eventHandler_0 = (EventHandler)Delegate.Remove(this.eventHandler_0, value);
-			}
-		}
+	    public event EventHandler Load;
 
 		internal bool bool_0;
 
 		internal double double_0;
 
-		private EventHandler eventHandler_0;
+		//private EventHandler eventHandler_0;
 
 		private Image image_0;
 
 		private int int_0;
 
 		internal int int_1;
-
-		internal Rectangle rectangle_0;
 	}
 }

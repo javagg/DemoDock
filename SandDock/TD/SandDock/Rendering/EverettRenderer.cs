@@ -7,11 +7,7 @@ namespace TD.SandDock.Rendering
 {
 	public class EverettRenderer : RendererBase
 	{
-		public EverettRenderer()
-		{
-		}
-
-		protected internal override Rectangle AdjustDockControlClientBounds(ControlLayoutSystem layoutSystem, DockControl control, Rectangle clientBounds)
+	    protected internal override Rectangle AdjustDockControlClientBounds(ControlLayoutSystem layoutSystem, DockControl control, Rectangle clientBounds)
 		{
 			if (layoutSystem is DocumentLayoutSystem)
 			{
@@ -518,27 +514,11 @@ namespace TD.SandDock.Rendering
 			}
 		}
 
-		public override Size TabControlPadding
-		{
-			get
-			{
-				return new Size(3, 3);
-			}
-		}
+		public override Size TabControlPadding => new Size(3, 3);
 
-		protected internal override BoxModel TabMetrics
-		{
-			get
-			{
-				if (this.boxModel_1 == null)
-				{
-					this.boxModel_1 = new BoxModel(0, 0, 0, 0, 0, 0, 0, 0, 1, 0);
-				}
-				return this.boxModel_1;
-			}
-		}
+	    protected internal override BoxModel TabMetrics => this.boxModel_1 ?? (this.boxModel_1 = new BoxModel(0, 0, 0, 0, 0, 0, 0, 0, 1, 0));
 
-		public Color TabStripBackgroundColor
+	    public Color TabStripBackgroundColor
 		{
 			get
 			{
@@ -546,19 +526,9 @@ namespace TD.SandDock.Rendering
 			}
 		}
 
-		protected internal override BoxModel TabStripMetrics
-		{
-			get
-			{
-				if (this.boxModel_0 == null)
-				{
-					this.boxModel_0 = new BoxModel(0, Control.DefaultFont.Height + 9, 4, 0, 5, 1, 0, 2, 0, 0);
-				}
-				return this.boxModel_0;
-			}
-		}
+		protected internal override BoxModel TabStripMetrics => this.boxModel_0 ?? (this.boxModel_0 = new BoxModel(0, Control.DefaultFont.Height + 9, 4, 0, 5, 1, 0, 2, 0, 0));
 
-		protected internal override TabTextDisplayMode TabTextDisplay
+	    protected internal override TabTextDisplayMode TabTextDisplay
 		{
 			get
 			{

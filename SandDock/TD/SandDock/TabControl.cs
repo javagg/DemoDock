@@ -3,13 +3,21 @@ using System.Collections;
 using System.ComponentModel;
 using System.Drawing;
 using System.Drawing.Text;
+using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Windows.Forms;
 using TD.SandDock.Rendering;
 
 namespace TD.SandDock
 {
-	[DefaultEvent("SelectedPageChanged"), DefaultProperty("TabLayout"), Designer("TD.SandDock.Design.TabControlDesigner, SandDock.Design"), ToolboxItem(true), ToolboxBitmap(typeof(TabControl))]
+    public enum TabLayout
+    {
+        SingleLineScrollable,
+        SingleLineFixed,
+        MultipleLine
+    }
+
+    [DefaultEvent("SelectedPageChanged"), DefaultProperty("TabLayout"), Designer("TD.SandDock.Design.TabControlDesigner, SandDock.Design"), ToolboxItem(true), ToolboxBitmap(typeof(TabControl))]
 	public class TabControl : Control
 	{
 		public TabControl()
@@ -19,64 +27,29 @@ namespace TD.SandDock
 			base.SetStyle(ControlStyles.Selectable, true);
 			base.SetStyle(ControlStyles.SupportsTransparentBackColor, true);
 			this.itabControlRenderer_0 = new MilborneRenderer();
-			this.tabPageCollection_0 = new TabControl.TabPageCollection(this);
+			this.TabPages = new TabControl.TabPageCollection(this);
 			this.class17_0 = new Class17();
 			this.class17_1 = new Class17();
 			this.timer_0 = new Timer();
 			this.timer_0.Interval = 20;
-			this.timer_0.Tick += new EventHandler(this.timer_0_Tick);
+			this.timer_0.Tick += this.timer_0_Tick;
 		}
 
-		protected override Control.ControlCollection CreateControlsInstance()
-		{
-			return new TabControl.Control2(this);
-		}
+		protected override ControlCollection CreateControlsInstance() => new Control2(this);
 
-		protected override void Dispose(bool disposing)
+        protected override void Dispose(bool disposing)
 		{
 			if (disposing)
 			{
-				if (this.itabControlRenderer_0 is IDisposable)
-				{
-					((IDisposable)this.itabControlRenderer_0).Dispose();
-				}
-				this.timer_0.Dispose();
+			    (this.itabControlRenderer_0 as IDisposable)?.Dispose();
+			    this.timer_0.Dispose();
 			}
 			base.Dispose(disposing);
 		}
 
-		public TabPage GetTabPageAt(Point position)
-		{
-			IEnumerator enumerator = base.Controls.GetEnumerator();
-			TabPage result;
-			try
-			{
-				while (enumerator.MoveNext())
-				{
-					TabPage tabPage = (TabPage)enumerator.Current;
-					Rectangle rectangle = tabPage.rectangle_0;
-					if (rectangle.Contains(position))
-					{
-						result = tabPage;
-						return result;
-					}
-				}
-				goto IL_50;
-			}
-			finally
-			{
-				IDisposable disposable = enumerator as IDisposable;
-				if (disposable != null)
-				{
-					disposable.Dispose();
-				}
-			}
-			return result;
-			IL_50:
-			return null;
-		}
+		public TabPage GetTabPageAt(Point position) => Controls.Cast<TabPage>().FirstOrDefault(page => page.TabBounds.Contains(position));
 
-		protected override bool IsInputKey(Keys keyData)
+        protected override bool IsInputKey(Keys keyData)
 		{
 			switch (keyData)
 			{
@@ -113,16 +86,15 @@ namespace TD.SandDock
 
 		private void method_1(Graphics graphics_0)
 		{
-			ArrayList arrayList = new ArrayList();
-			foreach (TabPage tabPage in base.Controls)
-			{
-				if (!arrayList.Contains(tabPage.int_1))
-				{
-					arrayList.Add(tabPage.int_1);
-				}
-			}
-			int[] array = (int[])arrayList.ToArray(typeof(int));
-			Array.Sort<int>(array);
+   //         ArrayList arrayList = new ArrayList();
+			//foreach (TabPage tabPage in base.Controls.Cast<TabPage>().Where(tabPage => !arrayList.Contains(tabPage.int_1)))
+			//{
+			//    arrayList.Add(tabPage.int_1);
+			//}
+			//int[] array = (int[])arrayList.ToArray(typeof(int));
+
+            var array = Controls.Cast<TabPage>().Select(p => p.int_1).Distinct().ToArray();
+            Array.Sort<int>(array);
 			for (int i = 0; i < array.Length; i++)
 			{
 				for (int j = base.Controls.Count - 1; j >= 0; j--)
@@ -133,7 +105,7 @@ namespace TD.SandDock
 						this.method_2(graphics_0, tabPage2);
 						if (i < array.Length - 1)
 						{
-							Rectangle bounds = tabPage2.rectangle_0;
+							Rectangle bounds = tabPage2.TabBounds;
 							bounds.X = this.rectangle_0.X;
 							bounds.Width = this.rectangle_0.Width;
 							bounds.Y = bounds.Bottom - 1;
@@ -201,7 +173,7 @@ namespace TD.SandDock
 			{
 				Rectangle rectangle = this.rectangle_0;
 				rectangle.Width -= this.rectangle_0.Right - this.class17_0.rectangle_0.Left;
-				Rectangle rect = tabPage_1.rectangle_0;
+				Rectangle rect = tabPage_1.TabBounds;
 				if (!rectangle.Contains(rect))
 				{
 					int num = 0;
@@ -225,13 +197,13 @@ namespace TD.SandDock
 		{
 			if (this.SelectedPage != null)
 			{
-				Rectangle rectangle = this.SelectedPage.rectangle_0;
+				Rectangle rectangle = this.SelectedPage.TabBounds;
 				int num = rectangle.X + rectangle.Width / 2;
 				int num2 = this.SelectedPage.int_1;
 				num2 += int_4;
 				foreach (TabPage tabPage in base.Controls)
 				{
-					rectangle = tabPage.rectangle_0;
+					rectangle = tabPage.TabBounds;
 					if (tabPage.int_1 == num2)
 					{
 						if (rectangle.X <= num && rectangle.Right >= num)
@@ -279,7 +251,7 @@ namespace TD.SandDock
 					drawItemState |= DrawItemState.Checked;
 				}
 			}
-			this.Renderer.DrawTabControlTab(graphics_0, tabPage_1.rectangle_0, tabPage_1.TabImage, tabPage_1.Text, this.Font, tabPage_1.BackColor, tabPage_1.ForeColor, drawItemState, true);
+			this.Renderer.DrawTabControlTab(graphics_0, tabPage_1.TabBounds, tabPage_1.TabImage, tabPage_1.Text, this.Font, tabPage_1.BackColor, tabPage_1.ForeColor, drawItemState, true);
 		}
 
 		internal void method_3()
@@ -407,7 +379,7 @@ namespace TD.SandDock
 				{
 					tabPage2.int_1 = num3;
 					int num4 = (int)Math.Round(tabPage2.double_0, 0);
-					tabPage2.rectangle_0 = new Rectangle(num, num2, num4, this.itabControlRenderer_0.TabControlTabHeight);
+					tabPage2.TabBounds = new Rectangle(num, num2, num4, this.itabControlRenderer_0.TabControlTabHeight);
 					num += num4 - this.itabControlRenderer_0.TabControlTabExtra;
 				}
 				num2 += this.itabControlRenderer_0.TabControlTabHeight - 2;
@@ -428,7 +400,7 @@ namespace TD.SandDock
 			foreach (TabPage tabPage in base.Controls)
 			{
 				int num3 = (int)Math.Round(tabPage.double_0, 0);
-				tabPage.rectangle_0 = new Rectangle(num2, this.rectangle_0.Bottom - this.itabControlRenderer_0.TabControlTabHeight, num3, this.itabControlRenderer_0.TabControlTabHeight);
+				tabPage.TabBounds = new Rectangle(num2, this.rectangle_0.Bottom - this.itabControlRenderer_0.TabControlTabHeight, num3, this.itabControlRenderer_0.TabControlTabHeight);
 				num2 += num3 - this.itabControlRenderer_0.TabControlTabExtra;
 			}
 			if (base.Controls.Count != 0)
@@ -449,9 +421,9 @@ namespace TD.SandDock
 			this.class17_1.bool_1 = (this.int_2 < this.int_3);
 			foreach (TabPage tabPage2 in base.Controls)
 			{
-				Rectangle rectangle = tabPage2.rectangle_0;
+				Rectangle rectangle = tabPage2.TabBounds;
 				rectangle.Offset(-this.int_2, 0);
-				tabPage2.rectangle_0 = rectangle;
+				tabPage2.TabBounds = rectangle;
 			}
 		}
 
@@ -462,7 +434,7 @@ namespace TD.SandDock
 			foreach (TabPage tabPage in base.Controls)
 			{
 				int num2 = (int)Math.Round(tabPage.double_0, 0);
-				tabPage.rectangle_0 = new Rectangle(num, this.rectangle_0.Bottom - this.itabControlRenderer_0.TabControlTabHeight, num2, this.itabControlRenderer_0.TabControlTabHeight);
+				tabPage.TabBounds = new Rectangle(num, this.rectangle_0.Bottom - this.itabControlRenderer_0.TabControlTabHeight, num2, this.itabControlRenderer_0.TabControlTabHeight);
 				num += num2 - this.itabControlRenderer_0.TabControlTabExtra;
 			}
 		}
@@ -733,13 +705,10 @@ namespace TD.SandDock
 
 		protected virtual void OnSelectedPageChanged(EventArgs e)
 		{
-			if (this.eventHandler_0 != null)
-			{
-				this.eventHandler_0(this, e);
-			}
+            SelectedPageChanged?.Invoke(this, e);
 		}
 
-		protected override bool ProcessCmdKey(ref Message msg, Keys keyData)
+        protected override bool ProcessCmdKey(ref Message msg, Keys keyData)
 		{
 			if (keyData != (Keys.LButton | Keys.Back | Keys.Control))
 			{
@@ -860,15 +829,9 @@ namespace TD.SandDock
 			}
 		}
 
-		protected override Size DefaultSize
-		{
-			get
-			{
-				return new Size(300, 200);
-			}
-		}
+		protected override Size DefaultSize => new Size(300, 200);
 
-		public override Rectangle DisplayRectangle
+        public override Rectangle DisplayRectangle
 		{
 			get
 			{
@@ -914,13 +877,10 @@ namespace TD.SandDock
 				{
 					throw new ArgumentNullException();
 				}
-				if (this.itabControlRenderer_0 is IDisposable)
+			    (this.itabControlRenderer_0 as IDisposable)?.Dispose();
+			    if (this.itabControlRenderer_0 is RendererBase)
 				{
-					((IDisposable)this.itabControlRenderer_0).Dispose();
-				}
-				if (this.itabControlRenderer_0 is RendererBase)
-				{
-					((RendererBase)this.itabControlRenderer_0).MetricsChanged -= new EventHandler(this.method_17);
+					((RendererBase)this.itabControlRenderer_0).MetricsChanged -= this.method_17;
 				}
 				this.itabControlRenderer_0 = value;
 				if (value.ShouldDrawControlBorder && this.BorderStyle == TD.SandDock.Rendering.BorderStyle.None)
@@ -933,7 +893,7 @@ namespace TD.SandDock
 				}
 				if (this.itabControlRenderer_0 is RendererBase)
 				{
-					((RendererBase)this.itabControlRenderer_0).MetricsChanged += new EventHandler(this.method_17);
+					((RendererBase)this.itabControlRenderer_0).MetricsChanged += this.method_17;
 				}
 				this.method_3();
 				base.PerformLayout();
@@ -984,10 +944,7 @@ namespace TD.SandDock
 					finally
 					{
 						IDisposable disposable = enumerator as IDisposable;
-						if (disposable != null)
-						{
-							disposable.Dispose();
-						}
+					    disposable?.Dispose();
 					}
 					goto IL_6F;
 					IL_7A:
@@ -1016,24 +973,19 @@ namespace TD.SandDock
 		}
 
 		[Category("Behavior"), Description("A collection of TabPage controls belonging to this control."), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-		public TabControl.TabPageCollection TabPages
-		{
-			get
-			{
-				return this.tabPageCollection_0;
-			}
-		}
+		public TabPageCollection TabPages { get; }
 
-		[Browsable(false)]
+        [Browsable(false)]
 		public Rectangle TabStripBounds
-		{
-			get
+        {
+            get
 			{
 				return this.rectangle_0;
 			}
-		}
+            private set { this.rectangle_0 = value; }
+        }
 
-		[Browsable(false)]
+        [Browsable(false)]
 		public override string Text
 		{
 			get
@@ -1046,19 +998,7 @@ namespace TD.SandDock
 			}
 		}
 
-		public event EventHandler SelectedPageChanged
-		{
-			[MethodImpl(MethodImplOptions.Synchronized)]
-			add
-			{
-				this.eventHandler_0 = (EventHandler)Delegate.Combine(this.eventHandler_0, value);
-			}
-			[MethodImpl(MethodImplOptions.Synchronized)]
-			remove
-			{
-				this.eventHandler_0 = (EventHandler)Delegate.Remove(this.eventHandler_0, value);
-			}
-		}
+        public event EventHandler SelectedPageChanged;
 
 		private static bool bool_0;
 
@@ -1074,7 +1014,7 @@ namespace TD.SandDock
 
 		//private Class2 class2_0;
 
-		private EventHandler eventHandler_0;
+		//private EventHandler eventHandler_0;
 
 		private const int int_0 = 14;
 
@@ -1094,9 +1034,7 @@ namespace TD.SandDock
 
 		private TabLayout tabLayout_0;
 
-		private TabControl.TabPageCollection tabPageCollection_0;
-
-		private TabPage tabPage_0;
+        private TabPage tabPage_0;
 
 		private Timer timer_0;
 

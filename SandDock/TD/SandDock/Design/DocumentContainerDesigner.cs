@@ -6,11 +6,7 @@ namespace TD.SandDock.Design
 {
 	internal class DocumentContainerDesigner : DockContainerDesigner
 	{
-		public DocumentContainerDesigner()
-		{
-		}
-
-		protected override bool GetHitTest(Point point)
+	    protected override bool GetHitTest(Point point)
 		{
 			point = this.dockContainer_1.PointToClient(point);
 			LayoutSystemBase layoutSystemAt = this.dockContainer_1.GetLayoutSystemAt(point);

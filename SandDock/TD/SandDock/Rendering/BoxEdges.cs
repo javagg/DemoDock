@@ -10,50 +10,18 @@ namespace TD.SandDock.Rendering
 
 		public BoxEdges(int left, int top, int right, int bottom)
 		{
-			this.int_0 = left;
-			this.int_1 = top;
-			this.int_3 = right;
-			this.int_2 = bottom;
+            Left = left;
+			Top = top;
+			Right = right;
+			Bottom = bottom;
 		}
 
-		public int Bottom
-		{
-			get
-			{
-				return this.int_2;
-			}
-		}
+		public int Bottom { get; }
 
-		public int Left
-		{
-			get
-			{
-				return this.int_0;
-			}
-		}
+	    public int Left { get; }
 
-		public int Right
-		{
-			get
-			{
-				return this.int_3;
-			}
-		}
+	    public int Right { get; }
 
-		public int Top
-		{
-			get
-			{
-				return this.int_1;
-			}
-		}
-
-		private int int_0;
-
-		private int int_1;
-
-		private int int_2;
-
-		private int int_3;
+	    public int Top { get; }
 	}
 }

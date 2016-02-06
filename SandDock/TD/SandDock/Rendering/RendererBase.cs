@@ -8,13 +8,23 @@ using System.Windows.Forms;
 
 namespace TD.SandDock.Rendering
 {
-	[TypeConverter(typeof(Class25))]
+    public enum BorderStyle
+    {
+        None,
+        Flat,
+        RaisedThick,
+        RaisedThin,
+        SunkenThick,
+        SunkenThin
+    }
+
+    [TypeConverter(typeof(Class25))]
 	public abstract class RendererBase : ITabControlRenderer, IDisposable
 	{
 		public RendererBase()
 		{
-			SystemEvents.UserPreferenceChanged += new UserPreferenceChangedEventHandler(this.method_0);
-			this.GetColorsFromSystem();
+			SystemEvents.UserPreferenceChanged += this.method_0;
+			GetColorsFromSystem();
 		}
 
 		protected internal virtual Rectangle AdjustDockControlClientBounds(ControlLayoutSystem layoutSystem, DockControl control, Rectangle clientBounds)
@@ -24,7 +34,7 @@ namespace TD.SandDock.Rendering
 
 		public void Dispose()
 		{
-			SystemEvents.UserPreferenceChanged -= new UserPreferenceChangedEventHandler(this.method_0);
+			SystemEvents.UserPreferenceChanged -= this.method_0;
 		}
 
 		protected internal abstract void DrawAutoHideBarBackground(Control container, Control control, Graphics graphics, Rectangle bounds);
@@ -45,35 +55,31 @@ namespace TD.SandDock.Rendering
 
 		public virtual void DrawFakeTabControlBackgroundExtension(Graphics graphics, Rectangle bounds, Color backColor)
 		{
-			using (SolidBrush solidBrush = new SolidBrush(backColor))
-			{
-				graphics.FillRectangle(solidBrush, bounds);
-			}
+		    using (var brush = new SolidBrush(backColor))
+		        graphics.FillRectangle(brush, bounds);
 		}
 
 		protected internal abstract void DrawSplitter(Control container, Control control, Graphics graphics, Rectangle bounds, Orientation orientation);
 
 		public virtual void DrawTabControlBackground(Graphics graphics, Rectangle bounds, Color backColor, bool client)
 		{
-			using (SolidBrush solidBrush = new SolidBrush(backColor))
-			{
-				graphics.FillRectangle(solidBrush, bounds);
-			}
+		    using (var brush = new SolidBrush(backColor))
+		        graphics.FillRectangle(brush, bounds);
 		}
 
 		public virtual void DrawTabControlButton(Graphics graphics, Rectangle bounds, SandDockButtonType buttonType, DrawItemState state)
 		{
-			this.DrawDocumentStripButton(graphics, bounds, buttonType, state);
+			DrawDocumentStripButton(graphics, bounds, buttonType, state);
 		}
 
 		public virtual void DrawTabControlTab(Graphics graphics, Rectangle bounds, Image image, string text, Font font, Color backColor, Color foreColor, DrawItemState state, bool drawSeparator)
 		{
-			this.DrawDocumentStripTab(graphics, bounds, bounds, image, text, font, backColor, foreColor, state, drawSeparator);
+			DrawDocumentStripTab(graphics, bounds, bounds, image, text, font, backColor, foreColor, state, drawSeparator);
 		}
 
 		public virtual void DrawTabControlTabStripBackground(Graphics graphics, Rectangle bounds, Color backColor)
 		{
-			this.DrawDocumentStripBackground(graphics, bounds);
+			DrawDocumentStripBackground(graphics, bounds);
 		}
 
 		protected internal abstract void DrawTabStripBackground(Control container, Control control, Graphics graphics, Rectangle bounds, int selectedTabOffset);
@@ -134,13 +140,10 @@ namespace TD.SandDock.Rendering
 
 		protected virtual void OnMetricsChanged(EventArgs e)
 		{
-			if (this.eventHandler_0 != null)
-			{
-				this.eventHandler_0(this, e);
-			}
+            MetricsChanged?.Invoke(this, e);
 		}
 
-		public abstract void StartRenderSession(HotkeyPrefix hotKeys);
+	    public abstract void StartRenderSession(HotkeyPrefix hotKeys);
 
 		public bool CustomColors
 		{
@@ -186,52 +189,22 @@ namespace TD.SandDock.Rendering
 			}
 		}
 
-		public virtual bool ShouldDrawControlBorder
-		{
-			get
-			{
-				return true;
-			}
-		}
+		public virtual bool ShouldDrawControlBorder => true;
 
-		public virtual bool ShouldDrawTabControlBackground
-		{
-			get
-			{
-				return false;
-			}
-		}
+	    public virtual bool ShouldDrawTabControlBackground => false;
 
-		public abstract Size TabControlPadding
+	    public abstract Size TabControlPadding
 		{
 			get;
 		}
 
-		public virtual int TabControlTabExtra
-		{
-			get
-			{
-				return this.DocumentTabExtra;
-			}
-		}
+		public virtual int TabControlTabExtra => this.DocumentTabExtra;
 
-		public virtual int TabControlTabHeight
-		{
-			get
-			{
-				return this.DocumentTabSize;
-			}
-		}
+	    public virtual int TabControlTabHeight => this.DocumentTabSize;
 
-		public virtual int TabControlTabStripHeight
-		{
-			get
-			{
-				return this.DocumentTabStripSize;
-			}
-		}
+	    public virtual int TabControlTabStripHeight => this.DocumentTabStripSize;
 
-		protected internal abstract BoxModel TabMetrics
+	    protected internal abstract BoxModel TabMetrics
 		{
 			get;
 		}
@@ -251,23 +224,11 @@ namespace TD.SandDock.Rendering
 			get;
 		}
 
-		public event EventHandler MetricsChanged
-		{
-			[MethodImpl(MethodImplOptions.Synchronized)]
-			add
-			{
-				this.eventHandler_0 = (EventHandler)Delegate.Combine(this.eventHandler_0, value);
-			}
-			[MethodImpl(MethodImplOptions.Synchronized)]
-			remove
-			{
-				this.eventHandler_0 = (EventHandler)Delegate.Remove(this.eventHandler_0, value);
-			}
-		}
+	    public event EventHandler MetricsChanged;
 
 		private bool bool_0;
 
-		private EventHandler eventHandler_0;
+		//private EventHandler eventHandler_0;
 
 		private Size size_0 = new Size(16, 16);
 	}

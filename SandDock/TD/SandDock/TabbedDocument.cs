@@ -1,5 +1,6 @@
 using System;
 using System.ComponentModel;
+using System.ComponentModel.Design;
 using System.Drawing;
 using System.Windows.Forms;
 
@@ -72,4 +73,9 @@ namespace TD.SandDock
 			}
 		}
 	}
+
+    [Designer("Design.UserDockControlDocumentDesigner", typeof(IRootDesigner)), Designer("Design.UserDockControlDesigner", typeof(IDesigner))]
+    public class UserTabbedDocument : TabbedDocument
+    {
+    }
 }
