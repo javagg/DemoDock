@@ -6,13 +6,18 @@ using System.Windows.Forms;
 
 namespace TD.SandDock.Rendering
 {
-	public abstract class ThemeAwareRendererBase : RendererBase
-	{
-		protected ThemeAwareRendererBase()
-		{
-		}
+    public enum WindowsColorScheme
+    {
+        Automatic,
+        Standard,
+        LunaBlue,
+        LunaOlive,
+        LunaSilver
+    }
 
-		protected abstract void ApplyLunaBlueColors();
+    public abstract class ThemeAwareRendererBase : RendererBase
+	{
+        protected abstract void ApplyLunaBlueColors();
 
 		protected abstract void ApplyLunaOliveColors();
 

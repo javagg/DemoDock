@@ -1,5 +1,6 @@
 using System;
 using System.Collections;
+using System.Linq;
 using System.Windows.Forms;
 
 namespace TD.SandDock
@@ -10,56 +11,27 @@ namespace TD.SandDock
 		{
 		}
 
-		public static ControlLayoutSystem FindControlLayoutSystem(DockContainer container)
-		{
-			IEnumerator enumerator = container.arrayList_0.GetEnumerator();
-			ControlLayoutSystem result;
-			try
-			{
-				while (enumerator.MoveNext())
-				{
-					LayoutSystemBase layoutSystemBase = (LayoutSystemBase)enumerator.Current;
-					if (layoutSystemBase is ControlLayoutSystem)
-					{
-						result = (ControlLayoutSystem)layoutSystemBase;
-						return result;
-					}
-				}
-				goto IL_49;
-			}
-			finally
-			{
-				IDisposable disposable = enumerator as IDisposable;
-				if (disposable != null)
-				{
-					disposable.Dispose();
-				}
-			}
-			return result;
-			IL_49:
-			return null;
-		}
+		public static ControlLayoutSystem FindControlLayoutSystem(DockContainer container) => container.arrayList_0.OfType<ControlLayoutSystem>().FirstOrDefault();
 
-		internal static void smethod_0()
+	    internal static void smethod_0()
 		{
-			LayoutUtilities.int_0++;
+			int_0++;
 		}
 
 		internal static void smethod_1()
 		{
-			if (LayoutUtilities.int_0 > 0)
+			if (int_0 > 0)
 			{
-				LayoutUtilities.int_0--;
+				int_0--;
 			}
 		}
 
 		internal static void smethod_10(ControlLayoutSystem controlLayoutSystem_0)
 		{
-			if (controlLayoutSystem_0 == null)
-			{
-				throw new ArgumentNullException();
-			}
-			DockContainer dockContainer = controlLayoutSystem_0.DockContainer;
+		    if (controlLayoutSystem_0 == null)
+		        throw new ArgumentNullException();
+
+		    DockContainer dockContainer = controlLayoutSystem_0.DockContainer;
 			if (controlLayoutSystem_0.Control0_0 != null)
 			{
 				if (controlLayoutSystem_0.Control0_0.ControlLayoutSystem_0 == controlLayoutSystem_0)
@@ -79,11 +51,9 @@ namespace TD.SandDock
 
 		internal static void smethod_11(DockControl dockControl_0)
 		{
-			if (dockControl_0 == null)
-			{
-				throw new ArgumentNullException();
-			}
-			ControlLayoutSystem layoutSystem = dockControl_0.LayoutSystem;
+		    if (dockControl_0 == null)
+		        throw new ArgumentNullException();
+		    ControlLayoutSystem layoutSystem = dockControl_0.LayoutSystem;
 			if (layoutSystem == null)
 			{
 				return;
@@ -105,36 +75,22 @@ namespace TD.SandDock
 			}
 			if (containsFocus && dockControl_0.Manager != null)
 			{
-				DockControl dockControl = dockControl_0.Manager.FindMostRecentlyUsedWindow(DockSituation.Document, dockControl_0);
-				if (dockControl == null)
-				{
-					dockControl = dockControl_0.Manager.FindMostRecentlyUsedWindow((DockSituation)(-1), dockControl_0);
-				}
-				if (dockControl != null)
-				{
-					dockControl.method_12(true);
-				}
+				var dockControl = dockControl_0.Manager.FindMostRecentlyUsedWindow(DockSituation.Document, dockControl_0) ??
+				                          dockControl_0.Manager.FindMostRecentlyUsedWindow((DockSituation)(-1), dockControl_0);
+			    dockControl?.method_12(true);
 			}
 		}
 
 		internal static int smethod_12(DockContainer dockContainer_0)
 		{
 			int num = dockContainer_0.AllowResize ? 4 : 0;
-			return num + LayoutUtilities.smethod_13(dockContainer_0.LayoutSystem, dockContainer_0.Boolean_1 ? Orientation.Vertical : Orientation.Horizontal) * 5;
+			return num + smethod_13(dockContainer_0.LayoutSystem, dockContainer_0.Boolean_1 ? Orientation.Vertical : Orientation.Horizontal) * 5;
 		}
 
 		private static int smethod_13(SplitLayoutSystem splitLayoutSystem_0, Orientation orientation_0)
 		{
-			int num = 0;
-			foreach (LayoutSystemBase layoutSystemBase in splitLayoutSystem_0.LayoutSystems)
-			{
-				SplitLayoutSystem splitLayoutSystem = layoutSystemBase as SplitLayoutSystem;
-				if (splitLayoutSystem != null)
-				{
-					num = Math.Max(num, LayoutUtilities.smethod_13(splitLayoutSystem, orientation_0));
-				}
-			}
-			int num2 = num;
+			int num = splitLayoutSystem_0.LayoutSystems.OfType<SplitLayoutSystem>().Select(splitLayoutSystem => smethod_13(splitLayoutSystem, orientation_0)).Concat(new[] {0}).Max();
+		    int num2 = num;
 			if (splitLayoutSystem_0.LayoutSystems.Count > 1)
 			{
 				if (splitLayoutSystem_0.SplitMode == orientation_0)
@@ -223,20 +179,9 @@ namespace TD.SandDock
 			return DockSituation.Document;
 		}
 
-		internal static ControlLayoutSystem[] smethod_3(DockContainer dockContainer_0)
-		{
-			ArrayList arrayList = new ArrayList();
-			foreach (LayoutSystemBase layoutSystemBase in dockContainer_0.arrayList_0)
-			{
-				if (layoutSystemBase is ControlLayoutSystem)
-				{
-					arrayList.Add(layoutSystemBase);
-				}
-			}
-			return (ControlLayoutSystem[])arrayList.ToArray(typeof(ControlLayoutSystem));
-		}
+		internal static ControlLayoutSystem[] smethod_3(DockContainer dockContainer_0) => dockContainer_0.arrayList_0.OfType<ControlLayoutSystem>().ToArray();
 
-		internal static ControlLayoutSystem smethod_4(SandDockManager sandDockManager_0, DockSituation dockSituation_0, Class18 class18_0)
+	    internal static ControlLayoutSystem smethod_4(SandDockManager sandDockManager_0, DockSituation dockSituation_0, Class18 class18_0)
 		{
 			switch (dockSituation_0)
 			{
@@ -284,22 +229,19 @@ namespace TD.SandDock
 			case DockSituation.Floating:
 			{
 				DockContainer[] dockContainers2 = sandDockManager_0.GetDockContainers();
-				for (int l = 0; l < dockContainers2.Length; l++)
+				foreach (DockContainer dockContainer_2 in dockContainers2)
 				{
-					DockContainer dockContainer_2 = dockContainers2[l];
-					if (LayoutUtilities.smethod_2(dockContainer_2) == dockSituation_0)
-					{
-						ControlLayoutSystem[] array3 = LayoutUtilities.smethod_3(dockContainer_2);
-						for (int m = 0; m < array3.Length; m++)
-						{
-							ControlLayoutSystem controlLayoutSystem3 = array3[m];
-							if (controlLayoutSystem3.Guid_0 == class18_0.Guid_0)
-							{
-								ControlLayoutSystem result = controlLayoutSystem3;
-								return result;
-							}
-						}
-					}
+				    if (smethod_2(dockContainer_2) == dockSituation_0)
+				    {
+				        foreach (var controlLayoutSystem3 in smethod_3(dockContainer_2))
+				        {
+				            if (controlLayoutSystem3.Guid_0 == class18_0.Guid_0)
+				            {
+				                ControlLayoutSystem result = controlLayoutSystem3;
+				                return result;
+				            }
+				        }
+				    }
 				}
 				goto IL_133;
 			}
@@ -365,11 +307,10 @@ namespace TD.SandDock
 			{
 				control_0.Parent.Focus();
 			}
-			if (control_0 is DockControl)
-			{
-				((DockControl)control_0).Boolean_0 = true;
-			}
-			try
+		    var control = control_0 as DockControl;
+		    if (control != null)
+		        control.Boolean_0 = true;
+		    try
 			{
 				IContainerControl containerControl = control_0.Parent.GetContainerControl();
 				if (containerControl != null)
@@ -436,14 +377,8 @@ namespace TD.SandDock
 			return result;
 		}
 
-		internal static bool Boolean_0
-		{
-			get
-			{
-				return LayoutUtilities.int_0 > 0;
-			}
-		}
+		internal static bool Boolean_0 => int_0 > 0;
 
-		private static int int_0;
+	    private static int int_0;
 	}
 }

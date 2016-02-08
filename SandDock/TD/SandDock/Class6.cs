@@ -7,7 +7,7 @@ namespace TD.SandDock
 {
 	internal abstract class Class6 : IDisposable, IMessageFilter
 	{
-		public Class6(Control control, DockingHints dockingHints, bool hollow)
+	    protected Class6(Control control, DockingHints dockingHints, bool hollow)
 		{
 			this.control_0 = control;
 			this.bool_1 = hollow;
@@ -23,9 +23,9 @@ namespace TD.SandDock
 			this.form_0 = control.FindForm();
 			if (this.form_0 != null)
 			{
-				this.form_0.Deactivate += new EventHandler(this.form_0_Deactivate);
+				this.form_0.Deactivate += this.form_0_Deactivate;
 			}
-			control.MouseCaptureChanged += new EventHandler(this.method_0);
+			control.MouseCaptureChanged += this.method_0;
 			Application.AddMessageFilter(this);
 			if (dockingHints == DockingHints.TranslucentFill)
 			{
@@ -33,7 +33,7 @@ namespace TD.SandDock
 			}
 		}
 
-		public Class6(Control control, DockingHints dockingHints, bool hollow, int tabStripSize) : this(control, dockingHints, hollow)
+	    protected Class6(Control control, DockingHints dockingHints, bool hollow, int tabStripSize) : this(control, dockingHints, hollow)
 		{
 			this.int_5 = tabStripSize;
 		}
@@ -46,7 +46,7 @@ namespace TD.SandDock
 
 		public virtual void Commit()
 		{
-			this.Dispose();
+			Dispose();
 		}
 
 		public virtual void Dispose()

@@ -32,6 +32,29 @@ namespace TD.SandDock
 
     }
 
+    public enum ContextMenuContext
+    {
+        Keyboard,
+        RightClick,
+        OptionsButton,
+        Other
+    }
+
+    public delegate void ShowControlContextMenuEventHandler(object sender, ShowControlContextMenuEventArgs e);
+
+    public class ShowControlContextMenuEventArgs : DockControlEventArgs
+    {
+        internal ShowControlContextMenuEventArgs(DockControl dockControl, Point position, ContextMenuContext context) : base(dockControl)
+        {
+            Position = position;
+            Context = context;
+        }
+
+        public ContextMenuContext Context { get; }
+
+        public Point Position { get; }
+    }
+
     [DefaultEvent("ActiveTabbedDocumentChanged"), Designer("Design.SandDockManagerDesigner"), ToolboxBitmap(typeof(SandDockManager))]
 	public class SandDockManager : Component
 	{
@@ -48,16 +71,9 @@ namespace TD.SandDock
 			//Class1.ActivateProduct(licenseKey);
 		}
 
-		private string ConvertBoolToString(bool b)
-		{
-			if (!b)
-			{
-				return "0";
-			}
-			return "1";
-		}
+		private string ConvertBoolToString(bool value) => !value ? "0" : "1";
 
-		private string ConvertPointToString(Point point)
+        private string ConvertPointToString(Point point)
 		{
 			return (string)TypeDescriptor.GetConverter(typeof(Point)).ConvertTo(null, CultureInfo.InvariantCulture, point, typeof(string));
 		}
@@ -77,12 +93,9 @@ namespace TD.SandDock
 			return (string)TypeDescriptor.GetConverter(typeof(Size)).ConvertTo(null, CultureInfo.InvariantCulture, size, typeof(string));
 		}
 
-		private bool ConvertStringToBool(string str)
-		{
-			return !(str == "0");
-		}
+		private bool ConvertStringToBool(string str) => str != "0";
 
-		private Point ConvertStringToPoint(string str)
+        private Point ConvertStringToPoint(string str)
 		{
 			return (Point)TypeDescriptor.GetConverter(typeof(Point)).ConvertFrom(null, CultureInfo.InvariantCulture, str);
 		}
@@ -104,8 +117,8 @@ namespace TD.SandDock
 
 		public DockContainer CreateNewDockContainer(ContainerDockLocation dockLocation, ContainerDockEdge edge, int contentSize)
 		{
-			this.EnsureDockSystemContainer();
-			this.DockSystemContainer.SuspendLayout();
+			EnsureDockSystemContainer();
+			DockSystemContainer.SuspendLayout();
 			DockContainer result;
 			try
 			{
@@ -118,14 +131,7 @@ namespace TD.SandDock
 				int newIndex;
 				if (dockLocation != ContainerDockLocation.Center)
 				{
-					if (edge == ContainerDockEdge.Inside)
-					{
-						newIndex = this.GetInsideControlIndex(this.DockSystemContainer);
-					}
-					else
-					{
-						newIndex = this.GetOutsideControlIndex(this.DockSystemContainer, dockStyle);
-					}
+					newIndex = edge == ContainerDockEdge.Inside ? GetInsideControlIndex(DockSystemContainer) : GetOutsideControlIndex(DockSystemContainer, dockStyle);
 				}
 				else
 				{
@@ -133,13 +139,10 @@ namespace TD.SandDock
 				}
 				this.DockSystemContainer.Controls.Add(dockContainer);
 				this.DockSystemContainer.Controls.SetChildIndex(dockContainer, newIndex);
-				foreach (Control control in this.DockSystemContainer.Controls)
+				foreach (var control2 in
+				    this.DockSystemContainer.Controls.Cast<Control>().Select(control => control as PopupContainer))
 				{
-					Control1 control2 = control as Control1;
-					if (control2 != null)
-					{
-						control2.BringToFront();
-					}
+				    control2?.BringToFront();
 				}
 				result = dockContainer;
 			}
@@ -152,14 +155,12 @@ namespace TD.SandDock
 
 		protected virtual DockContainer CreateNewDockContainerCore(ContainerDockLocation dockLocation)
 		{
-			if (dockLocation == ContainerDockLocation.Center && this.EnableTabbedDocuments)
-			{
-				return new DocumentContainer();
-			}
-			return new DockContainer();
+		    return dockLocation == ContainerDockLocation.Center && EnableTabbedDocuments
+		        ? new DocumentContainer()
+		        : new DockContainer();
 		}
 
-		protected override void Dispose(bool disposing)
+        protected override void Dispose(bool disposing)
 		{
 			if (disposing)
 			{
@@ -172,12 +173,12 @@ namespace TD.SandDock
 					dockContainer.Dispose();
 				}
 				this.arrayList_0.Clear();
-				Control0[] array3 = new Control0[this.arrayList_1.Count];
+				AutoHideBar[] array3 = new AutoHideBar[this.arrayList_1.Count];
 				this.arrayList_1.CopyTo(array3);
-				Control0[] array4 = array3;
+				AutoHideBar[] array4 = array3;
 				for (int j = 0; j < array4.Length; j++)
 				{
-					Control0 control = array4[j];
+					AutoHideBar control = array4[j];
 					control.Dispose();
 				}
 				this.arrayList_1.Clear();
@@ -187,10 +188,8 @@ namespace TD.SandDock
 
 		private void EnsureDockSystemContainer()
 		{
-			if (this.DockSystemContainer == null)
-			{
-				throw new InvalidOperationException("This SandDockManager does not have its DockSystemContainer property set.");
-			}
+		    if (DockSystemContainer == null)
+		        throw new InvalidOperationException("This SandDockManager does not have its DockSystemContainer property set.");
 		}
 
 		private void EnsureHandles()
@@ -216,40 +215,12 @@ namespace TD.SandDock
 
 		public DockContainer FindDockContainer(ContainerDockLocation location)
 		{
-			return this.FindDockedContainer(LayoutUtilities.smethod_6(location));
+			return FindDockedContainer(LayoutUtilities.smethod_6(location));
 		}
 
-		internal DockContainer FindDockedContainer(DockStyle dockStyle)
-		{
-			IEnumerator enumerator = this.arrayList_0.GetEnumerator();
-			DockContainer result;
-			try
-			{
-				while (enumerator.MoveNext())
-				{
-					DockContainer dockContainer = (DockContainer)enumerator.Current;
-					if (dockContainer.Dock == dockStyle && !dockContainer.IsFloating)
-					{
-						result = dockContainer;
-						return result;
-					}
-				}
-				goto IL_4D;
-			}
-			finally
-			{
-				IDisposable disposable = enumerator as IDisposable;
-				if (disposable != null)
-				{
-					disposable.Dispose();
-				}
-			}
-			return result;
-			IL_4D:
-			return null;
-		}
+		internal DockContainer FindDockedContainer(DockStyle dockStyle) => this.arrayList_0.Cast<DockContainer>().FirstOrDefault(c => c.Dock == dockStyle && !c.IsFloating);
 
-		private Control FindDockSystemContainer(IDesignerHost designerHost, Control parent)
+        private Control FindDockSystemContainer(IDesignerHost designerHost, Control parent)
 		{
 		    var ctl =
 		        parent.Controls.Cast<Control>()
@@ -283,7 +254,7 @@ namespace TD.SandDock
 			//return result;
 		}
 
-		internal Class5 FindFloatingDockContainer(Guid guid) => GetFloatingDockContainerList().FirstOrDefault(@class => @class.Guid_0 == guid);
+		internal FloatingContainer FindFloatingDockContainer(Guid guid) => GetFloatingDockContainerList().FirstOrDefault(@class => @class.Guid_0 == guid);
 
 	    public DockControl FindMostRecentlyUsedWindow() => FindMostRecentlyUsedWindow((DockSituation)(-1));
 
@@ -302,12 +273,12 @@ namespace TD.SandDock
 	        return result;
 		}
 
-		internal Control0 GetAutoHideBar(DockStyle dock)
+		internal AutoHideBar GetAutoHideBar(DockStyle dock)
 		{
 			if (dock != DockStyle.Fill && dock != DockStyle.None)
 			{
-				Control0 result;
-				foreach (Control0 control in this.arrayList_1)
+				AutoHideBar result;
+				foreach (AutoHideBar control in this.arrayList_1)
 				{
 					if (control.Dock == dock)
 					{
@@ -318,11 +289,13 @@ namespace TD.SandDock
 				this.DockSystemContainer.SuspendLayout();
 				try
 				{
-					Control0 control2 = new Control0();
-					control2.SandDockManager_0 = this;
-					control2.Dock = dock;
-					control2.Parent = this.DockSystemContainer;
-					this.DockSystemContainer.Controls.SetChildIndex(control2, this.GetOutsideControlIndex(this.DockSystemContainer, dock));
+				    var control2 = new AutoHideBar
+				    {
+				        Manager = this,
+				        Dock = dock,
+				        Parent = DockSystemContainer
+				    };
+				    this.DockSystemContainer.Controls.SetChildIndex(control2, this.GetOutsideControlIndex(this.DockSystemContainer, dock));
 					result = control2;
 				}
 				finally
@@ -343,7 +316,7 @@ namespace TD.SandDock
 		{
 			if (dockStyle == DockStyle.Fill)
 			{
-				throw new ArgumentException("dockStyle");
+				throw new ArgumentException(nameof(dockStyle));
 			}
 			if (this.DockSystemContainer != null)
 			{
@@ -352,13 +325,10 @@ namespace TD.SandDock
 				for (int i = this.DockSystemContainer.Controls.Count - 1; i >= 0; i--)
 				{
 					DockContainer dockContainer = this.DockSystemContainer.Controls[i] as DockContainer;
-					if (dockContainer != null)
-					{
-						if (dockContainer.Dock == dockStyle)
-						{
-							array[num++] = dockContainer;
-						}
-					}
+				    if (dockContainer?.Dock == dockStyle)
+				    {
+				        array[num++] = dockContainer;
+				    }
 				}
 				DockContainer[] array2 = new DockContainer[num];
 				Array.Copy(array, array2, num);
@@ -369,14 +339,14 @@ namespace TD.SandDock
 
 		public DockControl[] GetDockControls()
 		{
-			DockControl[] array = new DockControl[this.hashtable_0.Count];
+			var array = new DockControl[this.hashtable_0.Count];
 			this.hashtable_0.Values.CopyTo(array, 0);
 			return array;
 		}
 
 		public DockControl[] GetDockControls(DockSituation dockSituation) => this.hashtable_0.Values.Cast<DockControl>().Where(control => control.DockSituation == dockSituation).ToArray();
 
-	    private Class5[] GetFloatingDockContainerList() => this.arrayList_0.Cast<DockContainer>().Where(container => container.IsFloating).Cast<Class5>().ToArray();
+	    private FloatingContainer[] GetFloatingDockContainerList() => this.arrayList_0.Cast<DockContainer>().Where(container => container.IsFloating).Cast<FloatingContainer>().ToArray();
 
 	    private int GetInsideControlIndex(Control container)
 		{
@@ -396,33 +366,28 @@ namespace TD.SandDock
 		{
 			EnsureDockSystemContainer();
 			StringWriter stringWriter = new StringWriter();
-			XmlTextWriter xmlTextWriter = new XmlTextWriter(stringWriter);
-			xmlTextWriter.Formatting = Formatting.Indented;
-			xmlTextWriter.WriteStartDocument();
+		    XmlTextWriter xmlTextWriter = new XmlTextWriter(stringWriter) {Formatting = Formatting.Indented};
+		    xmlTextWriter.WriteStartDocument();
 			xmlTextWriter.WriteStartElement("Layout");
-			foreach (DockControl dockControl in this.hashtable_0.Values)
-			{
-				if (dockControl.PersistState)
-				{
-					this.SaveWindowLayout(dockControl, xmlTextWriter);
-				}
-			}
-			DockContainer[] orderedDockedDockContainerList = this.GetOrderedDockedDockContainerList();
+		    foreach (var dockControl in this.hashtable_0.Values.Cast<DockControl>().Where(c => c.PersistState))
+		        SaveWindowLayout(dockControl, xmlTextWriter);
+
+		    DockContainer[] orderedDockedDockContainerList = this.GetOrderedDockedDockContainerList();
 			for (int i = 0; i < orderedDockedDockContainerList.Length; i++)
 			{
 				DockContainer dockContainer = orderedDockedDockContainerList[i];
 				if (dockContainer.LayoutSystem.Boolean_2)
 				{
-					this.SaveContainerLayout(dockContainer, xmlTextWriter);
+					SaveContainerLayout(dockContainer, xmlTextWriter);
 				}
 			}
-			Class5[] floatingDockContainerList = this.GetFloatingDockContainerList();
+			FloatingContainer[] floatingDockContainerList = this.GetFloatingDockContainerList();
 			for (int j = 0; j < floatingDockContainerList.Length; j++)
 			{
 				DockContainer dockContainer2 = floatingDockContainerList[j];
 				if (dockContainer2.LayoutSystem.Boolean_2)
 				{
-					this.SaveContainerLayout(dockContainer2, xmlTextWriter);
+					SaveContainerLayout(dockContainer2, xmlTextWriter);
 				}
 			}
 			DocumentContainer documentContainer = this.FindDockedContainer(DockStyle.Fill) as DocumentContainer;
@@ -480,12 +445,12 @@ namespace TD.SandDock
 			return result;
 		}
 
-		private string GetSettingsKey() => this.OwnerForm != null ? this.OwnerForm.GetType().FullName : "default";
+		private string GetSettingsKey() => OwnerForm != null ? OwnerForm.GetType().FullName : "default";
 
 	    public void LoadLayout()
 		{
-			var layoutSettings = new LayoutSettings(this.GetSettingsKey());
-			if (!layoutSettings.IsDefault && layoutSettings.LayoutXml != null && layoutSettings.LayoutXml.Length != 0)
+			var layoutSettings = new LayoutSettings(GetSettingsKey());
+			if (!layoutSettings.IsDefault && !string.IsNullOrEmpty(layoutSettings.LayoutXml))
 			{
 				this.SetLayout(layoutSettings.LayoutXml);
 			}
@@ -504,11 +469,8 @@ namespace TD.SandDock
 
 		protected internal virtual void OnDockControlActivated(DockControlEventArgs e)
 		{
-			if (this.dockControlEventHandler_0 != null)
-			{
-				this.dockControlEventHandler_0(this, e);
-			}
-			if (e.DockControl.DockSituation == DockSituation.Document)
+		    DockControlActivated?.Invoke(this, e);
+		    if (e.DockControl.DockSituation == DockSituation.Document)
 			{
 				this.SetActiveTabbedDocument(e.DockControl);
 			}
@@ -516,27 +478,27 @@ namespace TD.SandDock
 
 		protected virtual void OnDockControlAdded(DockControlEventArgs e)
 		{
-		    this.dockControlEventHandler_1?.Invoke(this, e);
+            DockControlAdded?.Invoke(this, e);
 		}
 
 	    protected internal virtual void OnDockControlClosing(DockControlClosingEventArgs e)
 	    {
-	        this.dockControlClosingEventHandler_0?.Invoke(this, e);
+            DockControlClosing?.Invoke(this, e);
 	    }
 
 	    protected virtual void OnDockControlRemoved(DockControlEventArgs e)
 	    {
-	        this.dockControlEventHandler_2?.Invoke(this, e);
+            DockControlRemoved?.Invoke(this, e);
 	    }
 
 	    protected internal virtual void OnDockingFinished(EventArgs e)
 	    {
-	        this.eventHandler_1?.Invoke(this, e);
+            DockingFinished?.Invoke(this, e);
 	    }
 
 	    protected internal virtual void OnDockingStarted(EventArgs e)
 	    {
-	        this.eventHandler_0?.Invoke(this, e);
+            DockingStarted?.Invoke(this, e);
 	    }
 
 	    private void OnDockSystemContainerResize(object sender, EventArgs e)
@@ -652,10 +614,8 @@ namespace TD.SandDock
 
 	    private void OnOwnerFormClosing(object sender, CancelEventArgs e)
 		{
-			if (this.AutoSaveLayout)
-			{
-				this.SaveLayout();
-			}
+	        if (AutoSaveLayout)
+	            SaveLayout();
 		}
 
 		private void OnOwnerFormDeactivated(object sender, EventArgs e)
@@ -668,30 +628,28 @@ namespace TD.SandDock
 
 	    private void OnOwnerFormLoad(object sender, EventArgs e)
 		{
-			if (this.AutoSaveLayout)
-			{
-				this.LoadLayout();
-			}
+	        if (AutoSaveLayout)
+	            LoadLayout();
 		}
 
 		private void OnRendererMetricsChanged(object sender, EventArgs e)
 		{
-			this.PropagateNewRenderer();
+			PropagateNewRenderer();
 		}
 
 		protected virtual void OnResolveDockControl(ResolveDockControlEventArgs e)
 		{
-		    this.resolveDockControlEventHandler_0?.Invoke(this, e);
+            ResolveDockControl?.Invoke(this, e);
 		}
 
 	    protected internal virtual void OnShowActiveFilesList(ActiveFilesListEventArgs e)
 	    {
-	        this.activeFilesListEventHandler_0?.Invoke(this, e);
+            ShowActiveFilesList?.Invoke(this, e);
 	    }
 
 	    protected internal virtual void OnShowControlContextMenu(ShowControlContextMenuEventArgs e)
 	    {
-	        this.showControlContextMenuEventHandler_0?.Invoke(this, e);
+            ShowControlContextMenu?.Invoke(this, e);
 	    }
 
 	    private void PropagateNewRenderer()
@@ -700,7 +658,7 @@ namespace TD.SandDock
 			{
 				dockContainer.method_4();
 			}
-			foreach (Control0 control in this.arrayList_1)
+			foreach (AutoHideBar control in this.arrayList_1)
 			{
 				control.method_1();
 			}
@@ -791,7 +749,7 @@ namespace TD.SandDock
 			return controlLayoutSystem;
 		}
 
-		private void ReadFloatingContainerProperties(XmlNode node, Class5 container)
+		private void ReadFloatingContainerProperties(XmlNode node, FloatingContainer container)
 		{
 			Rectangle rectangle_ = this.ConvertStringToRectangle(node.Attributes["Bounds"].Value);
 			Guid guid = Guid.NewGuid();
@@ -801,7 +759,7 @@ namespace TD.SandDock
 			}
 			if (container == null)
 			{
-				container = new Class5(this, guid);
+				container = new FloatingContainer(this, guid);
 			}
 			foreach (XmlNode xmlNode in node.ChildNodes)
 			{
@@ -865,7 +823,7 @@ namespace TD.SandDock
 			Class22.smethod_0(this, node);
 		}
 
-		internal void RegisterAutoHideBar(Control0 bar)
+		internal void RegisterAutoHideBar(AutoHideBar bar)
 		{
 			if (!this.arrayList_1.Contains(bar))
 			{
@@ -876,11 +834,9 @@ namespace TD.SandDock
 
 		internal void RegisterDockContainer(DockContainer container)
 		{
-			if (container is DocumentContainer && this.documentContainer_0 != null)
-			{
-				throw new InvalidOperationException("Only one DocumentContainer can exist in a SandDock layout.");
-			}
-			if (!this.arrayList_0.Contains(container))
+		    if (container is DocumentContainer && this.DocumentContainer != null)
+		        throw new InvalidOperationException("Only one DocumentContainer can exist in a SandDock layout.");
+		    if (!this.arrayList_0.Contains(container))
 			{
 				this.arrayList_0.Add(container);
 			}
@@ -891,10 +847,10 @@ namespace TD.SandDock
 			container.AllowDrop = this.SelectTabsOnDrag;
 			if (container is DocumentContainer)
 			{
-				this.documentContainer_0 = (DocumentContainer)container;
-				this.documentContainer_0.BorderStyle_0 = this.BorderStyle;
-				this.documentContainer_0.DocumentOverflowMode_0 = this.DocumentOverflow;
-				this.documentContainer_0.Boolean_5 = this.IntegralClose;
+				this.DocumentContainer = (DocumentContainer)container;
+				this.DocumentContainer.BorderStyle = this.BorderStyle;
+				this.DocumentContainer.DocumentOverflow = DocumentOverflow;
+				this.DocumentContainer.IntegralClose = this.IntegralClose;
 			}
 		}
 
@@ -915,9 +871,9 @@ namespace TD.SandDock
 
 		private void SaveContainerLayout(DockContainer container, XmlTextWriter writer)
 		{
-			if (container is Class5)
+			if (container is FloatingContainer)
 			{
-				Class5 @class = (Class5)container;
+				FloatingContainer @class = (FloatingContainer)container;
 				writer.WriteStartElement("FloatingContainer");
 				writer.WriteAttributeString("Bounds", this.ConvertRectangleToString(@class.Rectangle_1));
 				writer.WriteAttributeString("Guid", @class.Guid_0.ToString());
@@ -1043,7 +999,7 @@ namespace TD.SandDock
 			xmlDocument.LoadXml(layout);
 			this.GetLayout();
 			DockContainer[] orderedDockedDockContainerList = this.GetOrderedDockedDockContainerList();
-			Class5[] floatingDockContainerList = this.GetFloatingDockContainerList();
+			FloatingContainer[] floatingDockContainerList = this.GetFloatingDockContainerList();
 			int num = 0;
 			int num2 = 0;
 			ArrayList arrayList = new ArrayList(orderedDockedDockContainerList);
@@ -1092,7 +1048,7 @@ namespace TD.SandDock
 					{
 						if (xmlNode2.Name == "FloatingContainer" && xmlNode2.HasChildNodes)
 						{
-							Class5 container2 = null;
+							FloatingContainer container2 = null;
 							if (num2 < floatingDockContainerList.Length)
 							{
 								container2 = floatingDockContainerList[num2++];
@@ -1148,7 +1104,7 @@ namespace TD.SandDock
 			return !(this.rendererBase_0 is WhidbeyRenderer);
 		}
 
-		internal void UnregisterAutoHideBar(Control0 bar)
+		internal void UnregisterAutoHideBar(AutoHideBar bar)
 		{
 			if (this.arrayList_1.Contains(bar))
 			{
@@ -1162,9 +1118,9 @@ namespace TD.SandDock
 			{
 				this.arrayList_0.Remove(container);
 			}
-			if (this.documentContainer_0 == container)
+			if (this.DocumentContainer == container)
 			{
-				this.documentContainer_0 = null;
+				this.DocumentContainer = null;
 			}
 		}
 
@@ -1253,7 +1209,7 @@ namespace TD.SandDock
 				this.borderStyle_0 = value;
 				if (this.DocumentContainer != null)
 				{
-					this.DocumentContainer.BorderStyle_0 = this.borderStyle_0;
+					this.DocumentContainer.BorderStyle = this.borderStyle_0;
 				}
 			}
 		}
@@ -1293,35 +1249,28 @@ namespace TD.SandDock
 			}
 			set
 			{
-				if (value == null)
-				{
-					throw new ArgumentNullException("value");
-				}
-				if (value is DockContainer)
-				{
-					throw new ArgumentException("A DockContainer cannot act as a host for a SandDock layout.");
-				}
-				if (value != this.control_0)
+			    if (value == null)
+			        throw new ArgumentNullException(nameof(value));
+			    if (value is DockContainer)
+			        throw new ArgumentException("A DockContainer cannot act as a host for a SandDock layout.");
+			    if (value != this.control_0)
 				{
 					ArrayList arrayList = new ArrayList();
 					foreach (DockContainer dockContainer in this.arrayList_0)
 					{
-						if (dockContainer.Parent != null)
-						{
-							if (dockContainer.Parent != value)
-							{
-								arrayList.Add(dockContainer);
-							}
-						}
+					    if (dockContainer.Parent != null && dockContainer.Parent != value)
+					    {
+					        arrayList.Add(dockContainer);
+					    }
 					}
 					if (this.control_0 != null)
 					{
-						this.control_0.Resize -= new EventHandler(this.OnDockSystemContainerResize);
+						this.control_0.Resize -= this.OnDockSystemContainerResize;
 					}
 					this.control_0 = value;
 					if (this.control_0 != null)
 					{
-						this.control_0.Resize += new EventHandler(this.OnDockSystemContainerResize);
+						this.control_0.Resize += this.OnDockSystemContainerResize;
 					}
 					value.Controls.AddRange((Control[])arrayList.ToArray(typeof(Control)));
 					return;
@@ -1330,28 +1279,12 @@ namespace TD.SandDock
 		}
 
 		[Browsable(false)]
-		public DocumentContainer DocumentContainer
-		{
-			get
-			{
-				return this.documentContainer_0;
-			}
-		}
+		public DocumentContainer DocumentContainer { get; private set; }
 
-		[Category("Behavior"), DefaultValue(typeof(DocumentContainerWindowOpenPosition), "Last"), Description("Specifies whether documents are opened at the first position or the last.")]
-		public DocumentContainerWindowOpenPosition DocumentOpenPosition
-		{
-			get
-			{
-				return this.documentContainerWindowOpenPosition_0;
-			}
-			set
-			{
-				this.documentContainerWindowOpenPosition_0 = value;
-			}
-		}
+        [Category("Behavior"), DefaultValue(typeof(DocumentContainerWindowOpenPosition), "Last"), Description("Specifies whether documents are opened at the first position or the last.")]
+		public DocumentContainerWindowOpenPosition DocumentOpenPosition { get; set; } = DocumentContainerWindowOpenPosition.Last;
 
-		[Category("Behavior"), DefaultValue(typeof(DocumentOverflowMode), "Scrollable"), Description("Determines how document tabs that overflow past the visible area are accessed.")]
+        [Category("Behavior"), DefaultValue(typeof(DocumentOverflowMode), "Scrollable"), Description("Determines how document tabs that overflow past the visible area are accessed.")]
 		public DocumentOverflowMode DocumentOverflow
 		{
 			get
@@ -1365,35 +1298,19 @@ namespace TD.SandDock
 					this.documentOverflowMode_0 = value;
 					if (this.DocumentContainer != null)
 					{
-						this.DocumentContainer.DocumentOverflowMode_0 = this.DocumentOverflow;
+						this.DocumentContainer.DocumentOverflow = this.DocumentOverflow;
 					}
 				}
 			}
 		}
 
 		[Browsable(false), Obsolete("Use the GetDockControls method passing DockSituation.Document instead.")]
-		public DockControl[] Documents
-		{
-			get
-			{
-				return this.GetDockControls(DockSituation.Document);
-			}
-		}
+		public DockControl[] Documents => GetDockControls(DockSituation.Document);
 
-		[Category("Behavior"), DefaultValue(false), Description("Indicates whether an empty container is left when all tabbed documents have been removed.")]
-		public bool EnableEmptyEnvironment
-		{
-			get
-			{
-				return this.bool_5;
-			}
-			set
-			{
-				this.bool_5 = value;
-			}
-		}
+        [Category("Behavior"), DefaultValue(false), Description("Indicates whether an empty container is left when all tabbed documents have been removed.")]
+		public bool EnableEmptyEnvironment { get; set; }
 
-		[Category("Behavior"), DefaultValue(true), Description("Indicates whether tabbed documents can be shown in the centre of the container.")]
+        [Category("Behavior"), DefaultValue(true), Description("Indicates whether tabbed documents can be shown in the centre of the container.")]
 		public bool EnableTabbedDocuments
 		{
 			get
@@ -1424,39 +1341,19 @@ namespace TD.SandDock
 					this.bool_8 = value;
 					if (this.DocumentContainer != null)
 					{
-						this.DocumentContainer.Boolean_5 = this.IntegralClose;
+						this.DocumentContainer.IntegralClose = this.IntegralClose;
 					}
 				}
 			}
 		}
 
 		[Category("Behavior"), DefaultValue(500), Description("Indicates the maximum size of a docked strip of toolwindows.")]
-		public int MaximumDockContainerSize
-		{
-			get
-			{
-				return this.int_1;
-			}
-			set
-			{
-				this.int_1 = value;
-			}
-		}
+		public int MaximumDockContainerSize { get; set; } = 500;
 
-		[Category("Behavior"), DefaultValue(30), Description("Indicates the minimum size of a docked strip of toolwindows.")]
-		public int MinimumDockContainerSize
-		{
-			get
-			{
-				return this.int_0;
-			}
-			set
-			{
-				this.int_0 = value;
-			}
-		}
+        [Category("Behavior"), DefaultValue(30), Description("Indicates the minimum size of a docked strip of toolwindows.")]
+		public int MinimumDockContainerSize { get; set; } = 30;
 
-		[Browsable(false)]
+        [Browsable(false)]
 		public Form OwnerForm
 		{
 			get
@@ -1488,19 +1385,9 @@ namespace TD.SandDock
 		}
 
 		[Category("Behavior"), DefaultValue(false), Description("Indicates whether standard validation events are fired when the user changes tabs.")]
-		public bool RaiseValidationEvents
-		{
-			get
-			{
-				return this.bool_4;
-			}
-			set
-			{
-				this.bool_4 = value;
-			}
-		}
+		public bool RaiseValidationEvents { get; set; }
 
-		[Category("Appearance"), Description("The renderer used to calculate object metrics and draw contents.")]
+        [Category("Appearance"), Description("The renderer used to calculate object metrics and draw contents.")]
 		public RendererBase Renderer
 		{
 			get
@@ -1515,11 +1402,11 @@ namespace TD.SandDock
 				}
 				if (this.rendererBase_0 != null)
 				{
-					this.rendererBase_0.MetricsChanged -= new EventHandler(this.OnRendererMetricsChanged);
+					this.rendererBase_0.MetricsChanged -= this.OnRendererMetricsChanged;
 					this.rendererBase_0.Dispose();
 				}
 				this.rendererBase_0 = value;
-				this.rendererBase_0.MetricsChanged += new EventHandler(this.OnRendererMetricsChanged);
+				this.rendererBase_0.MetricsChanged += this.OnRendererMetricsChanged;
 				this.PropagateNewRenderer();
 			}
 		}
@@ -1534,31 +1421,17 @@ namespace TD.SandDock
 			set
 			{
 				this.bool_6 = value;
-				foreach (DockContainer dockContainer in this.arrayList_0)
-				{
-					dockContainer.AllowDrop = value;
-				}
-				foreach (Control0 control in this.arrayList_1)
-				{
-					control.AllowDrop = value;
-				}
+			    foreach (DockContainer dockContainer in this.arrayList_0)
+			        dockContainer.AllowDrop = value;
+			    foreach (AutoHideBar control in this.arrayList_1)
+			        control.AllowDrop = value;
 			}
 		}
 
 		[Category("Serialization"), DefaultValue(false), Description("Indicates whether tabbed document layout will be serialized alongside dockable window layout.")]
-		public bool SerializeTabbedDocuments
-		{
-			get
-			{
-				return this.bool_9;
-			}
-			set
-			{
-				this.bool_9 = value;
-			}
-		}
+		public bool SerializeTabbedDocuments { get; set; }
 
-		public override ISite Site
+        public override ISite Site
 		{
 			get
 			{
@@ -1584,133 +1457,25 @@ namespace TD.SandDock
 
 	    public event EventHandler ActiveTabbedDocumentChanged;
 
-		public event DockControlEventHandler DockControlActivated
-		{
-			[MethodImpl(MethodImplOptions.Synchronized)]
-			add
-			{
-				this.dockControlEventHandler_0 = (DockControlEventHandler)Delegate.Combine(this.dockControlEventHandler_0, value);
-			}
-			[MethodImpl(MethodImplOptions.Synchronized)]
-			remove
-			{
-				this.dockControlEventHandler_0 = (DockControlEventHandler)Delegate.Remove(this.dockControlEventHandler_0, value);
-			}
-		}
+        public event DockControlEventHandler DockControlActivated;
 
-		public event DockControlEventHandler DockControlAdded
-		{
-			[MethodImpl(MethodImplOptions.Synchronized)]
-			add
-			{
-				this.dockControlEventHandler_1 = (DockControlEventHandler)Delegate.Combine(this.dockControlEventHandler_1, value);
-			}
-			[MethodImpl(MethodImplOptions.Synchronized)]
-			remove
-			{
-				this.dockControlEventHandler_1 = (DockControlEventHandler)Delegate.Remove(this.dockControlEventHandler_1, value);
-			}
-		}
+        public event DockControlEventHandler DockControlAdded;
 
-		public event DockControlClosingEventHandler DockControlClosing
-		{
-			[MethodImpl(MethodImplOptions.Synchronized)]
-			add
-			{
-				this.dockControlClosingEventHandler_0 = (DockControlClosingEventHandler)Delegate.Combine(this.dockControlClosingEventHandler_0, value);
-			}
-			[MethodImpl(MethodImplOptions.Synchronized)]
-			remove
-			{
-				this.dockControlClosingEventHandler_0 = (DockControlClosingEventHandler)Delegate.Remove(this.dockControlClosingEventHandler_0, value);
-			}
-		}
+        public event DockControlClosingEventHandler DockControlClosing;
 
-		public event DockControlEventHandler DockControlRemoved
-		{
-			[MethodImpl(MethodImplOptions.Synchronized)]
-			add
-			{
-				this.dockControlEventHandler_2 = (DockControlEventHandler)Delegate.Combine(this.dockControlEventHandler_2, value);
-			}
-			[MethodImpl(MethodImplOptions.Synchronized)]
-			remove
-			{
-				this.dockControlEventHandler_2 = (DockControlEventHandler)Delegate.Remove(this.dockControlEventHandler_2, value);
-			}
-		}
+        public event DockControlEventHandler DockControlRemoved;
 
-		public event EventHandler DockingFinished
-		{
-			[MethodImpl(MethodImplOptions.Synchronized)]
-			add
-			{
-				this.eventHandler_1 = (EventHandler)Delegate.Combine(this.eventHandler_1, value);
-			}
-			[MethodImpl(MethodImplOptions.Synchronized)]
-			remove
-			{
-				this.eventHandler_1 = (EventHandler)Delegate.Remove(this.eventHandler_1, value);
-			}
-		}
+        public event EventHandler DockingFinished;
 
-		public event EventHandler DockingStarted
-		{
-			[MethodImpl(MethodImplOptions.Synchronized)]
-			add
-			{
-				this.eventHandler_0 = (EventHandler)Delegate.Combine(this.eventHandler_0, value);
-			}
-			[MethodImpl(MethodImplOptions.Synchronized)]
-			remove
-			{
-				this.eventHandler_0 = (EventHandler)Delegate.Remove(this.eventHandler_0, value);
-			}
-		}
+        public event EventHandler DockingStarted;
 
-		public event ResolveDockControlEventHandler ResolveDockControl
-		{
-			[MethodImpl(MethodImplOptions.Synchronized)]
-			add
-			{
-				this.resolveDockControlEventHandler_0 = (ResolveDockControlEventHandler)Delegate.Combine(this.resolveDockControlEventHandler_0, value);
-			}
-			[MethodImpl(MethodImplOptions.Synchronized)]
-			remove
-			{
-				this.resolveDockControlEventHandler_0 = (ResolveDockControlEventHandler)Delegate.Remove(this.resolveDockControlEventHandler_0, value);
-			}
-		}
+        public event ResolveDockControlEventHandler ResolveDockControl;
 
-		public event ActiveFilesListEventHandler ShowActiveFilesList
-		{
-			[MethodImpl(MethodImplOptions.Synchronized)]
-			add
-			{
-				this.activeFilesListEventHandler_0 = (ActiveFilesListEventHandler)Delegate.Combine(this.activeFilesListEventHandler_0, value);
-			}
-			[MethodImpl(MethodImplOptions.Synchronized)]
-			remove
-			{
-				this.activeFilesListEventHandler_0 = (ActiveFilesListEventHandler)Delegate.Remove(this.activeFilesListEventHandler_0, value);
-			}
-		}
+        public event ActiveFilesListEventHandler ShowActiveFilesList;
 
-		public event ShowControlContextMenuEventHandler ShowControlContextMenu
-		{
-			[MethodImpl(MethodImplOptions.Synchronized)]
-			add
-			{
-				this.showControlContextMenuEventHandler_0 = (ShowControlContextMenuEventHandler)Delegate.Combine(this.showControlContextMenuEventHandler_0, value);
-			}
-			[MethodImpl(MethodImplOptions.Synchronized)]
-			remove
-			{
-				this.showControlContextMenuEventHandler_0 = (ShowControlContextMenuEventHandler)Delegate.Remove(this.showControlContextMenuEventHandler_0, value);
-			}
-		}
+        public event ShowControlContextMenuEventHandler ShowControlContextMenu;
 
-		private ActiveFilesListEventHandler activeFilesListEventHandler_0;
+		//private ActiveFilesListEventHandler activeFilesListEventHandler_0;
 
 		internal ArrayList arrayList_0;
 
@@ -1724,29 +1489,23 @@ namespace TD.SandDock
 
 		private bool bool_3 = true;
 
-		private bool bool_4;
-
-		private bool bool_5;
-
-		private bool bool_6;
+        private bool bool_6;
 
 		private bool bool_7;
 
 		private bool bool_8;
 
-		private bool bool_9;
-
-		private TD.SandDock.Rendering.BorderStyle borderStyle_0 = TD.SandDock.Rendering.BorderStyle.Flat;
+        private TD.SandDock.Rendering.BorderStyle borderStyle_0 = TD.SandDock.Rendering.BorderStyle.Flat;
 
 		private Control control_0;
 
-		private DockControlClosingEventHandler dockControlClosingEventHandler_0;
+		//private DockControlClosingEventHandler dockControlClosingEventHandler_0;
 
-		private DockControlEventHandler dockControlEventHandler_0;
+		//private DockControlEventHandler dockControlEventHandler_0;
 
-		private DockControlEventHandler dockControlEventHandler_1;
+		//private DockControlEventHandler dockControlEventHandler_1;
 
-		private DockControlEventHandler dockControlEventHandler_2;
+		//private DockControlEventHandler dockControlEventHandler_2;
 
 		private DockControl dockControl_0;
 
@@ -1754,15 +1513,11 @@ namespace TD.SandDock
 
 		private DockingManager dockingManager_0 = DockingManager.Whidbey;
 
-		private DocumentContainerWindowOpenPosition documentContainerWindowOpenPosition_0 = DocumentContainerWindowOpenPosition.Last;
+        private DocumentOverflowMode documentOverflowMode_0 = DocumentOverflowMode.Scrollable;
 
-		private DocumentContainer documentContainer_0;
+		//private EventHandler eventHandler_0;
 
-		private DocumentOverflowMode documentOverflowMode_0 = DocumentOverflowMode.Scrollable;
-
-		private EventHandler eventHandler_0;
-
-		private EventHandler eventHandler_1;
+		//private EventHandler eventHandler_1;
 
 		//private EventHandler eventHandler_2;
 
@@ -1770,14 +1525,10 @@ namespace TD.SandDock
 
 		private Hashtable hashtable_0;
 
-		private int int_0 = 30;
+        private RendererBase rendererBase_0;
 
-		private int int_1 = 500;
+		//private ResolveDockControlEventHandler resolveDockControlEventHandler_0;
 
-		private RendererBase rendererBase_0;
-
-		private ResolveDockControlEventHandler resolveDockControlEventHandler_0;
-
-		private ShowControlContextMenuEventHandler showControlContextMenuEventHandler_0;
+		//private ShowControlContextMenuEventHandler showControlContextMenuEventHandler_0;
 	}
 }

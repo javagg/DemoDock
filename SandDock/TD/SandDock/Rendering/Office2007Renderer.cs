@@ -6,7 +6,13 @@ using System.Windows.Forms;
 
 namespace TD.SandDock.Rendering
 {
-	public class Office2007Renderer : RendererBase
+    public enum Office2007ColorScheme
+    {
+        Blue,
+        Silver,
+        Black
+    }
+    public class Office2007Renderer : RendererBase
 	{
 		public Office2007Renderer() : this(Office2007ColorScheme.Blue)
 		{

@@ -18,12 +18,9 @@ namespace TD.SandDock
 			this.method_18();
 		}
 
-		protected override DockingRules CreateDockingRules()
-		{
-			return new DockingRules(true, false, true);
-		}
+		protected override DockingRules CreateDockingRules() => new DockingRules(true, false, true);
 
-		private void method_18()
+	    private void method_18()
 		{
 			if (this.Text.Length == 0)
 			{
@@ -34,7 +31,7 @@ namespace TD.SandDock
 
 		public override void Open()
 		{
-			base.Open(WindowOpenMethod.OnScreenSelect);
+            Open(WindowOpenMethod.OnScreenSelect);
 		}
 
 		protected override Size DefaultSize => new Size(250, 400);

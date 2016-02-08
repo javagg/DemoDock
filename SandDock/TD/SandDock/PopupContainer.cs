@@ -6,16 +6,15 @@ using TD.Util;
 
 namespace TD.SandDock
 {
-	internal class Control1 : Control
+	internal class PopupContainer : Control
 	{
-		public Control1(Control0 bar)
+		public PopupContainer(AutoHideBar bar)
 		{
 			this.control0_0 = bar;
-			base.SetStyle(ControlStyles.ResizeRedraw | ControlStyles.AllPaintingInWmPaint | ControlStyles.OptimizedDoubleBuffer, true);
-			base.SetStyle(ControlStyles.Selectable, false);
-			this.class0_0 = new Class0(this);
-			this.class0_0.Boolean_0 = false;
-			this.class0_0.Event_0 += new Class0.Delegate0(this.method_4);
+			SetStyle(ControlStyles.ResizeRedraw | ControlStyles.AllPaintingInWmPaint | ControlStyles.OptimizedDoubleBuffer, true);
+			SetStyle(ControlStyles.Selectable, false);
+		    this.class0_0 = new Class0(this) {Boolean_0 = false};
+		    this.class0_0.Event_0 += this.method_4;
 			this.BackColor = SystemColors.Control;
 		}
 
@@ -23,9 +22,9 @@ namespace TD.SandDock
 		{
 			if (disposing && !base.IsDisposed)
 			{
-				if (base.ContainsFocus && this.control0_0.SandDockManager_0.OwnerForm != null && this.control0_0.SandDockManager_0.OwnerForm.IsMdiContainer && this.control0_0.SandDockManager_0.OwnerForm.ActiveMdiChild != null)
+				if (base.ContainsFocus && this.control0_0.Manager.OwnerForm != null && this.control0_0.Manager.OwnerForm.IsMdiContainer && this.control0_0.Manager.OwnerForm.ActiveMdiChild != null)
 				{
-					this.control0_0.SandDockManager_0.OwnerForm.ActiveControl = this.control0_0.SandDockManager_0.OwnerForm.ActiveMdiChild;
+					this.control0_0.Manager.OwnerForm.ActiveControl = this.control0_0.Manager.OwnerForm.ActiveMdiChild;
 				}
 				this.control0_0.method_6(true);
 				this.control0_0 = null;
@@ -47,13 +46,13 @@ namespace TD.SandDock
 		{
 			this.class9_0 = new Class9(this.control0_0, this, point_0);
 			this.class9_0.Event_0 += this.method_2;
-			this.class9_0.Event_1 += this.method_3;
+			this.class9_0.ResizingManagerFinished += this.method_3;
 		}
 
 		private void method_1()
 		{
 			this.class9_0.Event_0 -= this.method_2;
-			this.class9_0.Event_1 -= this.method_3;
+			this.class9_0.ResizingManagerFinished -= this.method_3;
 			this.class9_0 = null;
 		}
 
@@ -119,7 +118,7 @@ namespace TD.SandDock
 						break;
 					}
 				}
-				this.controlLayoutSystem_0.LayoutCollapsed(this.control0_0.SandDockManager_0.Renderer, this.rectangle_0);
+				this.controlLayoutSystem_0.LayoutCollapsed(this.control0_0.Manager.Renderer, this.rectangle_0);
 				base.Invalidate();
 			}
 		}
@@ -195,18 +194,18 @@ namespace TD.SandDock
 
 		protected override void OnPaint(PaintEventArgs e)
 		{
-			this.control0_0.SandDockManager_0.Renderer.StartRenderSession(HotkeyPrefix.None);
-		    this.controlLayoutSystem_0?.vmethod_4(this.control0_0.SandDockManager_0.Renderer, e.Graphics, this.Font);
+			this.control0_0.Manager.Renderer.StartRenderSession(HotkeyPrefix.None);
+		    this.controlLayoutSystem_0?.vmethod_4(this.control0_0.Manager.Renderer, e.Graphics, this.Font);
 		    if (this.Boolean_1)
 			{
-				this.control0_0.SandDockManager_0.Renderer.DrawSplitter(null, this, e.Graphics, this.rectangle_1, (this.control0_0.Dock == DockStyle.Top || this.control0_0.Dock == DockStyle.Bottom) ? Orientation.Horizontal : Orientation.Vertical);
+				this.control0_0.Manager.Renderer.DrawSplitter(null, this, e.Graphics, this.rectangle_1, (this.control0_0.Dock == DockStyle.Top || this.control0_0.Dock == DockStyle.Bottom) ? Orientation.Horizontal : Orientation.Vertical);
 			}
-			this.control0_0.SandDockManager_0.Renderer.FinishRenderSession();
+			this.control0_0.Manager.Renderer.FinishRenderSession();
 		}
 
 		public bool Boolean_0 => this.class9_0 != null;
 
-	    private bool Boolean_1 => this.control0_0.SandDockManager_0.AllowDockContainerResize;
+	    private bool Boolean_1 => this.control0_0.Manager.AllowDockContainerResize;
 
 	    public ControlLayoutSystem ControlLayoutSystem_0
 		{
@@ -217,7 +216,7 @@ namespace TD.SandDock
 			set
 			{
 				this.controlLayoutSystem_0 = value;
-				base.PerformLayout();
+				PerformLayout();
 			}
 		}
 
@@ -262,7 +261,7 @@ namespace TD.SandDock
 
 		private Class9 class9_0;
 
-		private Control0 control0_0;
+		private AutoHideBar control0_0;
 
 		private ControlLayoutSystem controlLayoutSystem_0;
 

@@ -9,13 +9,13 @@ namespace TD.SandDock
 	{
 		public Class11(SandDockManager manager, DockContainer container, Point startPoint) : base(container, manager.DockingHints, false)
 		{
-			this.dockContainer_0 = container;
+			this.container = container;
 			Rectangle rectangle = Rectangle.Empty;
 			rectangle = Class7.smethod_2(Class7.smethod_1(container.Parent), container.Parent);
 			rectangle = new Rectangle(container.PointToClient(rectangle.Location), rectangle.Size);
-			int num = (manager == null) ? 30 : manager.MinimumDockContainerSize;
+			int num = manager?.MinimumDockContainerSize ?? 30;
 			num = Math.Max(num, LayoutUtilities.smethod_12(container));
-			int num2 = (manager == null) ? 500 : manager.MaximumDockContainerSize;
+			int num2 = manager?.MaximumDockContainerSize ?? 500;
 			int int32_ = container.Int32_0;
 			switch (container.Dock)
 			{
@@ -46,18 +46,15 @@ namespace TD.SandDock
 		public override void Commit()
 		{
 			base.Commit();
-			if (this.resizingManagerFinishedEventHandler_0 != null)
-			{
-				this.resizingManagerFinishedEventHandler_0(this.int_8);
-			}
+            ResizingManagerFinished?.Invoke(this.int_8);
 		}
 
 		public override void OnMouseMove(Point position)
 		{
 			Rectangle empty = Rectangle.Empty;
-			if (this.dockContainer_0.Boolean_1)
+			if (this.container.Boolean_1)
 			{
-				empty = new Rectangle(position.X - this.int_9, 0, 4, this.dockContainer_0.Height);
+				empty = new Rectangle(position.X - this.int_9, 0, 4, this.container.Height);
 				if (empty.X < this.int_6)
 				{
 					empty.X = this.int_6;
@@ -69,7 +66,7 @@ namespace TD.SandDock
 			}
 			else
 			{
-				empty = new Rectangle(0, position.Y - this.int_9, this.dockContainer_0.Width, 4);
+				empty = new Rectangle(0, position.Y - this.int_9, this.container.Width, 4);
 				if (empty.Y < this.int_6)
 				{
 					empty.Y = this.int_6;
@@ -79,25 +76,25 @@ namespace TD.SandDock
 					empty.Y = this.int_7 - 4;
 				}
 			}
-			switch (this.dockContainer_0.Dock)
+			switch (this.container.Dock)
 			{
 			case DockStyle.Top:
-				this.int_8 = this.dockContainer_0.ContentSize + (empty.Y - this.dockContainer_0.Rectangle_0.Y);
+				this.int_8 = this.container.ContentSize + (empty.Y - this.container.Rectangle_0.Y);
 				break;
 			case DockStyle.Bottom:
-				this.int_8 = this.dockContainer_0.ContentSize + (this.dockContainer_0.Rectangle_0.Y - empty.Y);
+				this.int_8 = this.container.ContentSize + (this.container.Rectangle_0.Y - empty.Y);
 				break;
 			case DockStyle.Left:
-				this.int_8 = this.dockContainer_0.ContentSize + (empty.X - this.dockContainer_0.Rectangle_0.X);
+				this.int_8 = this.container.ContentSize + (empty.X - this.container.Rectangle_0.X);
 				break;
 			case DockStyle.Right:
-				this.int_8 = this.dockContainer_0.ContentSize + (this.dockContainer_0.Rectangle_0.X - empty.X);
+				this.int_8 = this.container.ContentSize + (this.container.Rectangle_0.X - empty.X);
 				break;
 			}
-			base.method_1(new Rectangle(this.dockContainer_0.PointToScreen(empty.Location), empty.Size), false);
-			if (this.dockContainer_0.Dock != DockStyle.Left)
+			base.method_1(new Rectangle(this.container.PointToScreen(empty.Location), empty.Size), false);
+			if (this.container.Dock != DockStyle.Left)
 			{
-				if (this.dockContainer_0.Dock != DockStyle.Right)
+				if (this.container.Dock != DockStyle.Right)
 				{
 					Cursor.Current = Cursors.HSplit;
 					return;
@@ -106,21 +103,9 @@ namespace TD.SandDock
 			Cursor.Current = Cursors.VSplit;
 		}
 
-		public event Class11.ResizingManagerFinishedEventHandler Event_1
-		{
-			[MethodImpl(MethodImplOptions.Synchronized)]
-			add
-			{
-				this.resizingManagerFinishedEventHandler_0 = (Class11.ResizingManagerFinishedEventHandler)Delegate.Combine(this.resizingManagerFinishedEventHandler_0, value);
-			}
-			[MethodImpl(MethodImplOptions.Synchronized)]
-			remove
-			{
-				this.resizingManagerFinishedEventHandler_0 = (Class11.ResizingManagerFinishedEventHandler)Delegate.Remove(this.resizingManagerFinishedEventHandler_0, value);
-			}
-		}
+	    public event ResizingManagerFinishedEventHandler ResizingManagerFinished;
 
-		private DockContainer dockContainer_0;
+		private DockContainer container;
 
 		private int int_6;
 
@@ -130,7 +115,7 @@ namespace TD.SandDock
 
 		private int int_9;
 
-		private Class11.ResizingManagerFinishedEventHandler resizingManagerFinishedEventHandler_0;
+		//private Class11.ResizingManagerFinishedEventHandler resizingManagerFinishedEventHandler_0;
 
 		public delegate void ResizingManagerFinishedEventHandler(int newSize);
 	}

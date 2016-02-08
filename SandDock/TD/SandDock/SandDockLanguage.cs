@@ -11,34 +11,11 @@ namespace TD.SandDock
 		{
 			string text = SandDockLanguage.string_6 + Environment.NewLine + Environment.NewLine;
 			string text2 = text;
-			text = string.Concat(new string[]
-			{
-				text2,
-				"Component Assembly:",
-				Environment.NewLine,
-				componentAssembly.Location,
-				Environment.NewLine,
-				Environment.NewLine
-			});
+			text = string.Concat(text2, "Component Assembly:", Environment.NewLine, componentAssembly.Location, Environment.NewLine, Environment.NewLine);
 			string text3 = text;
-			text = string.Concat(new string[]
-			{
-				text3,
-				"Designer Assembly:",
-				Environment.NewLine,
-				designerAssembly.Location,
-				Environment.NewLine,
-				Environment.NewLine
-			});
+			text = string.Concat(text3, "Designer Assembly:", Environment.NewLine, designerAssembly.Location, Environment.NewLine, Environment.NewLine);
 			string text4 = text;
-			text = string.Concat(new string[]
-			{
-				text4,
-				SandDockLanguage.string_7,
-				Environment.NewLine,
-				Environment.NewLine,
-				SandDockLanguage.string_8
-			});
+			text = string.Concat(text4, SandDockLanguage.string_7, Environment.NewLine, Environment.NewLine, SandDockLanguage.string_8);
 			MessageBox.Show(text, "Visual Studio Error Detected", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
 		}
 
@@ -51,11 +28,7 @@ namespace TD.SandDock
 			}
 			set
 			{
-				if (value == null)
-				{
-					value = string.Empty;
-				}
-				SandDockLanguage.string_5 = value;
+				SandDockLanguage.string_5 = value?? string.Empty;
 			}
 		}
 

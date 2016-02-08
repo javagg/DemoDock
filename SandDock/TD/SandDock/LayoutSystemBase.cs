@@ -14,7 +14,7 @@ namespace TD.SandDock
 
 		protected internal virtual void Layout(RendererBase renderer, Graphics graphics, Rectangle bounds, bool floating)
 		{
-			this.rectangle_0 = bounds;
+			Bounds = bounds;
 		}
 
 		internal void method_0(SandDockManager sandDockManager_0, DockContainer dockContainer_1, LayoutSystemBase layoutSystemBase_0, DockControl dockControl_0, int int_2, Point point_0, DockingHints dockingHints_0, DockingManager dockingManager_0)
@@ -27,15 +27,15 @@ namespace TD.SandDock
 			{
 				this.class7_0 = new Class7(sandDockManager_0, this.DockContainer, this, dockControl_0, int_2, point_0, dockingHints_0);
 			}
-			this.class7_0.Event_1 += new Class7.DockingManagerFinishedEventHandler(this.vmethod_0);
-			this.class7_0.Event_0 += new EventHandler(this.vmethod_1);
+			this.class7_0.DockingManagerFinished += this.vmethod_0;
+			this.class7_0.Event_0 += this.vmethod_1;
 			this.class7_0.OnMouseMove(Cursor.Position);
 		}
 
 		private void method_1()
 		{
-			this.class7_0.Event_1 -= new Class7.DockingManagerFinishedEventHandler(this.vmethod_0);
-			this.class7_0.Event_0 -= new EventHandler(this.vmethod_1);
+			this.class7_0.DockingManagerFinished -= this.vmethod_0;
+			this.class7_0.Event_0 -= this.vmethod_1;
 			this.class7_0 = null;
 		}
 
@@ -64,10 +64,7 @@ namespace TD.SandDock
 			IL_7C:
 			if (!(this is ControlLayoutSystem))
 			{
-				if (this.Parent != null)
-				{
-					this.Parent.LayoutSystems.Remove(this);
-				}
+			    this.Parent?.LayoutSystems.Remove(this);
 			}
 			else
 			{
@@ -91,10 +88,8 @@ namespace TD.SandDock
 
 		private void method_3()
 		{
-			if (this.SandDockManager_0 == null)
-			{
-				throw new InvalidOperationException("No SandDockManager is associated with this ControlLayoutSystem.");
-			}
+		    if (Manager == null)
+		        throw new InvalidOperationException("No SandDockManager is associated with this ControlLayoutSystem.");
 		}
 
 		protected internal virtual void OnDragOver(DragEventArgs drgevent)
@@ -133,7 +128,7 @@ namespace TD.SandDock
 
 		internal virtual void vmethod_2(DockContainer dockContainer_1)
 		{
-			this.dockContainer_0 = dockContainer_1;
+			this.DockContainer = dockContainer_1;
 		}
 
 		internal abstract bool vmethod_3(ContainerDockLocation containerDockLocation_0);
@@ -155,56 +150,22 @@ namespace TD.SandDock
 			get;
 		}
 
-		public Rectangle Bounds
-		{
-			get
-			{
-				return this.rectangle_0;
-			}
-		}
+		public Rectangle Bounds { get; private set; } = Rectangle.Empty;
 
-		public DockContainer DockContainer
-		{
-			get
-			{
-				return this.dockContainer_0;
-			}
-		}
+	    public DockContainer DockContainer { get; private set; }
 
-		internal abstract DockControl[] DockControl_0
+	    internal abstract DockControl[] DockControl_0
 		{
 			get;
 		}
 
-		public bool IsInContainer
-		{
-			get
-			{
-				return this.dockContainer_0 != null;
-			}
-		}
+		public bool IsInContainer => DockContainer != null;
 
-		public SplitLayoutSystem Parent
-		{
-			get
-			{
-				return this.splitLayoutSystem_0;
-			}
-		}
+	    public SplitLayoutSystem Parent => this.splitLayoutSystem_0;
 
-		private SandDockManager SandDockManager_0
-		{
-			get
-			{
-				if (this.DockContainer != null)
-				{
-					return this.DockContainer.Manager;
-				}
-				return null;
-			}
-		}
+	    private SandDockManager Manager => DockContainer?.Manager;
 
-		[EditorBrowsable(EditorBrowsableState.Advanced)]
+	    [EditorBrowsable(EditorBrowsableState.Advanced)]
 		public SizeF WorkingSize
 		{
 			get
@@ -223,15 +184,11 @@ namespace TD.SandDock
 
 		internal Class7 class7_0;
 
-		private DockContainer dockContainer_0;
-
-		internal const int int_0 = 250;
+	    internal const int int_0 = 250;
 
 		internal const int int_1 = 400;
 
-		private Rectangle rectangle_0 = Rectangle.Empty;
-
-		private SizeF sizeF_0 = new SizeF(250f, 400f);
+	    private SizeF sizeF_0 = new SizeF(250f, 400f);
 
 		internal SplitLayoutSystem splitLayoutSystem_0;
 	}

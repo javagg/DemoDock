@@ -141,25 +141,18 @@ namespace TD.SandDock.Rendering
 
 		protected internal override void DrawDocumentClientBackground(Graphics graphics, Rectangle bounds, Color backColor)
 		{
-			using (SolidBrush solidBrush = new SolidBrush(backColor))
-			{
-				graphics.FillRectangle(solidBrush, bounds);
-			}
+		    using (var brush = new SolidBrush(backColor))
+		        graphics.FillRectangle(brush, bounds);
 		}
 
 		protected internal override void DrawDocumentStripBackground(Graphics graphics, Rectangle bounds)
 		{
 			if (bounds.Width > 0 && bounds.Height > 0)
 			{
-				using (LinearGradientBrush linearGradientBrush = new LinearGradientBrush(new Point(bounds.X, bounds.Y - 1), new Point(bounds.X, bounds.Bottom), this.color_8, this.color_9))
-				{
-					graphics.FillRectangle(linearGradientBrush, bounds);
-				}
-				using (Pen pen = new Pen(this.color_2))
-				{
-					graphics.DrawLine(pen, bounds.Left, bounds.Bottom - 1, bounds.Right - 1, bounds.Bottom - 1);
-				}
-				return;
+			    using (var brush = new LinearGradientBrush(new Point(bounds.X, bounds.Y - 1), new Point(bounds.X, bounds.Bottom), this.color_8, this.color_9))
+			        graphics.FillRectangle(brush, bounds);
+			    using (var pen = new Pen(this.color_2))
+			        graphics.DrawLine(pen, bounds.Left, bounds.Bottom - 1, bounds.Right - 1, bounds.Bottom - 1);
 			}
 		}
 

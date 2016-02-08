@@ -19,7 +19,7 @@ namespace TD.SandDock.Rendering
 
 		protected internal override void DrawAutoHideBarBackground(Control container, Control autoHideBar, Graphics graphics, Rectangle bounds)
 		{
-			using (this.solidBrush_0 = new SolidBrush(this.color_7))
+			using (this.solidBrush_0 = new SolidBrush(this.TabStripBackgroundColor))
 			{
 				graphics.FillRectangle(this.solidBrush_0, bounds);
 			}
@@ -281,7 +281,7 @@ namespace TD.SandDock.Rendering
 
 		protected override void GetColorsFromSystem()
 		{
-			this.color_7 = this.method_1(SystemColors.Control);
+			this.TabStripBackgroundColor = this.method_1(SystemColors.Control);
 		}
 
 		protected internal override Size MeasureDocumentStripTab(Graphics graphics, Image image, string text, Font font, DrawItemState state)
@@ -332,7 +332,7 @@ namespace TD.SandDock.Rendering
 
 		public override void StartRenderSession(HotkeyPrefix hotKeys)
 		{
-			this.solidBrush_0 = new SolidBrush(this.color_7);
+			this.solidBrush_0 = new SolidBrush(this.TabStripBackgroundColor);
 			this.pen_0 = new Pen(this.color_2);
 			this.pen_1 = new Pen(this.color_3);
 			this.solidBrush_1 = new SolidBrush(this.color_4);
@@ -410,31 +410,13 @@ namespace TD.SandDock.Rendering
 			}
 		}
 
-		protected internal override int DocumentTabExtra
-		{
-			get
-			{
-				return 0;
-			}
-		}
+		protected internal override int DocumentTabExtra => 0;
 
-		protected internal override int DocumentTabSize
-		{
-			get
-			{
-				return Control.DefaultFont.Height + 6;
-			}
-		}
+	    protected internal override int DocumentTabSize => Control.DefaultFont.Height + 6;
 
-		protected internal override int DocumentTabStripSize
-		{
-			get
-			{
-				return Control.DefaultFont.Height + 8;
-			}
-		}
+	    protected internal override int DocumentTabStripSize => Control.DefaultFont.Height + 8;
 
-		public Color HighlightColor
+	    public Color HighlightColor
 		{
 			get
 			{
@@ -487,11 +469,13 @@ namespace TD.SandDock.Rendering
 			{
 				if (EverettRenderer.stringFormat_0 == null)
 				{
-					EverettRenderer.stringFormat_0 = new StringFormat(StringFormat.GenericDefault);
-					EverettRenderer.stringFormat_0.Alignment = StringAlignment.Near;
-					EverettRenderer.stringFormat_0.LineAlignment = StringAlignment.Center;
-					EverettRenderer.stringFormat_0.Trimming = StringTrimming.EllipsisCharacter;
-					EverettRenderer.stringFormat_0.FormatFlags |= StringFormatFlags.NoWrap;
+				    EverettRenderer.stringFormat_0 = new StringFormat(StringFormat.GenericDefault)
+				    {
+				        Alignment = StringAlignment.Near,
+				        LineAlignment = StringAlignment.Center,
+				        Trimming = StringTrimming.EllipsisCharacter
+				    };
+				    EverettRenderer.stringFormat_0.FormatFlags |= StringFormatFlags.NoWrap;
 				}
 				return EverettRenderer.stringFormat_0;
 			}
@@ -503,11 +487,13 @@ namespace TD.SandDock.Rendering
 			{
 				if (EverettRenderer.stringFormat_1 == null)
 				{
-					EverettRenderer.stringFormat_1 = new StringFormat(StringFormat.GenericDefault);
-					EverettRenderer.stringFormat_1.Alignment = StringAlignment.Near;
-					EverettRenderer.stringFormat_1.LineAlignment = StringAlignment.Center;
-					EverettRenderer.stringFormat_1.Trimming = StringTrimming.EllipsisCharacter;
-					EverettRenderer.stringFormat_1.FormatFlags |= StringFormatFlags.NoWrap;
+				    EverettRenderer.stringFormat_1 = new StringFormat(StringFormat.GenericDefault)
+				    {
+				        Alignment = StringAlignment.Near,
+				        LineAlignment = StringAlignment.Center,
+				        Trimming = StringTrimming.EllipsisCharacter
+				    };
+				    EverettRenderer.stringFormat_1.FormatFlags |= StringFormatFlags.NoWrap;
 					EverettRenderer.stringFormat_1.FormatFlags |= StringFormatFlags.DirectionVertical;
 				}
 				return EverettRenderer.stringFormat_1;
@@ -518,37 +504,15 @@ namespace TD.SandDock.Rendering
 
 	    protected internal override BoxModel TabMetrics => this.boxModel_1 ?? (this.boxModel_1 = new BoxModel(0, 0, 0, 0, 0, 0, 0, 0, 1, 0));
 
-	    public Color TabStripBackgroundColor
-		{
-			get
-			{
-				return this.color_7;
-			}
-		}
+	    public Color TabStripBackgroundColor { get; private set; }
 
-		protected internal override BoxModel TabStripMetrics => this.boxModel_0 ?? (this.boxModel_0 = new BoxModel(0, Control.DefaultFont.Height + 9, 4, 0, 5, 1, 0, 2, 0, 0));
+	    protected internal override BoxModel TabStripMetrics => this.boxModel_0 ?? (this.boxModel_0 = new BoxModel(0, Control.DefaultFont.Height + 9, 4, 0, 5, 1, 0, 2, 0, 0));
 
-	    protected internal override TabTextDisplayMode TabTextDisplay
-		{
-			get
-			{
-				return TabTextDisplayMode.SelectedTab;
-			}
-		}
+	    protected internal override TabTextDisplayMode TabTextDisplay => TabTextDisplayMode.SelectedTab;
 
-		protected internal override BoxModel TitleBarMetrics
-		{
-			get
-			{
-				if (this.boxModel_2 == null)
-				{
-					this.boxModel_2 = new BoxModel(0, SystemInformation.ToolWindowCaptionHeight + 2, 0, 0, 0, 0, 0, 0, 0, 2);
-				}
-				return this.boxModel_2;
-			}
-		}
+	    protected internal override BoxModel TitleBarMetrics => this.boxModel_2 ?? (this.boxModel_2 = new BoxModel(0, SystemInformation.ToolWindowCaptionHeight + 2, 0, 0, 0, 0, 0, 0, 0, 2));
 
-		private BoxModel boxModel_0;
+	    private BoxModel boxModel_0;
 
 		private BoxModel boxModel_1;
 
@@ -568,9 +532,7 @@ namespace TD.SandDock.Rendering
 
 		private Color color_6 = SystemColors.ControlDarkDark;
 
-		private Color color_7;
-
-		private Pen pen_0;
+	    private Pen pen_0;
 
 		private Pen pen_1;
 

@@ -8,13 +8,13 @@ namespace TD.SandDock
 {
 	internal class Class22
 	{
-	    internal static void smethod_0(SandDockManager sandDockManager_0, XmlNode xmlNode_0)
+	    internal static void smethod_0(SandDockManager manager, XmlNode xmlNode_0)
 		{
 			TypeConverter converter = TypeDescriptor.GetConverter(typeof(long));
 			TypeConverter converter2 = TypeDescriptor.GetConverter(typeof(int));
 			TypeConverter converter3 = TypeDescriptor.GetConverter(typeof(Size));
 			TypeConverter converter4 = TypeDescriptor.GetConverter(typeof(Point));
-			DockControl dockControl = sandDockManager_0.FindControl(new Guid(xmlNode_0.Attributes["Guid"].Value));
+			DockControl dockControl = manager.FindControl(new Guid(xmlNode_0.Attributes["Guid"].Value));
 			if (dockControl != null)
 			{
 				if (xmlNode_0.Attributes["LastFocused"] != null)

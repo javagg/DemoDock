@@ -5,7 +5,17 @@ using System.Windows.Forms;
 
 namespace TD.SandDock.Rendering
 {
-	public interface ITabControlRenderer
+    public enum SandDockButtonType
+    {
+        Close,
+        Pin,
+        ScrollLeft,
+        ScrollRight,
+        WindowPosition,
+        ActiveFiles
+    }
+
+    public interface ITabControlRenderer
 	{
 		void DrawFakeTabControlBackgroundExtension(Graphics graphics, Rectangle bounds, Color backColor);
 

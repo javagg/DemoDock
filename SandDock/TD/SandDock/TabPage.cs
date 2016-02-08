@@ -5,7 +5,7 @@ using System.Windows.Forms;
 
 namespace TD.SandDock
 {
-	[Designer("TD.SandDock.Design.TabPageDesigner, SandDock.Design"), ToolboxItem(false)]
+	[Designer("Design.TabPageDesigner"), ToolboxItem(false)]
 	public class TabPage : Panel
 	{
 		public TabPage()
@@ -29,12 +29,7 @@ namespace TD.SandDock
 		    Parent?.Controls.SetChildIndex(this, newIndex);
 		}
 
-		protected override void Dispose(bool disposing)
-		{
-			base.Dispose(disposing);
-		}
-
-		protected override void OnCreateControl()
+	    protected override void OnCreateControl()
 		{
 			base.OnCreateControl();
 			OnLoad(EventArgs.Empty);
@@ -145,11 +140,9 @@ namespace TD.SandDock
 			}
 			set
 			{
-				if (value < 0)
-				{
-					throw new ArgumentException("Value must be greater than or equal to zero.");
-				}
-				this.int_0 = value;
+			    if (value < 0)
+			        throw new ArgumentException("Value must be greater than or equal to zero.");
+			    this.int_0 = value;
 			    (Parent as TabControl)?.method_3();
 			}
 		}
@@ -157,7 +150,7 @@ namespace TD.SandDock
 		[Browsable(false)]
 		public Rectangle TabBounds { get; internal set; }
 
-	    [AmbientValue(typeof(Image), null), Category("Appearance"), DefaultValue(typeof(Image), null), Description("The image displayed next to the text on the tab.")]
+	    [AmbientValue(null), Category("Appearance"), DefaultValue(null), Description("The image displayed next to the text on the tab.")]
 		public Image TabImage
 		{
 			get

@@ -55,7 +55,7 @@
     <Compile Include="TD\SandDock\Class22.cs" />
     <Compile Include="TD\SandDock\Class23.cs" />
     <Compile Include="TD\SandDock\Class24.cs" />
-    <Compile Include="TD\SandDock\Class5.cs">
+    <Compile Include="TD\SandDock\FloatingContainer.cs">
       <SubType>Component</SubType>
     </Compile>
     <Compile Include="TD\SandDock\Class6.cs" />
@@ -64,11 +64,10 @@
     <Compile Include="TD\SandDock\Class9.cs" />
     <Compile Include="TD\SandDock\ContainerDockEdge.cs" />
     <Compile Include="TD\SandDock\ContainerDockLocation.cs" />
-    <Compile Include="TD\SandDock\ContextMenuContext.cs" />
-    <Compile Include="TD\SandDock\Control0.cs">
+    <Compile Include="TD\SandDock\AutoHideBar.cs">
       <SubType>Component</SubType>
     </Compile>
-    <Compile Include="TD\SandDock\Control1.cs">
+    <Compile Include="TD\SandDock\PopupContainer.cs">
       <SubType>Component</SubType>
     </Compile>
     <Compile Include="TD\SandDock\ControlLayoutSystem.cs" />
@@ -88,7 +87,6 @@
       <SubType>Component</SubType>
     </Compile>
     <Compile Include="TD\SandDock\DocumentLayoutSystem.cs" />
-    <Compile Include="TD\SandDock\DocumentOverflowMode.cs" />
     <Compile Include="TD\SandDock\Form1.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -104,7 +102,6 @@
     <Compile Include="TD\SandDock\ResolveDockControlEventArgs.cs" />
     <Compile Include="TD\SandDock\SandDockLanguage.cs" />
     <Compile Include="TD\SandDock\SandDockManager.cs" />
-    <Compile Include="TD\SandDock\ShowControlContextMenuEventArgs.cs" />
     <Compile Include="TD\SandDock\SplitLayoutSystem.cs" />
     <Compile Include="TD\SandDock\Struct0.cs" />
     <Compile Include="TD\SandDock\TabbedDocument.cs">
@@ -121,7 +118,6 @@
     <Compile Include="TD\SandDock\Design\DockContainerDesigner.cs" />
     <Compile Include="TD\SandDock\Design\DockControlDesigner.cs" />
     <Compile Include="TD\SandDock\Design\DocumentContainerDesigner.cs" />
-    <Compile Include="TD\SandDock\Rendering\BoxEdges.cs" />
     <Compile Include="TD\SandDock\Rendering\BoxModel.cs" />
     <Compile Include="TD\SandDock\Rendering\Class16.cs" />
     <Compile Include="TD\SandDock\Rendering\Class25.cs" />
@@ -130,14 +126,10 @@
     <Compile Include="TD\SandDock\Rendering\ITabControlRenderer.cs" />
     <Compile Include="TD\SandDock\Rendering\MilborneRenderer.cs" />
     <Compile Include="TD\SandDock\Rendering\Office2003Renderer.cs" />
-    <Compile Include="TD\SandDock\Rendering\Office2007ColorScheme.cs" />
     <Compile Include="TD\SandDock\Rendering\Office2007Renderer.cs" />
     <Compile Include="TD\SandDock\Rendering\RendererBase.cs" />
-    <Compile Include="TD\SandDock\Rendering\SandDockButtonType.cs" />
-    <Compile Include="TD\SandDock\Rendering\TabTextDisplayMode.cs" />
     <Compile Include="TD\SandDock\Rendering\ThemeAwareRendererBase.cs" />
     <Compile Include="TD\SandDock\Rendering\WhidbeyRenderer.cs" />
-    <Compile Include="TD\SandDock\Rendering\WindowsColorScheme.cs" />
     <Compile Include="TD\Util\Class0.cs" />
   </ItemGroup>
   <ItemGroup>

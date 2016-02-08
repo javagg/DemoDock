@@ -7,11 +7,7 @@ namespace TD.SandDock
 {
 	internal class Class12
 	{
-		public Class12()
-		{
-		}
-
-		[DllImport("gdi32.dll")]
+	    [DllImport("gdi32.dll")]
 		private static extern IntPtr CreateBitmap(int nWidth, int nHeight, int nPlanes, int nBitsPerPixel, short[] lpvBits);
 
 		[DllImport("gdi32.dll")]
@@ -82,8 +78,8 @@ namespace TD.SandDock
 			{
 				array[i] = (short)(21845 << (i & 1));
 			}
-			IntPtr intPtr = Class12.CreateBitmap(8, 8, 1, 1, array);
-			IntPtr result = Class12.CreateBrushIndirect(new Class12.Class13
+			IntPtr intPtr = CreateBitmap(8, 8, 1, 1, array);
+			IntPtr result = CreateBrushIndirect(new Class13
 			{
 				int_1 = ColorTranslator.ToWin32(Color.Black),
 				int_0 = 3,
@@ -96,11 +92,7 @@ namespace TD.SandDock
 		[StructLayout(LayoutKind.Sequential)]
 		private class Class13
 		{
-			public Class13()
-			{
-			}
-
-			public int int_0;
+		    public int int_0;
 
 			public int int_1;
 

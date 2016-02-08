@@ -127,7 +127,7 @@ namespace TD.SandDock.Rendering
 					Color color3 = RendererBase.InterpolateColors(this.color_3, this.color_2, 0.5f);
 					using (Pen pen3 = new Pen(color3))
 					{
-						graphics.DrawLines(pen3, new Point[]
+						graphics.DrawLines(pen3, new[]
 						{
 							new Point(bounds.Right - 4, bounds.Y + 1),
 							new Point(bounds.Right - 2, bounds.Y + 3),
@@ -215,7 +215,7 @@ namespace TD.SandDock.Rendering
 			int num = Math.Min(rectangle_0.Width, rectangle_0.Height);
 			if (!bool_0)
 			{
-				return new Point[]
+				return new[]
 				{
 					new Point(rectangle_0.X, rectangle_0.Bottom - 1),
 					new Point(rectangle_0.X + num - 4, rectangle_0.Y + 3),
@@ -225,7 +225,7 @@ namespace TD.SandDock.Rendering
 					new Point(rectangle_0.Right - 1, rectangle_0.Bottom - 1)
 				};
 			}
-			return new Point[]
+			return new[]
 			{
 				new Point(rectangle_0.X + 2, rectangle_0.Bottom - 2),
 				new Point(rectangle_0.X + num - 3, rectangle_0.Y + 3),
@@ -250,12 +250,9 @@ namespace TD.SandDock.Rendering
 			this.textFormatFlags_0 |= TextFormatFlags.NoPrefix;
 		}
 
-		public override string ToString()
-		{
-			return "Milborne";
-		}
+		public override string ToString() => "Milborne";
 
-		public double PageColorBlend
+	    public double PageColorBlend
 		{
 			get
 			{
@@ -271,23 +268,11 @@ namespace TD.SandDock.Rendering
 			}
 		}
 
-		public virtual bool ShouldDrawControlBorder
-		{
-			get
-			{
-				return false;
-			}
-		}
+		public virtual bool ShouldDrawControlBorder => false;
 
-		public bool ShouldDrawTabControlBackground
-		{
-			get
-			{
-				return true;
-			}
-		}
+	    public bool ShouldDrawTabControlBackground => true;
 
-		public double TabColorBlend
+	    public double TabColorBlend
 		{
 			get
 			{
@@ -303,39 +288,15 @@ namespace TD.SandDock.Rendering
 			}
 		}
 
-		public virtual Size TabControlPadding
-		{
-			get
-			{
-				return new Size(4, 4);
-			}
-		}
+		public virtual Size TabControlPadding => new Size(4, 4);
 
-		public int TabControlTabExtra
-		{
-			get
-			{
-				return this.TabControlTabStripHeight - 7;
-			}
-		}
+	    public int TabControlTabExtra => this.TabControlTabStripHeight - 7;
 
-		public int TabControlTabHeight
-		{
-			get
-			{
-				return this.TabControlTabStripHeight;
-			}
-		}
+	    public int TabControlTabHeight => this.TabControlTabStripHeight;
 
-		public int TabControlTabStripHeight
-		{
-			get
-			{
-				return Control.DefaultFont.Height + 8;
-			}
-		}
+	    public int TabControlTabStripHeight => Control.DefaultFont.Height + 8;
 
-		private Color color_0 = Color.FromArgb(124, 124, 148);
+	    private Color color_0 = Color.FromArgb(124, 124, 148);
 
 		private Color color_1 = SystemColors.ControlLight;
 

@@ -13,14 +13,14 @@ namespace TD.SandDock.Design
 	{
 		public DockContainerDesigner()
 		{
-			base.EnableDragDrop(false);
+			EnableDragDrop(false);
 		}
 
 		protected override void Dispose(bool disposing)
 		{
 			ISelectionService arg_15_0 = (ISelectionService)this.GetService(typeof(ISelectionService));
-			this.icomponentChangeService_0.ComponentRemoving += new ComponentEventHandler(this.icomponentChangeService_0_ComponentRemoving);
-			this.icomponentChangeService_0.ComponentRemoved += new ComponentEventHandler(this.icomponentChangeService_0_ComponentRemoved);
+			this.icomponentChangeService_0.ComponentRemoving += this.icomponentChangeService_0_ComponentRemoving;
+			this.icomponentChangeService_0.ComponentRemoved += this.icomponentChangeService_0_ComponentRemoved;
 			base.Dispose(disposing);
 		}
 
@@ -36,7 +36,7 @@ namespace TD.SandDock.Design
 		private void icomponentChangeService_0_ComponentRemoving(object sender, ComponentEventArgs e)
 		{
 			DockControl dockControl = e.Component as DockControl;
-			if (dockControl != null && dockControl.LayoutSystem != null)
+			if (dockControl?.LayoutSystem != null)
 			{
 				if (dockControl.LayoutSystem.DockContainer == this.dockContainer_0)
 				{
@@ -69,27 +69,25 @@ namespace TD.SandDock.Design
 
 		private DockControl method_0(Point point_1)
 		{
-			LayoutSystemBase layoutSystemAt = this.dockContainer_0.GetLayoutSystemAt(point_1);
-			if (!(layoutSystemAt is ControlLayoutSystem))
-			{
-				return null;
-			}
-			return ((ControlLayoutSystem)layoutSystemAt).GetControlAt(point_1);
+		    LayoutSystemBase layoutSystemAt = this.dockContainer_0.GetLayoutSystemAt(point_1);
+		    return !(layoutSystemAt is ControlLayoutSystem)
+		        ? null
+		        : ((ControlLayoutSystem) layoutSystemAt).GetControlAt(point_1);
 		}
 
-		private void method_1()
+	    private void method_1()
 		{
-			this.class11_0.Event_0 -= new EventHandler(this.method_3);
-			this.class11_0.Event_1 -= new Class11.ResizingManagerFinishedEventHandler(this.method_2);
+			this.class11_0.Event_0 -= this.method_3;
+			this.class11_0.ResizingManagerFinished -= this.method_2;
 			this.class11_0 = null;
 		}
 
-		private void method_2(int int_0)
+		private void method_2(int newSize)
 		{
 			this.method_1();
 			DesignerTransaction designerTransaction = this.idesignerHost_0.CreateTransaction("Resize Docked Windows");
 			base.RaiseComponentChanging(TypeDescriptor.GetProperties(base.Component)["ContentSize"]);
-			this.dockContainer_0.ContentSize = int_0;
+			this.dockContainer_0.ContentSize = newSize;
 			base.RaiseComponentChanged(TypeDescriptor.GetProperties(base.Component)["ContentSize"], null, null);
 			designerTransaction.Commit();
 		}
@@ -107,23 +105,23 @@ namespace TD.SandDock.Design
 				ControlLayoutSystem controlLayoutSystem = (ControlLayoutSystem)layoutSystemAt;
 				DockControl controlAt = controlLayoutSystem.GetControlAt(point_1);
 				this.class7_0 = new Class8(this.dockContainer_0.Manager, this.dockContainer_0, controlLayoutSystem, controlAt, controlLayoutSystem.SelectedControl.MetaData.DockedContentSize, point_1, DockingHints.TranslucentFill);
-				this.class7_0.Event_1 += new Class7.DockingManagerFinishedEventHandler(this.vmethod_0);
-				this.class7_0.Event_0 += new EventHandler(this.vmethod_1);
+				this.class7_0.DockingManagerFinished += this.vmethod_0;
+				this.class7_0.Event_0 += this.vmethod_1;
 				this.dockContainer_0.Capture = true;
 			}
 		}
 
 		private void method_5()
 		{
-			this.class7_0.Event_1 -= new Class7.DockingManagerFinishedEventHandler(this.vmethod_0);
-			this.class7_0.Event_0 -= new EventHandler(this.vmethod_1);
+			this.class7_0.DockingManagerFinished -= this.vmethod_0;
+			this.class7_0.Event_0 -= this.vmethod_1;
 			this.class7_0 = null;
 		}
 
 		private void method_6()
 		{
 			this.class10_0.Event_0 -= new EventHandler(this.method_7);
-			this.class10_0.Event_1 -= new Class10.SplittingManagerFinishedEventHandler(this.method_8);
+			this.class10_0.SplittingManagerFinished -= this.method_8;
 			this.class10_0 = null;
 		}
 
@@ -132,27 +130,27 @@ namespace TD.SandDock.Design
 			this.method_6();
 		}
 
-		private void method_8(LayoutSystemBase layoutSystemBase_0, LayoutSystemBase layoutSystemBase_1, float float_0, float float_1)
+		private void method_8(LayoutSystemBase aboveLayout, LayoutSystemBase belowLayout, float aboveSize, float belowSize)
 		{
-			SplitLayoutSystem splitLayoutSystem_ = this.class10_0.SplitLayoutSystem_0;
+			SplitLayoutSystem splitLayoutSystem_ = this.class10_0.SplitLayout;
 			this.method_6();
 			DesignerTransaction designerTransaction = this.idesignerHost_0.CreateTransaction("Resize Docked Windows");
 			IComponentChangeService componentChangeService = (IComponentChangeService)this.GetService(typeof(IComponentChangeService));
 			componentChangeService.OnComponentChanging(this.dockContainer_0, TypeDescriptor.GetProperties(this.dockContainer_0)["LayoutSystem"]);
-			SizeF workingSize = layoutSystemBase_0.WorkingSize;
-			SizeF workingSize2 = layoutSystemBase_1.WorkingSize;
+			SizeF workingSize = aboveLayout.WorkingSize;
+			SizeF workingSize2 = belowLayout.WorkingSize;
 			if (splitLayoutSystem_.SplitMode == Orientation.Horizontal)
 			{
-				workingSize.Height = float_0;
-				workingSize2.Height = float_1;
+				workingSize.Height = aboveSize;
+				workingSize2.Height = belowSize;
 			}
 			else
 			{
-				workingSize.Width = float_0;
-				workingSize2.Width = float_1;
+				workingSize.Width = aboveSize;
+				workingSize2.Width = belowSize;
 			}
-			layoutSystemBase_0.WorkingSize = workingSize;
-			layoutSystemBase_1.WorkingSize = workingSize2;
+			aboveLayout.WorkingSize = workingSize;
+			belowLayout.WorkingSize = workingSize2;
 			componentChangeService.OnComponentChanged(this.dockContainer_0, TypeDescriptor.GetProperties(this.dockContainer_0)["LayoutSystem"], null, null);
 			designerTransaction.Commit();
 			splitLayoutSystem_.method_8();
@@ -160,7 +158,7 @@ namespace TD.SandDock.Design
 
 		private void method_9()
 		{
-			IExtenderListService extenderListService = (IExtenderListService)this.GetService(typeof(IExtenderListService));
+			IExtenderListService extenderListService = (IExtenderListService)GetService(typeof(IExtenderListService));
 			IExtenderProvider[] extenderProviders = extenderListService.GetExtenderProviders();
 			int i = 0;
 			while (i < extenderProviders.Length)
@@ -198,7 +196,7 @@ namespace TD.SandDock.Design
 				{
 					this.class11_0 = new Class11(this.dockContainer_0.Manager, this.dockContainer_0, point);
 					this.class11_0.Event_0 += new EventHandler(this.method_3);
-					this.class11_0.Event_1 += new Class11.ResizingManagerFinishedEventHandler(this.method_2);
+					this.class11_0.ResizingManagerFinished += this.method_2;
 					this.dockContainer_0.Capture = true;
 					return;
 				}
@@ -246,7 +244,7 @@ namespace TD.SandDock.Design
 					splitLayoutSystem.method_5(point, out aboveLayout, out belowLayout);
 					this.class10_0 = new Class10(this.dockContainer_0, splitLayoutSystem, aboveLayout, belowLayout, point, DockingHints.TranslucentFill);
 					this.class10_0.Event_0 += new EventHandler(this.method_7);
-					this.class10_0.Event_1 += new Class10.SplittingManagerFinishedEventHandler(this.method_8);
+					this.class10_0.SplittingManagerFinished += new Class10.SplittingManagerFinishedEventHandler(this.method_8);
 					this.dockContainer_0.Capture = true;
 					return;
 				}
@@ -362,7 +360,7 @@ namespace TD.SandDock.Design
 			}
 		}
 
-		internal virtual void vmethod_0(Class7.DockTarget dockTarget_0)
+		internal virtual void vmethod_0(Class7.DockTarget target)
 		{
 			IComponentChangeService componentChangeService = (IComponentChangeService)this.GetService(typeof(IComponentChangeService));
 			IDesignerHost designerHost = (IDesignerHost)this.GetService(typeof(IDesignerHost));
@@ -371,12 +369,12 @@ namespace TD.SandDock.Design
 			bool flag = this.class7_0.DockControl_0 == null;
 			DockControl selectedControl = controlLayoutSystem.SelectedControl;
 			this.method_5();
-			if (dockTarget_0 != null && dockTarget_0.type != Class7.DockTargetType.None && dockTarget_0.type != Class7.DockTargetType.AlreadyActioned)
+			if (target != null && target.type != Class7.DockTargetType.None && target.type != Class7.DockTargetType.AlreadyActioned)
 			{
 				DesignerTransaction designerTransaction = designerHost.CreateTransaction("Move DockControl");
 				try
 				{
-					Control control = (this.dockContainer_0.Manager != null) ? this.dockContainer_0.Manager.DockSystemContainer : null;
+					Control control = this.dockContainer_0.Manager?.DockSystemContainer;
 					if (control != null)
 					{
 						selectionService.SetSelectedComponents(new object[]
@@ -411,15 +409,15 @@ namespace TD.SandDock.Design
 					{
 						componentChangeService.OnComponentChanged(control, TypeDescriptor.GetProperties(control)["Controls"], null, null);
 					}
-					if (dockTarget_0.dockContainer == null)
+					if (target.dockContainer == null)
 					{
-						if (dockTarget_0.type == Class7.DockTargetType.CreateNewContainer)
+						if (target.type == Class7.DockTargetType.CreateNewContainer)
 						{
 							if (control != null)
 							{
 								componentChangeService.OnComponentChanging(control, TypeDescriptor.GetProperties(control)["Controls"]);
 							}
-							controlLayoutSystem.method_11(selectedControl.Manager, selectedControl, flag, dockTarget_0);
+							controlLayoutSystem.method_11(selectedControl.Manager, selectedControl, flag, target);
 							designerHost.Container.Add(selectedControl.LayoutSystem.DockContainer);
 							if (control != null)
 							{
@@ -429,9 +427,9 @@ namespace TD.SandDock.Design
 					}
 					else
 					{
-						componentChangeService.OnComponentChanging(dockTarget_0.dockContainer, TypeDescriptor.GetProperties(dockTarget_0.dockContainer)["LayoutSystem"]);
-						controlLayoutSystem.method_11(dockTarget_0.dockContainer.Manager, selectedControl, flag, dockTarget_0);
-						componentChangeService.OnComponentChanged(dockTarget_0.dockContainer, TypeDescriptor.GetProperties(dockTarget_0.dockContainer)["LayoutSystem"], null, null);
+						componentChangeService.OnComponentChanging(target.dockContainer, TypeDescriptor.GetProperties(target.dockContainer)["LayoutSystem"]);
+						controlLayoutSystem.method_11(target.dockContainer.Manager, selectedControl, flag, target);
+						componentChangeService.OnComponentChanged(target.dockContainer, TypeDescriptor.GetProperties(target.dockContainer)["LayoutSystem"], null, null);
 					}
 					designerTransaction.Commit();
 				}
@@ -461,15 +459,9 @@ namespace TD.SandDock.Design
 			}
 		}
 
-		public override SelectionRules SelectionRules
-		{
-			get
-			{
-				return SelectionRules.Visible;
-			}
-		}
+		public override SelectionRules SelectionRules => SelectionRules.Visible;
 
-		private Class10 class10_0;
+	    private Class10 class10_0;
 
 		private Class11 class11_0;
 

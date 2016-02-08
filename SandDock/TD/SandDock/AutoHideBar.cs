@@ -7,19 +7,19 @@ using TD.SandDock.Rendering;
 
 namespace TD.SandDock
 {
-	internal class Control0 : Control
+	internal class AutoHideBar : Control
 	{
-		public Control0()
+		public AutoHideBar()
 		{
 			base.SetStyle(ControlStyles.ResizeRedraw | ControlStyles.AllPaintingInWmPaint | ControlStyles.OptimizedDoubleBuffer, true);
 			base.SetStyle(ControlStyles.Selectable, false);
-			this.class4_0 = new Control0.Class4(this);
+			this.class4_0 = new AutoHideBar.Class4(this);
 			this.timer_0 = new Timer();
 			this.timer_0.Interval = SystemInformation.DoubleClickTime;
-			this.timer_0.Tick += new EventHandler(this.timer_0_Tick);
+			this.timer_0.Tick += this.timer_0_Tick;
 			this.timer_1 = new Timer();
 			this.timer_1.Interval = 800;
-			this.timer_1.Tick += new EventHandler(this.timer_1_Tick);
+			this.timer_1.Tick += this.timer_1_Tick;
 			base.Visible = false;
 		}
 
@@ -28,10 +28,10 @@ namespace TD.SandDock
 			if (disposing)
 			{
 				this.method_6(true);
-				this.timer_0.Tick -= new EventHandler(this.timer_0_Tick);
+				this.timer_0.Tick -= this.timer_0_Tick;
 				this.timer_0.Dispose();
 				this.timer_0 = null;
-				this.timer_1.Tick -= new EventHandler(this.timer_1_Tick);
+				this.timer_1.Tick -= this.timer_1_Tick;
 				this.timer_1.Dispose();
 				this.timer_1 = null;
 				if (this.control1_0 != null)
@@ -65,9 +65,9 @@ namespace TD.SandDock
 			{
 				this.method_6(true);
 			}
-			if (this.SandDockManager_0 != null)
+			if (this.Manager != null)
 			{
-				RendererBase renderer = this.SandDockManager_0.Renderer;
+				RendererBase renderer = this.Manager.Renderer;
 				using (Graphics graphics = base.CreateGraphics())
 				{
 					foreach (ControlLayoutSystem controlLayoutSystem in this.Class4_0)
@@ -164,7 +164,7 @@ namespace TD.SandDock
 			return null;
 		}
 
-		private void method_4(Control1 control1_1, Rectangle rectangle_1, Rectangle rectangle_2)
+		private void method_4(PopupContainer control1_1, Rectangle rectangle_1, Rectangle rectangle_2)
 		{
 			this.bool_0 = true;
 			try
@@ -207,7 +207,7 @@ namespace TD.SandDock
 			{
 				return;
 			}
-			Control1 control = this.control1_0;
+			PopupContainer control = this.control1_0;
 			//bool_1 = (bool_1 || !this.method_5());
 			this.timer_1.Enabled = false;
 			if (!bool_1)
@@ -259,7 +259,7 @@ namespace TD.SandDock
 						this.method_6(true);
 						Rectangle rectangle;
 						this.rectangle_0 = this.method_8(dockControl_0.LayoutSystem.Int32_0, out rectangle);
-						Control1 control = new Control1(this);
+						PopupContainer control = new PopupContainer(this);
 						foreach (DockControl dockControl in dockControl_0.LayoutSystem.Controls)
 						{
 							if (dockControl.Parent != null)
@@ -362,10 +362,7 @@ namespace TD.SandDock
 			base.OnLocationChanged(e);
 			if (this.controlLayoutSystem_0 != null)
 			{
-				base.BeginInvoke(new Control0.Delegate1(this.method_6), new object[]
-				{
-					true
-				});
+				base.BeginInvoke(new Delegate1(this.method_6), true);
 			}
 		}
 
@@ -401,7 +398,7 @@ namespace TD.SandDock
 
 		protected override void OnPaint(PaintEventArgs e)
 		{
-			if (this.SandDockManager_0 == null)
+			if (this.Manager == null)
 			{
 				base.OnPaint(e);
 				return;
@@ -419,7 +416,7 @@ namespace TD.SandDock
 				dockSide = DockSide.Left;
 				break;
 			}
-			this.SandDockManager_0.Renderer.StartRenderSession(HotkeyPrefix.None);
+			this.Manager.Renderer.StartRenderSession(HotkeyPrefix.None);
 			foreach (ControlLayoutSystem controlLayoutSystem in this.Class4_0)
 			{
 				foreach (DockControl dockControl in controlLayoutSystem.Controls)
@@ -430,24 +427,24 @@ namespace TD.SandDock
 						drawItemState |= DrawItemState.Selected;
 					}
 					string text = dockControl.TabText;
-					if (this.SandDockManager_0.Renderer.TabTextDisplay == TabTextDisplayMode.SelectedTab)
+					if (this.Manager.Renderer.TabTextDisplay == TabTextDisplayMode.SelectedTab)
 					{
 						if (dockControl != controlLayoutSystem.SelectedControl)
 						{
 							text = "";
 						}
 					}
-					this.SandDockManager_0.Renderer.DrawCollapsedTab(e.Graphics, dockControl.rectangle_1, dockSide, dockControl.Image_0, text, this.Font, dockControl.BackColor, dockControl.ForeColor, drawItemState, this.Boolean_0);
+					this.Manager.Renderer.DrawCollapsedTab(e.Graphics, dockControl.rectangle_1, dockSide, dockControl.Image_0, text, this.Font, dockControl.BackColor, dockControl.ForeColor, drawItemState, this.Boolean_0);
 				}
 			}
-			this.SandDockManager_0.Renderer.FinishRenderSession();
+			this.Manager.Renderer.FinishRenderSession();
 		}
 
 		protected override void OnPaintBackground(PaintEventArgs pevent)
 		{
-			if (this.SandDockManager_0 != null && this.SandDockManager_0.DockSystemContainer != null)
+			if (this.Manager?.DockSystemContainer != null)
 			{
-				this.SandDockManager_0.Renderer.DrawAutoHideBarBackground(this.SandDockManager_0.DockSystemContainer, this, pevent.Graphics, base.ClientRectangle);
+				this.Manager.Renderer.DrawAutoHideBarBackground(this.Manager.DockSystemContainer, this, pevent.Graphics, base.ClientRectangle);
 				return;
 			}
 			base.OnPaintBackground(pevent);
@@ -458,10 +455,7 @@ namespace TD.SandDock
 			base.OnResize(e);
 			if (this.controlLayoutSystem_0 != null)
 			{
-				base.BeginInvoke(new Control0.Delegate1(this.method_6), new object[]
-				{
-					true
-				});
+				base.BeginInvoke(new Delegate1(this.method_6), true);
 			}
 		}
 
@@ -489,51 +483,21 @@ namespace TD.SandDock
 			}
 		}
 
-		internal bool Boolean_0
-		{
-			get
-			{
-				return this.Dock == DockStyle.Left || this.Dock == DockStyle.Right;
-			}
-		}
+		internal bool Boolean_0 => this.Dock == DockStyle.Left || this.Dock == DockStyle.Right;
 
-		public Control0.Class4 Class4_0
-		{
-			get
-			{
-				return this.class4_0;
-			}
-		}
+	    public Class4 Class4_0 => this.class4_0;
 
-		public ControlLayoutSystem ControlLayoutSystem_0
-		{
-			get
-			{
-				return this.controlLayoutSystem_0;
-			}
-		}
+	    public ControlLayoutSystem ControlLayoutSystem_0 => this.controlLayoutSystem_0;
 
-		public Control Control_0
-		{
-			get
-			{
-				return this.control1_0;
-			}
-		}
+	    public Control Control_0 => this.control1_0;
 
-		protected override Size DefaultSize
-		{
-			get
-			{
-				return new Size(this.Int32_0, this.Int32_0);
-			}
-		}
+	    protected override Size DefaultSize => new Size(this.Int32_0, this.Int32_0);
 
-		private int Int32_0
+	    private int Int32_0
 		{
 			get
 			{
-				int num = Math.Max(Control.DefaultFont.Height, 16);
+				int num = Math.Max(DefaultFont.Height, 16);
 				return num + 6;
 			}
 		}
@@ -553,7 +517,7 @@ namespace TD.SandDock
 			}
 		}
 
-		public SandDockManager SandDockManager_0
+		public SandDockManager Manager
 		{
 			get
 			{
@@ -561,11 +525,8 @@ namespace TD.SandDock
 			}
 			set
 			{
-				if (this.sandDockManager_0 != null)
-				{
-					this.sandDockManager_0.UnregisterAutoHideBar(this);
-				}
-				this.sandDockManager_0 = value;
+			    this.sandDockManager_0?.UnregisterAutoHideBar(this);
+			    this.sandDockManager_0 = value;
 				if (this.sandDockManager_0 != null)
 				{
 					this.sandDockManager_0.RegisterAutoHideBar(this);
@@ -576,9 +537,9 @@ namespace TD.SandDock
 
 		private bool bool_0;
 
-		private Control0.Class4 class4_0;
+		private Class4 class4_0;
 
-		private Control1 control1_0;
+		private PopupContainer control1_0;
 
 		private ControlLayoutSystem controlLayoutSystem_0;
 
@@ -594,7 +555,7 @@ namespace TD.SandDock
 
 		internal class Class4 : CollectionBase
 		{
-			public Class4(Control0 parent)
+			public Class4(AutoHideBar parent)
 			{
 				this.control0_0 = parent;
 			}
@@ -649,7 +610,7 @@ namespace TD.SandDock
 				}
 			}
 
-			private Control0 control0_0;
+			private AutoHideBar control0_0;
 		}
 
 		private delegate void Delegate1(bool quick);

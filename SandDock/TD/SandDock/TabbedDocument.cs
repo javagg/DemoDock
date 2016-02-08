@@ -1,4 +1,3 @@
-using System;
 using System.ComponentModel;
 using System.ComponentModel.Design;
 using System.Drawing;
@@ -10,36 +9,29 @@ namespace TD.SandDock
 	{
 		public TabbedDocument()
 		{
-			this.method_18();
+			method_18();
 		}
 
 		public TabbedDocument(SandDockManager manager, Control control, string text) : base(manager, control, text)
 		{
-			this.method_18();
+			method_18();
 		}
 
-		protected override DockingRules CreateDockingRules()
+		protected override DockingRules CreateDockingRules() => new DockingRules(false, true, false);
+        
+        // Init
+	    private void method_18()
 		{
-			return new DockingRules(false, true, false);
+	        if (Text.Length == 0)
+	            Text = "Tabbed Document";
+	        CloseAction = DockControlCloseAction.Dispose;
+			PersistState = false;
+			SetPositionMetaData(DockSituation.Document);
 		}
 
-		private void method_18()
-		{
-			if (this.Text.Length == 0)
-			{
-				this.Text = "Tabbed Document";
-			}
-			this.CloseAction = DockControlCloseAction.Dispose;
-			this.PersistState = false;
-			base.SetPositionMetaData(DockSituation.Document);
-		}
+		public override void Open() => Open(WindowOpenMethod.OnScreenActivate);
 
-		public override void Open()
-		{
-			base.Open(WindowOpenMethod.OnScreenActivate);
-		}
-
-		[DefaultValue(typeof(DockControlCloseAction), "Dispose")]
+	    [DefaultValue(typeof(DockControlCloseAction), "Dispose")]
 		public override DockControlCloseAction CloseAction
 		{
 			get
@@ -52,15 +44,9 @@ namespace TD.SandDock
 			}
 		}
 
-		protected override Size DefaultSize
-		{
-			get
-			{
-				return new Size(550, 400);
-			}
-		}
+		protected override Size DefaultSize => new Size(550, 400);
 
-		[DefaultValue(false)]
+	    [DefaultValue(false)]
 		public override bool PersistState
 		{
 			get

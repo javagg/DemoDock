@@ -222,9 +222,10 @@ namespace SmartQuant.Docking.WinForms
 
         protected override void OnDockControlRemoved(DockControlEventArgs e)
         {
-            if (e.DockControl is DockControl)
+            var dockControl = e.DockControl as DockControl;
+            if (dockControl != null)
             {
-                var control = (DockControl)e.DockControl;
+                var control = dockControl;
                 _controls.Remove(control.GetType(), control.Key);
             }
             base.OnDockControlRemoved(e);

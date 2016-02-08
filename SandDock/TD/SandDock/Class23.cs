@@ -45,7 +45,7 @@ namespace TD.SandDock
 					SizeF sizeF = (SizeF)property2.GetValue(value, null);
 					PropertyInfo property3 = type.GetProperty("SelectedControl", BindingFlags.Instance | BindingFlags.Public);
 					object value2 = property3.GetValue(value, null);
-					return new InstanceDescriptor(constructor, new object[]
+					return new InstanceDescriptor(constructor, new[]
 					{
 						sizeF,
 						array,

@@ -6,20 +6,19 @@ using System.Windows.Forms;
 
 namespace TD.SandDock
 {
-	internal class Class5 : DockContainer
+	internal class FloatingContainer : DockContainer
 	{
-		public Class5(SandDockManager manager, Guid guid)
+		public FloatingContainer(SandDockManager manager, Guid guid)
 		{
-			if (manager == null)
-			{
-				throw new ArgumentNullException("manager");
-			}
-			this.form2_0 = new Form2(this);
-			this.form2_0.Activated += new EventHandler(base.method_11);
-			this.form2_0.Deactivate += new EventHandler(base.method_12);
-			this.form2_0.Closing += new CancelEventHandler(this.form2_0_Closing);
-			this.form2_0.DoubleClick += new EventHandler(this.form2_0_DoubleClick);
-			this.LayoutSystem.Event_0 += new EventHandler(this.method_22);
+		    if (manager == null)
+		        throw new ArgumentNullException(nameof(manager));
+
+		    this.form2_0 = new Form2(this);
+			this.form2_0.Activated += base.method_11;
+			this.form2_0.Deactivate += base.method_12;
+			this.form2_0.Closing += this.form2_0_Closing;
+			this.form2_0.DoubleClick += this.form2_0_DoubleClick;
+			this.LayoutSystem.Event_0 += this.method_22;
 			this.method_22(this.LayoutSystem, EventArgs.Empty);
 			this.Manager = manager;
 			this.Guid_0 = guid;
@@ -29,13 +28,13 @@ namespace TD.SandDock
 
 		protected override void Dispose(bool disposing)
 		{
-			if (disposing && !base.IsDisposed)
+			if (disposing && !IsDisposed)
 			{
-				this.LayoutSystem.Event_0 -= new EventHandler(this.method_22);
-				this.form2_0.Activated -= new EventHandler(base.method_11);
-				this.form2_0.Deactivate -= new EventHandler(base.method_12);
-				this.form2_0.Closing -= new CancelEventHandler(this.form2_0_Closing);
-				this.form2_0.DoubleClick -= new EventHandler(this.form2_0_DoubleClick);
+				this.LayoutSystem.Event_0 -= this.method_22;
+				this.form2_0.Activated -= base.method_11;
+				this.form2_0.Deactivate -= base.method_12;
+				this.form2_0.Closing -= this.form2_0_Closing;
+				this.form2_0.DoubleClick -= this.form2_0_DoubleClick;
 				LayoutUtilities.smethod_8(this);
 				this.form2_0.Dispose();
 			}
@@ -130,7 +129,7 @@ namespace TD.SandDock
 				num |= 16;
 			}
 			IntPtr zero = IntPtr.Zero;
-			Class5.SetWindowPos(new HandleRef(this, this.form2_0.Handle), new HandleRef(this, zero), rectangle_2.X, rectangle_2.Y, rectangle_2.Width, rectangle_2.Height, num);
+			FloatingContainer.SetWindowPos(new HandleRef(this, this.form2_0.Handle), new HandleRef(this, zero), rectangle_2.X, rectangle_2.Y, rectangle_2.Width, rectangle_2.Height, num);
 			this.form2_0.Visible = bool_3;
 			if (bool_3)
 			{
@@ -213,9 +212,9 @@ namespace TD.SandDock
 			}
 			set
 			{
-				this.LayoutSystem.Event_0 -= new EventHandler(this.method_22);
+				this.LayoutSystem.Event_0 -= this.method_22;
 				base.LayoutSystem = value;
-				this.LayoutSystem.Event_0 += new EventHandler(this.method_22);
+				this.LayoutSystem.Event_0 += this.method_22;
 				this.method_22(this.LayoutSystem, EventArgs.Empty);
 			}
 		}
@@ -228,12 +227,12 @@ namespace TD.SandDock
 			}
 			set
 			{
-			    this.Manager?.OwnerForm?.RemoveOwnedForm(this.form2_0);
+			    Manager?.OwnerForm?.RemoveOwnedForm(this.form2_0);
 			    base.Manager = value;
-				if (this.Manager?.OwnerForm != null)
+				if (Manager?.OwnerForm != null)
 				{
-					this.Manager.OwnerForm.AddOwnedForm(this.form2_0);
-					this.Font = new Font(this.Manager.OwnerForm.Font, this.Manager.OwnerForm.Font.Style);
+					Manager.OwnerForm.AddOwnedForm(this.form2_0);
+					Font = new Font(Manager.OwnerForm.Font, Manager.OwnerForm.Font.Style);
 				}
 			}
 		}
@@ -250,15 +249,9 @@ namespace TD.SandDock
 			}
 		}
 
-		public Rectangle Rectangle_1
-		{
-			get
-			{
-				return this.form2_0.Bounds;
-			}
-		}
+		public Rectangle Rectangle_1 => this.form2_0.Bounds;
 
-		public Size Size_0
+	    public Size Size_0
 		{
 			get
 			{

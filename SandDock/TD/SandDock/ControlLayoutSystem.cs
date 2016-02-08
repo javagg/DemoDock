@@ -15,7 +15,7 @@ namespace TD.SandDock
 	{
 		public ControlLayoutSystem()
 		{
-			this.Controls = new ControlLayoutSystem.DockControlCollection(this);
+			Controls = new DockControlCollection(this);
 			this.class17_0 = new Class17();
 			this.class17_1 = new Class17();
 			this.class17_2 = new Class17();
@@ -23,23 +23,21 @@ namespace TD.SandDock
 
 		public ControlLayoutSystem(int desiredWidth, int desiredHeight) : this()
 		{
-			base.WorkingSize = new SizeF((float)desiredWidth, (float)desiredHeight);
+			WorkingSize = new SizeF(desiredWidth, desiredHeight);
 		}
 
 		public ControlLayoutSystem(SizeF workingSize, DockControl[] windows, DockControl selectedWindow) : this()
 		{
-			base.WorkingSize = workingSize;
-			this.Controls.AddRange(windows);
-			if (selectedWindow != null)
-			{
-				this.SelectedControl = selectedWindow;
-			}
+			WorkingSize = workingSize;
+			Controls.AddRange(windows);
+		    if (selectedWindow != null)
+		        SelectedControl = selectedWindow;
 		}
 
 		[Obsolete("Use the constructor that takes a SizeF instead.")]
 		public ControlLayoutSystem(int desiredWidth, int desiredHeight, DockControl[] controls, DockControl selectedControl) : this(desiredWidth, desiredHeight)
 		{
-			this.Controls.AddRange(controls);
+			Controls.AddRange(controls);
 			if (selectedControl != null)
 			{
 				this.SelectedControl = selectedControl;
@@ -48,7 +46,7 @@ namespace TD.SandDock
 
 		public ControlLayoutSystem(int desiredWidth, int desiredHeight, DockControl[] controls, DockControl selectedControl, bool collapsed) : this(new SizeF((float)desiredWidth, (float)desiredHeight), controls, selectedControl)
 		{
-			this.Collapsed = collapsed;
+			Collapsed = collapsed;
 		}
 
 		protected virtual void CalculateLayout(RendererBase renderer, Rectangle bounds, bool floating, out Rectangle titlebarBounds, out Rectangle tabstripBounds, out Rectangle clientBounds, out Rectangle joinCatchmentBounds)
@@ -92,24 +90,19 @@ namespace TD.SandDock
 
 		public void Dock(ControlLayoutSystem layoutSystem)
 		{
-			if (layoutSystem == null)
-			{
-				throw new ArgumentNullException();
-			}
-			this.Dock(layoutSystem, 0);
+		    if (layoutSystem == null)
+		        throw new ArgumentNullException();
+		    Dock(layoutSystem, 0);
 		}
 
 		public void Dock(ControlLayoutSystem layoutSystem, int index)
 		{
-			if (layoutSystem == null)
-			{
-				throw new ArgumentNullException();
-			}
-			if (base.Parent != null)
-			{
-				throw new InvalidOperationException("This layout system already has a parent. To remove it, use the parent layout system's LayoutSystems.Remove method.");
-			}
-			DockControl selectedControl = this.SelectedControl;
+		    if (layoutSystem == null)
+		        throw new ArgumentNullException();
+		    if (Parent != null)
+		        throw new InvalidOperationException("This layout system already has a parent. To remove it, use the parent layout system's LayoutSystems.Remove method.");
+
+            DockControl selectedControl = this.SelectedControl;
 			while (this.Controls.Count != 0)
 			{
 				DockControl control = this.Controls[0];
@@ -124,11 +117,9 @@ namespace TD.SandDock
 
 		public void Float(SandDockManager manager)
 		{
-			if (this.SelectedControl == null)
-			{
-				throw new InvalidOperationException("The layout system must have a selected control to be floated.");
-			}
-			this.Float(manager, this.SelectedControl.method_11(), WindowOpenMethod.OnScreenActivate);
+		    if (SelectedControl == null)
+		        throw new InvalidOperationException("The layout system must have a selected control to be floated.");
+		    Float(manager, SelectedControl.method_11(), WindowOpenMethod.OnScreenActivate);
 		}
 
 		public void Float(SandDockManager manager, Rectangle bounds, WindowOpenMethod openMethod)
@@ -141,7 +132,7 @@ namespace TD.SandDock
 			{
 				this.SelectedControl.MetaData.method_5(Guid.NewGuid());
 			}
-			new Class5(manager, this.SelectedControl.MetaData.LastFloatingWindowGuid)
+			new FloatingContainer(manager, this.SelectedControl.MetaData.LastFloatingWindowGuid)
 			{
 				LayoutSystem = 
 				{
@@ -396,21 +387,12 @@ namespace TD.SandDock
 			}
 		}
 
-		internal int method_15(Point point_1)
+		internal int method_15(Point point)
 		{
-			int num = 0;
-			foreach (DockControl dockControl in this.Controls)
-			{
-				Rectangle rectangle_ = dockControl.rectangle_0;
-				if (point_1.X > rectangle_.Left + rectangle_.Width / 2)
-				{
-					num++;
-				}
-			}
-			return num;
+		    return Controls.Cast<DockControl>().Select(control => control.rectangle_0).Count(rect => point.X > rect.Left + rect.Width/2);
 		}
 
-		internal void method_16()
+	    internal void method_16()
 		{
 		    this.Control0_0?.method_0(this);
 		    if (base.IsInContainer)
@@ -521,14 +503,14 @@ namespace TD.SandDock
 			}
 		}
 
-		internal void method_4(Control0 control0_1)
+		internal void method_4(AutoHideBar control0_1)
 		{
 			this.Control0_0 = control0_1;
 		}
 
 		private void method_5(DockControl dockControl_1, DockControl dockControl_2)
 		{
-		    this.delegate2_0?.Invoke(dockControl_1, dockControl_2);
+            Event_0?.Invoke(dockControl_1, dockControl_2);
 		}
 
 	    private void method_6()
@@ -594,33 +576,23 @@ namespace TD.SandDock
 
 		protected virtual void OnCloseButtonClick(EventArgs e)
 		{
-			if (this.SelectedControl != null)
-			{
-				this.SelectedControl.method_14(true);
-			}
+		    SelectedControl?.method_14(true);
 		}
 
-		protected internal override void OnDragOver(DragEventArgs drgevent)
+	    protected internal override void OnDragOver(DragEventArgs drgevent)
 		{
 			base.OnDragOver(drgevent);
-			DockControl controlAt = this.GetControlAt(base.DockContainer.PointToClient(new Point(drgevent.X, drgevent.Y)));
-			if (controlAt != null)
-			{
-				if (this.SelectedControl != controlAt)
-				{
-					controlAt.Open(WindowOpenMethod.OnScreenActivate);
-				}
-			}
+			var control = this.GetControlAt(base.DockContainer.PointToClient(new Point(drgevent.X, drgevent.Y)));
+	        if (control != null && SelectedControl != control)
+	            control.Open(WindowOpenMethod.OnScreenActivate);
 		}
 
 		protected internal override void OnMouseDoubleClick()
 		{
-			Point point = base.DockContainer.PointToClient(Cursor.Position);
-			if (base.DockContainer.Manager == null)
-			{
-				return;
-			}
-			if (!this.LockControls)
+			var point = DockContainer.PointToClient(Cursor.Position);
+		    if (DockContainer.Manager == null)
+		        return;
+		    if (!this.LockControls)
 			{
 				if (this.rectangle_1.Contains(point) && !this.class17_0.rectangle_0.Contains(point) && !this.class17_1.rectangle_0.Contains(point) && this.Controls.Count != 0)
 				{
@@ -787,11 +759,11 @@ namespace TD.SandDock
 		{
 			if (layoutSystem == null)
 			{
-				throw new ArgumentNullException("layoutSystem");
+				throw new ArgumentNullException(nameof(layoutSystem));
 			}
 			if (side == DockSide.None)
 			{
-				throw new ArgumentException("side");
+				throw new ArgumentException(nameof(side));
 			}
 			if (layoutSystem.Parent != null)
 			{
@@ -900,7 +872,7 @@ namespace TD.SandDock
 			{
 				if (dockContainer_1?.Manager != null && this.Control0_0 == null)
 				{
-					Control0 autoHideBar = dockContainer_1.Manager.GetAutoHideBar(dockContainer_1.Dock);
+					AutoHideBar autoHideBar = dockContainer_1.Manager.GetAutoHideBar(dockContainer_1.Dock);
 					if (autoHideBar != null)
 					{
 						autoHideBar.Class4_0.method_1(this);
@@ -1252,7 +1224,7 @@ namespace TD.SandDock
 								LayoutUtilities.smethod_8(dockControl);
 							}
 						}
-						Control0 autoHideBar = base.DockContainer.Manager.GetAutoHideBar(base.DockContainer.Dock);
+						AutoHideBar autoHideBar = base.DockContainer.Manager.GetAutoHideBar(base.DockContainer.Dock);
 					    autoHideBar?.Class4_0.method_1(this);
 					}
 				}
@@ -1274,7 +1246,7 @@ namespace TD.SandDock
 			}
 		}
 
-		internal Control0 Control0_0 { get; private set; }
+		internal AutoHideBar Control0_0 { get; private set; }
 
 	    [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
 		public DockControlCollection Controls { get; }
@@ -1323,22 +1295,14 @@ namespace TD.SandDock
 			}
 			set
 			{
-				foreach (DockControl dockControl in this.Controls)
-				{
-					dockControl.PopupSize = value;
-				}
+			    foreach (DockControl dockControl in this.Controls)
+			        dockControl.PopupSize = value;
 			}
 		}
 
-		public bool IsPoppedUp
-		{
-			get
-			{
-				return this.Control0_0 != null && this.Control0_0.ControlLayoutSystem_0 == this;
-			}
-		}
+		public bool IsPoppedUp => this.Control0_0 != null && this.Control0_0.ControlLayoutSystem_0 == this;
 
-		public bool LockControls { get; set; }
+	    public bool LockControls { get; set; }
 
 	    internal Rectangle Rectangle_0 => this.rectangle_4;
 
@@ -1353,9 +1317,9 @@ namespace TD.SandDock
 			{
 				if (value != null && !this.Controls.Contains(value))
 				{
-					throw new ArgumentOutOfRangeException("value");
+					throw new ArgumentOutOfRangeException(nameof(value));
 				}
-				if (this.SelectedControl != null && this.SelectedControl.Manager != null && this.SelectedControl.Manager.RaiseValidationEvents && !this.SelectedControl.ValidateChildren())
+				if ((this.SelectedControl?.Manager?.RaiseValidationEvents ?? false) && !this.SelectedControl.ValidateChildren())
 				{
 					return;
 				}
@@ -1364,32 +1328,14 @@ namespace TD.SandDock
 				this.method_16();
 				if (this.IsPoppedUp)
 				{
-					if (dockControl != null)
-					{
-						dockControl.OnAutoHidePopupClosed(EventArgs.Empty);
-					}
-					if (this.dockControl_0 != null)
-					{
-						this.dockControl_0.OnAutoHidePopupOpened(EventArgs.Empty);
-					}
+				    dockControl?.OnAutoHidePopupClosed(EventArgs.Empty);
+				    this.dockControl_0?.OnAutoHidePopupOpened(EventArgs.Empty);
 				}
 				this.method_5(dockControl, this.dockControl_0);
 			}
 		}
 
-		internal event ControlLayoutSystem.Delegate2 Event_0
-		{
-			[MethodImpl(MethodImplOptions.Synchronized)]
-			add
-			{
-				this.delegate2_0 = (ControlLayoutSystem.Delegate2)Delegate.Combine(this.delegate2_0, value);
-			}
-			[MethodImpl(MethodImplOptions.Synchronized)]
-			remove
-			{
-				this.delegate2_0 = (ControlLayoutSystem.Delegate2)Delegate.Remove(this.delegate2_0, value);
-			}
-		}
+	    internal event Delegate2 Event_0;
 
 		private bool bool_0;
 
@@ -1411,7 +1357,7 @@ namespace TD.SandDock
 
 		private Class17 class17_3;
 
-	    private Delegate2 delegate2_0;
+	    //private Delegate2 delegate2_0;
 
 	    private DockControl dockControl_0;
 
@@ -1460,22 +1406,13 @@ namespace TD.SandDock
 				this.controlLayoutSystem_0.method_16();
 			}
 
-			public bool Contains(DockControl control)
-			{
-				return base.List.Contains(control);
-			}
+			public bool Contains(DockControl control) => List.Contains(control);
 
-			public void CopyTo(DockControl[] array, int index)
-			{
-				base.List.CopyTo(array, index);
-			}
+		    public void CopyTo(DockControl[] array, int index) => List.CopyTo(array, index);
 
-			public int IndexOf(DockControl control)
-			{
-				return base.List.IndexOf(control);
-			}
+		    public int IndexOf(DockControl control) => List.IndexOf(control);
 
-			public void Insert(int index, DockControl control)
+		    public void Insert(int index, DockControl control)
 			{
 				if (control == null)
 				{
@@ -1515,10 +1452,10 @@ namespace TD.SandDock
 			protected override void OnClear()
 			{
 				base.OnClear();
-				foreach (DockControl dockControl in this)
+				foreach (DockControl control in this)
 				{
-					dockControl.method_16(null);
-					dockControl.method_5();
+					control.method_16(null);
+					control.method_5();
 				}
 			}
 
@@ -1600,39 +1537,29 @@ namespace TD.SandDock
 
 			public void Remove(DockControl control)
 			{
-				if (control == null)
-				{
-					throw new ArgumentNullException("control");
-				}
-				base.List.Remove(control);
+			    if (control == null)
+			        throw new ArgumentNullException(nameof(control));
+			    List.Remove(control);
 			}
 
 			public void SetChildIndex(DockControl control, int index)
 			{
-				if (control == null)
-				{
-					throw new ArgumentNullException("control");
-				}
-				if (!this.Contains(control))
-				{
-					throw new ArgumentOutOfRangeException("control");
-				}
-				if (index == this.IndexOf(control))
-				{
-					return;
-				}
-				if (this.IndexOf(control) < index)
-				{
-					index--;
-				}
-				this.bool_1 = true;
+			    if (control == null)
+			        throw new ArgumentNullException(nameof(control));
+			    if (!this.Contains(control))
+			        throw new ArgumentOutOfRangeException(nameof(control));
+			    if (index == IndexOf(control))
+			        return;
+			    if (IndexOf(control) < index)
+			        index--;
+			    this.bool_1 = true;
 				base.List.Remove(control);
 				base.List.Insert(index, control);
 				this.bool_1 = false;
 				this.controlLayoutSystem_0.method_16();
 			}
 
-			public DockControl this[int index] => (DockControl)base.List[index];
+			public DockControl this[int index] => (DockControl)List[index];
 
 		    private bool bool_0;
 

@@ -8,6 +8,12 @@ using System.Windows.Forms;
 
 namespace TD.SandDock.Rendering
 {
+    public enum TabTextDisplayMode
+    {
+        AllTabs,
+        SelectedTab
+    }
+
     public enum BorderStyle
     {
         None,

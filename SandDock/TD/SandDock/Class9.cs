@@ -7,26 +7,26 @@ namespace TD.SandDock
 {
 	internal class Class9 : Class6
 	{
-		public Class9(Control0 bar, Control1 popupContainer, Point startPoint) : base(bar, (bar.SandDockManager_0 != null) ? bar.SandDockManager_0.DockingHints : DockingHints.TranslucentFill, false)
+		public Class9(AutoHideBar bar, PopupContainer popupContainer, Point startPoint) : base(bar, bar.Manager?.DockingHints ?? DockingHints.TranslucentFill, false)
 		{
 			this.control0_0 = bar;
 			this.control1_0 = popupContainer;
 			this.point_0 = startPoint;
-			int num = bar.SandDockManager_0?.MinimumDockContainerSize ?? 30;
-			int num2 = bar.SandDockManager_0?.MaximumDockContainerSize ?? 500;
+			int num = bar.Manager?.MinimumDockContainerSize ?? 30;
+			int num2 = bar.Manager?.MaximumDockContainerSize ?? 500;
 			this.int_6 = popupContainer.Int32_0;
 			switch (bar.Dock)
 			{
 			case DockStyle.Top:
-				if (bar.SandDockManager_0 != null && bar.SandDockManager_0.DockSystemContainer != null)
+				if (bar.Manager?.DockSystemContainer != null)
 				{
-					num2 = Math.Max(bar.SandDockManager_0.DockSystemContainer.Height - popupContainer.Bounds.Top - num, num);
+					num2 = Math.Max(bar.Manager.DockSystemContainer.Height - popupContainer.Bounds.Top - num, num);
 				}
 				this.int_7 = startPoint.Y - (this.int_6 - num);
 				this.int_8 = startPoint.Y + (num2 - this.int_6);
 				break;
 			case DockStyle.Bottom:
-				if (bar.SandDockManager_0?.DockSystemContainer != null)
+				if (bar.Manager?.DockSystemContainer != null)
 				{
 					num2 = Math.Max(popupContainer.Bounds.Bottom - num, num);
 				}
@@ -34,15 +34,15 @@ namespace TD.SandDock
 				this.int_8 = startPoint.Y + (this.int_6 - num);
 				break;
 			case DockStyle.Left:
-				if (bar.SandDockManager_0 != null && bar.SandDockManager_0.DockSystemContainer != null)
+				if (bar.Manager?.DockSystemContainer != null)
 				{
-					num2 = Math.Max(bar.SandDockManager_0.DockSystemContainer.Width - popupContainer.Bounds.Left - num, num);
+					num2 = Math.Max(bar.Manager.DockSystemContainer.Width - popupContainer.Bounds.Left - num, num);
 				}
 				this.int_7 = startPoint.X - (this.int_6 - num);
 				this.int_8 = startPoint.X + (num2 - this.int_6);
 				break;
 			case DockStyle.Right:
-				if (bar.SandDockManager_0 != null && bar.SandDockManager_0.DockSystemContainer != null)
+				if (bar.Manager != null && bar.Manager.DockSystemContainer != null)
 				{
 					num2 = Math.Max(popupContainer.Bounds.Right - num, num);
 				}
@@ -56,7 +56,7 @@ namespace TD.SandDock
 		public override void Commit()
 		{
 			base.Commit();
-            Event_1?.Invoke(this.int_9);
+            ResizingManagerFinished?.Invoke(this.int_9);
 		}
 
 		public override void OnMouseMove(Point position)
@@ -104,11 +104,11 @@ namespace TD.SandDock
 			base.method_1(new Rectangle(this.control1_0.PointToScreen(empty.Location), empty.Size), false);
 		}
 
-	    public event Class9.ResizingManagerFinishedEventHandler Event_1;
+	    public event ResizingManagerFinishedEventHandler ResizingManagerFinished;
 
-		private Control0 control0_0;
+		private AutoHideBar control0_0;
 
-		private Control1 control1_0;
+		private PopupContainer control1_0;
 
 		private int int_6;
 

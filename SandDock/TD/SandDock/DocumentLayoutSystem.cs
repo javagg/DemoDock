@@ -6,7 +6,14 @@ using TD.SandDock.Rendering;
 
 namespace TD.SandDock
 {
-	public class DocumentLayoutSystem : ControlLayoutSystem
+    public enum DocumentOverflowMode
+    {
+        None,
+        Scrollable,
+        Menu
+    }
+
+    public class DocumentLayoutSystem : ControlLayoutSystem
 	{
 		public DocumentLayoutSystem()
 		{
@@ -20,7 +27,7 @@ namespace TD.SandDock
 
 		public DocumentLayoutSystem(int desiredWidth, int desiredHeight) : this()
 		{
-			base.WorkingSize = new SizeF(desiredWidth, desiredHeight);
+			WorkingSize = new SizeF(desiredWidth, desiredHeight);
 		}
 
 		public DocumentLayoutSystem(SizeF workingSize, DockControl[] windows, DockControl selectedWindow) : this()
@@ -70,7 +77,7 @@ namespace TD.SandDock
 			this.method_22(renderer, graphics, this.rectangle_2);
 		}
 
-		private void method_20(RendererBase rendererBase_0, Graphics graphics_0, Font font_0, DockControl dockControl_2)
+		private void method_20(RendererBase renderer, Graphics graphics, Font font_0, DockControl dockControl_2)
 		{
 			DrawItemState drawItemState = DrawItemState.Default;
 			if (this.SelectedControl == dockControl_2)
@@ -107,18 +114,18 @@ namespace TD.SandDock
 			}
 			if ((drawItemState & DrawItemState.Focus) != DrawItemState.Focus)
 			{
-				rendererBase_0.DrawDocumentStripTab(graphics_0, dockControl_2.rectangle_0, tabBounds, dockControl_2.TabImage, dockControl_2.TabText, font_0, dockControl_2.BackColor, dockControl_2.ForeColor, drawItemState, drawSeparator);
+				renderer.DrawDocumentStripTab(graphics, dockControl_2.rectangle_0, tabBounds, dockControl_2.TabImage, dockControl_2.TabText, font_0, dockControl_2.BackColor, dockControl_2.ForeColor, drawItemState, drawSeparator);
 			}
 			else
 			{
 				using (Font font = new Font(font_0, FontStyle.Bold))
 				{
-					rendererBase_0.DrawDocumentStripTab(graphics_0, dockControl_2.rectangle_0, tabBounds, dockControl_2.TabImage, dockControl_2.TabText, font, dockControl_2.BackColor, dockControl_2.ForeColor, drawItemState, drawSeparator);
+					renderer.DrawDocumentStripTab(graphics, dockControl_2.rectangle_0, tabBounds, dockControl_2.TabImage, dockControl_2.TabText, font, dockControl_2.BackColor, dockControl_2.ForeColor, drawItemState, drawSeparator);
 				}
 			}
 		}
 
-		private void method_21(RendererBase rendererBase_0, Graphics graphics_0, Rectangle rectangle_5)
+		private void method_21(RendererBase rendere, Graphics graphics, Rectangle rectangle_5)
 		{
 			int y = rectangle_5.Top + rectangle_5.Height / 2 - 7;
 			int num = rectangle_5.Right - 2;
@@ -155,7 +162,7 @@ namespace TD.SandDock
 			}
 		}
 
-		private void method_22(RendererBase rendererBase_0, Graphics graphics_0, Rectangle rectangle_5)
+		private void method_22(RendererBase renderer, Graphics graphics, Rectangle rectangle_5)
 		{
 			int num = 3;
 			foreach (DockControl dockControl in base.Controls)
@@ -173,7 +180,7 @@ namespace TD.SandDock
 						}
 					}
 				}
-				int num2 = rendererBase_0.MeasureDocumentStripTab(graphics_0, dockControl.TabImage, dockControl.TabText, dockControl.Font, drawItemState).Width;
+				int num2 = renderer.MeasureDocumentStripTab(graphics, dockControl.TabImage, dockControl.TabText, dockControl.Font, drawItemState).Width;
 				if (this.Boolean_2 && dockControl.AllowClose)
 				{
 					num2 += 17;
@@ -187,12 +194,12 @@ namespace TD.SandDock
 					num2 = dockControl.MaximumTabWidth;
 					dockControl.bool_3 = true;
 				}
-				dockControl.rectangle_0 = new Rectangle(num, rectangle_5.Bottom - rendererBase_0.DocumentTabSize, num2, rendererBase_0.DocumentTabSize);
-				num += num2 - rendererBase_0.DocumentTabExtra + 1;
+				dockControl.rectangle_0 = new Rectangle(num, rectangle_5.Bottom - renderer.DocumentTabSize, num2, renderer.DocumentTabSize);
+				num += num2 - renderer.DocumentTabExtra + 1;
 			}
 			if (base.Controls.Count != 0)
 			{
-				num += rendererBase_0.DocumentTabExtra;
+				num += renderer.DocumentTabExtra;
 			}
 			num += 3;
 			int num3 = rectangle_5.Width - this.LeftPadding - this.RightPadding;
@@ -326,44 +333,37 @@ namespace TD.SandDock
 			}
 		}
 
-		internal override void vmethod_4(RendererBase rendererBase_0, Graphics graphics_0, Font font_0)
+		internal override void vmethod_4(RendererBase renderer, Graphics graphics, Font font_0)
 		{
-			rendererBase_0.DrawDocumentStripBackground(graphics_0, this.rectangle_2);
-			if (this.SelectedControl == null)
-			{
-				rendererBase_0.DrawDocumentClientBackground(graphics_0, this.rectangle_3, SystemColors.Control);
-			}
-			else
-			{
-				rendererBase_0.DrawDocumentClientBackground(graphics_0, this.rectangle_3, this.SelectedControl.BackColor);
-			}
-			Region clip = graphics_0.Clip;
+			renderer.DrawDocumentStripBackground(graphics, this.rectangle_2);
+		    renderer.DrawDocumentClientBackground(graphics, this.rectangle_3, SelectedControl == null ? SystemColors.Control : this.SelectedControl.BackColor);
+		    Region clip = graphics.Clip;
 			Rectangle rectangle_ = this.rectangle_2;
 			rectangle_.X += this.LeftPadding;
 			rectangle_.Width -= this.LeftPadding;
 			rectangle_.Width -= this.RightPadding;
-			graphics_0.SetClip(rectangle_);
+			graphics.SetClip(rectangle_);
 			for (int i = base.Controls.Count - 1; i >= 0; i--)
 			{
 				DockControl dockControl = base.Controls[i];
-				this.method_20(rendererBase_0, graphics_0, dockControl.Font, dockControl);
+				this.method_20(renderer, graphics, dockControl.Font, dockControl);
 			}
 			if (this.SelectedControl != null)
 			{
-				this.method_20(rendererBase_0, graphics_0, this.SelectedControl.Font, this.SelectedControl);
+				this.method_20(renderer, graphics, this.SelectedControl.Font, this.SelectedControl);
 			}
 			if (this.Boolean_2)
 			{
-				base.method_10(graphics_0, rendererBase_0, this.class17_6, SandDockButtonType.Close, true);
+				base.method_10(graphics, renderer, this.class17_6, SandDockButtonType.Close, true);
 			}
-			graphics_0.Clip = clip;
+			graphics.Clip = clip;
 			if (!this.Boolean_2)
 			{
-				base.method_10(graphics_0, rendererBase_0, this.class17_6, SandDockButtonType.Close, true);
+				base.method_10(graphics, renderer, this.class17_6, SandDockButtonType.Close, true);
 			}
-			base.method_10(graphics_0, rendererBase_0, this.class17_5, SandDockButtonType.ScrollRight, this.class17_5.bool_1);
-			base.method_10(graphics_0, rendererBase_0, this.class17_4, SandDockButtonType.ScrollLeft, this.class17_4.bool_1);
-			base.method_10(graphics_0, rendererBase_0, this.class17_7, SandDockButtonType.ActiveFiles, true);
+			base.method_10(graphics, renderer, this.class17_5, SandDockButtonType.ScrollRight, this.class17_5.bool_1);
+			base.method_10(graphics, renderer, this.class17_4, SandDockButtonType.ScrollLeft, this.class17_4.bool_1);
+			base.method_10(graphics, renderer, this.class17_7, SandDockButtonType.ActiveFiles, true);
 		}
 
 		internal override string vmethod_5(Point point_1)
@@ -439,18 +439,15 @@ namespace TD.SandDock
 
 		internal override void vmethod_9()
 		{
-			if (base.DockContainer != null)
-			{
-				base.DockContainer.Invalidate(this.rectangle_2);
-			}
+		    DockContainer?.Invalidate(this.rectangle_2);
 		}
 
-		private new bool Boolean_2
+        private new bool Boolean_2
 		{
 			get
 			{
-				DocumentContainer documentContainer = base.DockContainer as DocumentContainer;
-				return documentContainer != null && documentContainer.Boolean_5;
+				DocumentContainer documentContainer = DockContainer as DocumentContainer;
+				return documentContainer != null && documentContainer.IntegralClose;
 			}
 		}
 
@@ -488,36 +485,13 @@ namespace TD.SandDock
 			}
 		}
 
-		private DocumentOverflowMode DocumentOverflowMode_0
-		{
-			get
-			{
-				DocumentContainer documentContainer = base.DockContainer as DocumentContainer;
-				if (documentContainer == null)
-				{
-					return DocumentOverflowMode.Scrollable;
-				}
-				return documentContainer.DocumentOverflowMode_0;
-			}
-		}
+		private DocumentOverflowMode DocumentOverflowMode_0 => (DockContainer as DocumentContainer)?.DocumentOverflow ?? DocumentOverflowMode.Scrollable;
 
-		protected virtual int LeftPadding
-		{
-			get
-			{
-				return 0;
-			}
-		}
+        protected virtual int LeftPadding => 0;
 
-		public Rectangle LeftScrollButtonBounds
-		{
-			get
-			{
-				return this.class17_4.rectangle_0;
-			}
-		}
+        public Rectangle LeftScrollButtonBounds => this.class17_4.rectangle_0;
 
-		protected virtual int RightPadding
+        protected virtual int RightPadding
 		{
 			get
 			{
@@ -537,15 +511,9 @@ namespace TD.SandDock
 			}
 		}
 
-		public Rectangle RightScrollButtonBounds
-		{
-			get
-			{
-				return this.class17_5.rectangle_0;
-			}
-		}
+		public Rectangle RightScrollButtonBounds => this.class17_5.rectangle_0;
 
-		public override DockControl SelectedControl
+        public override DockControl SelectedControl
 		{
 			get
 			{

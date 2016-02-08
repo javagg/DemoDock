@@ -9,11 +9,7 @@ namespace TD.SandDock.Rendering
 {
 	internal class Class25 : TypeConverter
 	{
-		public Class25()
-		{
-		}
-
-		public override bool CanConvertFrom(ITypeDescriptorContext context, Type sourceType)
+	    public override bool CanConvertFrom(ITypeDescriptorContext context, Type sourceType)
 		{
 			return sourceType == typeof(string) || base.CanConvertFrom(context, sourceType);
 		}
@@ -77,7 +73,7 @@ namespace TD.SandDock.Rendering
 			}
 		}
 
-		public override TypeConverter.StandardValuesCollection GetStandardValues(ITypeDescriptorContext context)
+		public override StandardValuesCollection GetStandardValues(ITypeDescriptorContext context)
 		{
 			ArrayList arrayList = new ArrayList();
 			if (context?.Instance is DockContainer)
@@ -88,17 +84,11 @@ namespace TD.SandDock.Rendering
 			arrayList.Add("Office 2003");
 			arrayList.Add("Whidbey");
 			arrayList.Add("Office 2007");
-			return new TypeConverter.StandardValuesCollection(arrayList);
+			return new StandardValuesCollection(arrayList);
 		}
 
-		public override bool GetStandardValuesExclusive(ITypeDescriptorContext context)
-		{
-			return true;
-		}
+		public override bool GetStandardValuesExclusive(ITypeDescriptorContext context) => true;
 
-		public override bool GetStandardValuesSupported(ITypeDescriptorContext context)
-		{
-			return true;
-		}
+	    public override bool GetStandardValuesSupported(ITypeDescriptorContext context) => true;
 	}
 }

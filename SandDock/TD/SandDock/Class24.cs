@@ -11,11 +11,7 @@ namespace TD.SandDock
 {
 	internal class Class24 : TypeConverter
 	{
-		public Class24()
-		{
-		}
-
-		public override bool CanConvertTo(ITypeDescriptorContext context, Type destinationType)
+	    public override bool CanConvertTo(ITypeDescriptorContext context, Type destinationType)
 		{
 			return destinationType == typeof(InstanceDescriptor) || base.CanConvertTo(context, destinationType);
 		}

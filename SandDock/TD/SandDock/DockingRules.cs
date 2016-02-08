@@ -25,11 +25,11 @@ namespace TD.SandDock
 		    foreach (var dockingRules in dockingRules_0)
 		    {
 		        AllowDockLeft = AllowDockLeft && dockingRules.AllowDockLeft;
-                AllowDockRight = (AllowDockRight && dockingRules.AllowDockRight);
-                AllowDockTop = (AllowDockTop && dockingRules.AllowDockTop);
-                AllowDockBottom = (AllowDockBottom && dockingRules.AllowDockBottom);
-                AllowTab = (AllowTab && dockingRules.AllowTab);
-                AllowFloat = (AllowFloat && dockingRules.AllowFloat);
+                AllowDockRight = AllowDockRight && dockingRules.AllowDockRight;
+                AllowDockTop = AllowDockTop && dockingRules.AllowDockTop;
+                AllowDockBottom = AllowDockBottom && dockingRules.AllowDockBottom;
+                AllowTab = AllowTab && dockingRules.AllowTab;
+                AllowFloat = AllowFloat && dockingRules.AllowFloat;
 		    }
 		}
 

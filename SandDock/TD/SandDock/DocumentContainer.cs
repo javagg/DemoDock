@@ -17,8 +17,8 @@ namespace TD.SandDock
 	{
 		public DocumentContainer()
 		{
-			this.Dock = DockStyle.Fill;
-			this.BackColor = SystemColors.AppWorkspace;
+			Dock = DockStyle.Fill;
+			BackColor = SystemColors.AppWorkspace;
 		}
 
 		private DockControl method_17()
@@ -35,7 +35,7 @@ namespace TD.SandDock
 		protected override void OnPaint(PaintEventArgs e)
 		{
 			base.OnPaint(e);
-			DockControl.smethod_0(this, e.Graphics, this.borderStyle_0);
+			DockControl.smethod_0(this, e.Graphics, this.borderStyle);
 		}
 
 		protected override bool ProcessCmdKey(ref Message msg, Keys keyData)
@@ -116,13 +116,10 @@ namespace TD.SandDock
 			return true;
 		}
 
-		internal override ControlLayoutSystem vmethod_1()
-		{
-			return new DocumentLayoutSystem();
-		}
+		internal override ControlLayoutSystem vmethod_1() => new DocumentLayoutSystem();
 
-		[DefaultValue(typeof(Color), "AppWorkspace")]
-		public override Color BackColor
+        [DefaultValue(typeof(Color), "AppWorkspace")]
+		public sealed override Color BackColor
 		{
 			get
 			{
@@ -137,34 +134,34 @@ namespace TD.SandDock
 
 		internal bool Boolean_3 => this.dockControl_0 != null;
 
-        private bool Boolean_4 => this.Manager?.AllowKeyboardNavigation ?? true;
+        private bool Boolean_4 => Manager?.AllowKeyboardNavigation ?? true;
 
-        internal bool Boolean_5
+        internal bool IntegralClose
 		{
 			get
 			{
-				return this.bool_2;
+				return this.integralClose;
 			}
 			set
 			{
-				this.bool_2 = value;
-				base.CalculateAllMetricsAndLayout();
+				this.integralClose = value;
+				CalculateAllMetricsAndLayout();
 			}
 		}
 
 		internal override bool Boolean_6 => false;
 
-        [Category("Appearance"), DefaultValue(typeof(TD.SandDock.Rendering.BorderStyle), "Flat"), Description("The type of border to be drawn around the control.")]
-		internal TD.SandDock.Rendering.BorderStyle BorderStyle_0
+        [Category("Appearance"), DefaultValue(Rendering.BorderStyle.Flat), Description("The type of border to be drawn around the control.")]
+		internal Rendering.BorderStyle BorderStyle
 		{
 			get
 			{
-				return this.borderStyle_0;
+				return this.borderStyle;
 			}
 			set
 			{
-				this.borderStyle_0 = value;
-				this.OnResize(EventArgs.Empty);
+				this.borderStyle = value;
+				OnResize(EventArgs.Empty);
 			}
 		}
 
@@ -174,25 +171,25 @@ namespace TD.SandDock
 		{
 			get
 			{
-				Rectangle displayRectangle = base.DisplayRectangle;
-				switch (this.borderStyle_0)
+				var rect = base.DisplayRectangle;
+				switch (BorderStyle)
 				{
-				case TD.SandDock.Rendering.BorderStyle.Flat:
-				case TD.SandDock.Rendering.BorderStyle.RaisedThin:
-				case TD.SandDock.Rendering.BorderStyle.SunkenThin:
-					displayRectangle.Inflate(-1, -1);
+				case Rendering.BorderStyle.Flat:
+				case Rendering.BorderStyle.RaisedThin:
+				case Rendering.BorderStyle.SunkenThin:
+					rect.Inflate(-1, -1);
 					break;
-				case TD.SandDock.Rendering.BorderStyle.RaisedThick:
-				case TD.SandDock.Rendering.BorderStyle.SunkenThick:
-					displayRectangle.Inflate(-2, -2);
+				case Rendering.BorderStyle.RaisedThick:
+				case Rendering.BorderStyle.SunkenThick:
+					rect.Inflate(-2, -2);
 					break;
 				}
-				return displayRectangle;
+				return rect;
 			}
 		}
 
-		[DefaultValue(typeof(DockStyle), "Fill")]
-		public override DockStyle Dock
+		[DefaultValue(DockStyle.Fill)]
+		public sealed override DockStyle Dock
 		{
 			get
 			{
@@ -200,15 +197,13 @@ namespace TD.SandDock
 			}
 			set
 			{
-				if (value != DockStyle.Fill)
-				{
-					throw new ArgumentException("Only the Fill dock style is valid for this type of container.");
-				}
-				base.Dock = value;
+			    if (value != DockStyle.Fill)
+			        throw new ArgumentException("Only the Fill dock style is valid for this type of container.");
+			    base.Dock = value;
 			}
 		}
 
-		internal DocumentOverflowMode DocumentOverflowMode_0
+		internal DocumentOverflowMode DocumentOverflow
 		{
 			get
 			{
@@ -217,13 +212,13 @@ namespace TD.SandDock
 			set
 			{
 				this.documentOverflowMode_0 = value;
-				base.CalculateAllMetricsAndLayout();
+				CalculateAllMetricsAndLayout();
 			}
 		}
 
-		private bool bool_2;
+		private bool integralClose;
 
-		private Rendering.BorderStyle borderStyle_0 = Rendering.BorderStyle.Flat;
+		private Rendering.BorderStyle borderStyle = Rendering.BorderStyle.Flat;
 
 		private DockControl[] dockControl_0;
 

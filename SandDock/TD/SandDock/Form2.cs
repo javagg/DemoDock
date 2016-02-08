@@ -6,7 +6,7 @@ namespace TD.SandDock
 {
 	internal class Form2 : Form
 	{
-		public Form2(Class5 container)
+		public Form2(FloatingContainer container)
 		{
 			this.class5_0 = container;
 			base.FormBorderStyle = FormBorderStyle.SizableToolWindow;
@@ -132,7 +132,7 @@ namespace TD.SandDock
 			base.WndProc(ref m);
 		}
 
-		private Class5 class5_0;
+		private FloatingContainer class5_0;
 
 		private const int int_0 = 2;
 

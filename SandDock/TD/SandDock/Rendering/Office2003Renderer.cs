@@ -346,7 +346,7 @@ namespace TD.SandDock.Rendering
 
 		private Brush method_3(Rectangle rectangle_0, LinearGradientMode linearGradientMode_0, Color color_19, Color color_20)
 		{
-			Color color = RendererBase.InterpolateColors(color_19, color_20, 0.25f);
+			Color color = InterpolateColors(color_19, color_20, 0.25f);
 			return new LinearGradientBrush(rectangle_0, color_19, color_20, linearGradientMode_0)
 			{
 				InterpolationColors = new ColorBlend(3)
@@ -367,12 +367,9 @@ namespace TD.SandDock.Rendering
 			};
 		}
 
-		public override string ToString()
-		{
-			return "Office 2003";
-		}
+		public override string ToString() => "Office 2003";
 
-		public Color ActiveDocumentBorderColor
+	    public Color ActiveDocumentBorderColor
 		{
 			get
 			{
@@ -463,31 +460,13 @@ namespace TD.SandDock.Rendering
 			}
 		}
 
-		protected internal override int DocumentTabExtra
-		{
-			get
-			{
-				return 18;
-			}
-		}
+		protected internal override int DocumentTabExtra => 18;
 
-		protected internal override int DocumentTabSize
-		{
-			get
-			{
-				return Control.DefaultFont.Height + 7;
-			}
-		}
+	    protected internal override int DocumentTabSize => Control.DefaultFont.Height + 7;
 
-		protected internal override int DocumentTabStripSize
-		{
-			get
-			{
-				return Control.DefaultFont.Height + 15;
-			}
-		}
+	    protected internal override int DocumentTabStripSize => Control.DefaultFont.Height + 15;
 
-		public Color GripperColor
+	    public Color GripperColor
 		{
 			get
 			{

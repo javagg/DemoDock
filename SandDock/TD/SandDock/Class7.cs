@@ -10,19 +10,19 @@ namespace TD.SandDock
 	{
 		public Class7(SandDockManager manager, DockContainer container, LayoutSystemBase sourceControlSystem, DockControl sourceControl, int dockedSize, Point startPoint, DockingHints dockingHints) : base(container, dockingHints, true, container.RendererBase_0.TabStripMetrics.Height)
 		{
-			this.sandDockManager_0 = manager;
+			Manager = manager;
 			this.DockContainer_0 = container;
-			this.layoutSystemBase_0 = sourceControlSystem;
+			this.LayoutSystemBase_0 = sourceControlSystem;
 			this.DockControl_0 = sourceControl;
 			this.Int32_0 = dockedSize;
 			if (container is DocumentContainer)
 			{
-				this.cursor_0 = new Cursor(base.GetType().Assembly.GetManifestResourceStream("TD.SandDock.Resources.splitting.cur"));
-				this.cursor_1 = new Cursor(base.GetType().Assembly.GetManifestResourceStream("TD.SandDock.Resources.splittingno.cur"));
+				this.cursor_0 = new Cursor(GetType().Assembly.GetManifestResourceStream("TD.SandDock.Resources.splitting.cur"));
+				this.cursor_1 = new Cursor(GetType().Assembly.GetManifestResourceStream("TD.SandDock.Resources.splittingno.cur"));
 			}
 			if (sourceControlSystem is SplitLayoutSystem)
 			{
-				this.size_0 = ((Class5)container).Size_0;
+				this.size_0 = ((FloatingContainer)container).Size_0;
 			}
 			else if (sourceControl == null)
 			{
@@ -49,14 +49,7 @@ namespace TD.SandDock
 				startPoint.X -= bounds.Left;
 				startPoint.X = Convert.ToInt32((float)startPoint.X / (float)bounds.Width * (float)this.size_0.Width);
 			}
-			if (sourceControl == null)
-			{
-				this.point_0 = new Point(startPoint.X, startPoint.Y - bounds.Top);
-			}
-			else
-			{
-				this.point_0 = new Point(startPoint.X, this.size_0.Height - (bounds.Bottom - startPoint.Y));
-			}
+			this.point_0 = sourceControl == null ? new Point(startPoint.X, startPoint.Y - bounds.Top) : new Point(startPoint.X, this.size_0.Height - (bounds.Bottom - startPoint.Y));
 			this.point_0.Y = Math.Max(this.point_0.Y, 0);
 			this.point_0.Y = Math.Min(this.point_0.Y, this.size_0.Height);
 			this.ControlLayoutSystem_0 = this.method_10();
@@ -69,10 +62,7 @@ namespace TD.SandDock
 			LayoutUtilities.smethod_0();
 			try
 			{
-				if (this.dockingManagerFinishedEventHandler_0 != null)
-				{
-					this.dockingManagerFinishedEventHandler_0(this.DockTarget_0);
-				}
+                DockingManagerFinished?.Invoke(this.DockTarget_0);
 			}
 			finally
 			{
@@ -83,34 +73,28 @@ namespace TD.SandDock
 		public override void Dispose()
 		{
 			this.DockContainer_0.OnDockingFinished(EventArgs.Empty);
-			if (this.cursor_0 != null)
-			{
-				this.cursor_0.Dispose();
-			}
-			if (this.cursor_1 != null)
-			{
-				this.cursor_1.Dispose();
-			}
-			base.Dispose();
+		    this.cursor_0?.Dispose();
+		    this.cursor_1?.Dispose();
+		    base.Dispose();
 		}
 
-		protected virtual Class7.DockTarget FindDockTarget(Point position)
+		protected virtual DockTarget FindDockTarget(Point position)
 		{
-			if (this.sandDockManager_0 != null && this.Boolean_1)
+			if (this.Manager != null && this.Boolean_1)
 			{
-				foreach (DockContainer dockContainer in this.sandDockManager_0.arrayList_0)
+				foreach (DockContainer dockContainer in this.Manager.arrayList_0)
 				{
-					if (dockContainer.IsFloating && ((Class5)dockContainer).Form_0.Visible && ((Class5)dockContainer).HasSingleControlLayoutSystem)
+					if (dockContainer.IsFloating && ((FloatingContainer)dockContainer).Form_0.Visible && ((FloatingContainer)dockContainer).HasSingleControlLayoutSystem)
 					{
-						if (dockContainer.LayoutSystem != this.layoutSystemBase_0)
+						if (dockContainer.LayoutSystem != this.LayoutSystemBase_0)
 						{
-							if (((Class5)dockContainer).Rectangle_1.Contains(position) && !new Rectangle(dockContainer.PointToScreen(dockContainer.LayoutSystem.LayoutSystems[0].Bounds.Location), dockContainer.LayoutSystem.LayoutSystems[0].Bounds.Size).Contains(position))
+							if (((FloatingContainer)dockContainer).Rectangle_1.Contains(position) && !new Rectangle(dockContainer.PointToScreen(dockContainer.LayoutSystem.LayoutSystems[0].Bounds.Location), dockContainer.LayoutSystem.LayoutSystems[0].Bounds.Size).Contains(position))
 							{
 								Class7.DockTarget result = new Class7.DockTarget(Class7.DockTargetType.JoinExistingSystem)
 								{
 									dockContainer = dockContainer,
 									layoutSystem = (ControlLayoutSystem)dockContainer.LayoutSystem.LayoutSystems[0],
-									bounds = ((Class5)dockContainer).Rectangle_1
+									bounds = ((FloatingContainer)dockContainer).Rectangle_1
 								};
 								return result;
 							}
@@ -132,28 +116,28 @@ namespace TD.SandDock
 					}
 				}
 			}
-			if (this.SandDockManager_0 != null)
+			if (this.Manager != null)
 			{
 				for (int j = 1; j <= 4; j++)
 				{
 					ContainerDockLocation containerDockLocation = (ContainerDockLocation)j;
 					if (this.method_5(containerDockLocation))
 					{
-						if (Class7.smethod_2(this.method_7(containerDockLocation, true), this.SandDockManager_0.DockSystemContainer).Contains(position))
+						if (Class7.smethod_2(this.method_7(containerDockLocation, true), this.Manager.DockSystemContainer).Contains(position))
 						{
 							return new Class7.DockTarget(Class7.DockTargetType.CreateNewContainer)
 							{
 								dockLocation = containerDockLocation,
-								bounds = Class7.smethod_2(this.method_8(containerDockLocation, this.Int32_0, true), this.SandDockManager_0.DockSystemContainer),
+								bounds = Class7.smethod_2(this.method_8(containerDockLocation, this.Int32_0, true), this.Manager.DockSystemContainer),
 								middle = true
 							};
 						}
-						if (Class7.smethod_2(this.method_7(containerDockLocation, false), this.SandDockManager_0.DockSystemContainer).Contains(position))
+						if (Class7.smethod_2(this.method_7(containerDockLocation, false), this.Manager.DockSystemContainer).Contains(position))
 						{
 							return new Class7.DockTarget(Class7.DockTargetType.CreateNewContainer)
 							{
 								dockLocation = containerDockLocation,
-								bounds = Class7.smethod_2(this.method_8(containerDockLocation, this.Int32_0, false), this.SandDockManager_0.DockSystemContainer)
+								bounds = Class7.smethod_2(this.method_8(containerDockLocation, this.Int32_0, false), this.Manager.DockSystemContainer)
 							};
 						}
 					}
@@ -166,18 +150,8 @@ namespace TD.SandDock
 		{
 			ArrayList arrayList = new ArrayList();
 			DockContainer[] array;
-			if (this.sandDockManager_0 != null)
-			{
-				array = this.sandDockManager_0.GetDockContainers();
-			}
-			else
-			{
-				array = new DockContainer[]
-				{
-					this.DockContainer_0
-				};
-			}
-			DockContainer[] array2 = array;
+		    array = Manager != null ? this.Manager.GetDockContainers() : new[] {this.DockContainer_0};
+		    DockContainer[] array2 = array;
 			for (int i = 0; i < array2.Length; i++)
 			{
 				DockContainer dockContainer = array2[i];
@@ -197,11 +171,11 @@ namespace TD.SandDock
 			return array3;
 		}
 
-		private void method_11(DockContainer dockContainer_1, ArrayList arrayList_0)
+		private void method_11(DockContainer container, ArrayList arrayList_0)
 		{
-			if ((dockContainer_1.Width > 0 || dockContainer_1.Height > 0) && dockContainer_1.Enabled && dockContainer_1.Visible)
+			if ((container.Width > 0 || container.Height > 0) && container.Enabled && container.Visible)
 			{
-				this.method_12(dockContainer_1, dockContainer_1.LayoutSystem, arrayList_0);
+				this.method_12(container, container.LayoutSystem, arrayList_0);
 			}
 		}
 
@@ -213,7 +187,7 @@ namespace TD.SandDock
 				{
 					if (layoutSystemBase is ControlLayoutSystem)
 					{
-						if (this.DockControl_0 == null || layoutSystemBase != this.layoutSystemBase_0)
+						if (this.DockControl_0 == null || layoutSystemBase != this.LayoutSystemBase_0)
 						{
 							goto IL_59;
 						}
@@ -245,7 +219,7 @@ namespace TD.SandDock
 		{
 			Class7.DockTarget dockTarget = new Class7.DockTarget(Class7.DockTargetType.Undefined);
 			Point point = dockContainer_1.PointToClient(point_1);
-			if (this.DockControl_0 != null || controlLayoutSystem_1 != this.layoutSystemBase_0)
+			if (this.DockControl_0 != null || controlLayoutSystem_1 != this.LayoutSystemBase_0)
 			{
 				if (controlLayoutSystem_1.Rectangle_0.Contains(point) || controlLayoutSystem_1.rectangle_2.Contains(point))
 				{
@@ -363,7 +337,7 @@ namespace TD.SandDock
 			return dockTarget;
 		}
 
-		private void method_15(DockContainer dockContainer_1, ControlLayoutSystem controlLayoutSystem_1, Class7.DockTarget dockTarget_1, Rectangle rectangle_1, Point point_1)
+		private void method_15(DockContainer dockContainer_1, ControlLayoutSystem controlLayoutSystem_1, DockTarget dockTarget_1, Rectangle rectangle_1, Point point_1)
 		{
 			rectangle_1.X = rectangle_1.Right - 30;
 			rectangle_1.Y = rectangle_1.Bottom - 30;
@@ -448,9 +422,9 @@ namespace TD.SandDock
 			return result;
 		}
 
-		private Class7.DockTarget method_21(DockContainer dockContainer_1, ControlLayoutSystem controlLayoutSystem_1)
+		private DockTarget method_21(DockContainer dockContainer_1, ControlLayoutSystem controlLayoutSystem_1)
 		{
-			return new Class7.DockTarget(Class7.DockTargetType.SplitExistingSystem)
+			return new DockTarget(DockTargetType.SplitExistingSystem)
 			{
 				dockContainer = dockContainer_1,
 				layoutSystem = controlLayoutSystem_1
@@ -459,14 +433,10 @@ namespace TD.SandDock
 
 		public bool method_5(ContainerDockLocation containerDockLocation_0)
 		{
-			if (this.DockControl_0 != null)
-			{
-				return this.DockControl_0.method_13(containerDockLocation_0);
-			}
-			return this.LayoutSystemBase_0.vmethod_3(containerDockLocation_0);
+		    return this.DockControl_0?.method_13(containerDockLocation_0) ?? this.LayoutSystemBase_0.vmethod_3(containerDockLocation_0);
 		}
 
-		private Rectangle method_6(Rectangle rectangle_1)
+	    private Rectangle method_6(Rectangle rectangle_1)
 		{
 			if (rectangle_1.X >= Screen.PrimaryScreen.Bounds.X && rectangle_1.Right <= Screen.PrimaryScreen.Bounds.Right && rectangle_1.Y > Screen.PrimaryScreen.WorkingArea.Bottom)
 			{
@@ -486,7 +456,7 @@ namespace TD.SandDock
 			{
 				return this.method_8(containerDockLocation_0, 30, true);
 			}
-			Control dockSystemContainer = this.SandDockManager_0.DockSystemContainer;
+			Control dockSystemContainer = this.Manager.DockSystemContainer;
 			int num = 0;
 			int width = dockSystemContainer.ClientRectangle.Width;
 			int num2 = 0;
@@ -508,11 +478,11 @@ namespace TD.SandDock
 
 		protected Rectangle method_8(ContainerDockLocation containerDockLocation_0, int int_8, bool bool_2)
 		{
-			Rectangle rectangle = Class7.smethod_1(this.SandDockManager_0.DockSystemContainer);
+			Rectangle rectangle = Class7.smethod_1(this.Manager.DockSystemContainer);
 			Rectangle result = rectangle;
 			if (!bool_2)
 			{
-				result = this.SandDockManager_0.DockSystemContainer.ClientRectangle;
+				result = this.Manager.DockSystemContainer.ClientRectangle;
 			}
 			int val = int_8 + 4;
 			switch (containerDockLocation_0)
@@ -531,19 +501,19 @@ namespace TD.SandDock
 
 		protected bool method_9()
 		{
-			return this.SandDockManager_0.FindDockedContainer(DockStyle.Fill) is DocumentContainer;
+			return Manager.FindDockedContainer(DockStyle.Fill) is DocumentContainer;
 		}
 
 		public override void OnMouseMove(Point position)
 		{
-			Class7.DockTarget dockTarget = null;
+			DockTarget dockTarget = null;
 			if ((Control.ModifierKeys & Keys.Control) != Keys.Control)
 			{
 				dockTarget = this.FindDockTarget(position);
 			}
-			if (dockTarget == null || (dockTarget.type == Class7.DockTargetType.Undefined && this.sandDockManager_0 != null && this.Boolean_1))
+			if (dockTarget == null || (dockTarget.type == Class7.DockTargetType.Undefined && this.Manager != null && this.Boolean_1))
 			{
-				if (this.sandDockManager_0 != null && this.Boolean_1)
+				if (this.Manager != null && this.Boolean_1)
 				{
 					dockTarget = new Class7.DockTarget(Class7.DockTargetType.Float);
 				}
@@ -561,12 +531,12 @@ namespace TD.SandDock
 				dockTarget.bounds = new Rectangle(this.Point_0, this.size_0);
 				dockTarget.bounds = this.method_6(dockTarget.bounds);
 			}
-			if (dockTarget.layoutSystem == this.layoutSystemBase_0 && this.DockControl_0 != null)
+			if (dockTarget.layoutSystem == this.LayoutSystemBase_0 && this.DockControl_0 != null)
 			{
 				if (dockTarget.dockSide == DockSide.None)
 				{
 					base.method_2();
-					ControlLayoutSystem controlLayoutSystem = (ControlLayoutSystem)this.layoutSystemBase_0;
+					ControlLayoutSystem controlLayoutSystem = (ControlLayoutSystem)this.LayoutSystemBase_0;
 					if (dockTarget.index != controlLayoutSystem.Controls.IndexOf(this.DockControl_0))
 					{
 						if (dockTarget.index != controlLayoutSystem.Controls.IndexOf(this.DockControl_0) + 1)
@@ -686,65 +656,31 @@ namespace TD.SandDock
 
 	    public int Int32_0 { get; }
 
-	    public LayoutSystemBase LayoutSystemBase_0
-		{
-			get
-			{
-				return this.layoutSystemBase_0;
-			}
-		}
+	    public LayoutSystemBase LayoutSystemBase_0 { get; }
 
-		private Point Point_0
-		{
-			get
-			{
-				return new Point(Cursor.Position.X - this.point_0.X, Cursor.Position.Y - this.point_0.Y);
-			}
-		}
+	    private Point Point_0 => new Point(Cursor.Position.X - this.point_0.X, Cursor.Position.Y - this.point_0.Y);
 
-		public SandDockManager SandDockManager_0
-		{
-			get
-			{
-				return this.sandDockManager_0;
-			}
-		}
+	    public SandDockManager Manager { get; }
 
-		public event Class7.DockingManagerFinishedEventHandler Event_1
-		{
-			[MethodImpl(MethodImplOptions.Synchronized)]
-			add
-			{
-				this.dockingManagerFinishedEventHandler_0 = (Class7.DockingManagerFinishedEventHandler)Delegate.Combine(this.dockingManagerFinishedEventHandler_0, value);
-			}
-			[MethodImpl(MethodImplOptions.Synchronized)]
-			remove
-			{
-				this.dockingManagerFinishedEventHandler_0 = (Class7.DockingManagerFinishedEventHandler)Delegate.Remove(this.dockingManagerFinishedEventHandler_0, value);
-			}
-		}
+	    public event DockingManagerFinishedEventHandler DockingManagerFinished;
 
 	    private Cursor cursor_0;
 
 		private Cursor cursor_1;
 
-	    private Class7.DockingManagerFinishedEventHandler dockingManagerFinishedEventHandler_0;
+	   // private Class7.DockingManagerFinishedEventHandler dockingManagerFinishedEventHandler_0;
 
 	    private const int int_6 = 30;
 
-	    private LayoutSystemBase layoutSystemBase_0;
+	    private Point point_0 = Point.Empty;
 
-		private Point point_0 = Point.Empty;
+	    private Size size_0 = Size.Empty;
 
-		private SandDockManager sandDockManager_0;
-
-		private Size size_0 = Size.Empty;
-
-		public delegate void DockingManagerFinishedEventHandler(Class7.DockTarget target);
+		public delegate void DockingManagerFinishedEventHandler(DockTarget target);
 
 		public class DockTarget
 		{
-			public DockTarget(Class7.DockTargetType type)
+			public DockTarget(DockTargetType type)
 			{
 				this.type = type;
 			}
@@ -763,7 +699,7 @@ namespace TD.SandDock
 
 			public bool middle;
 
-			public Class7.DockTargetType type;
+			public DockTargetType type;
 		}
 
 		public enum DockTargetType
