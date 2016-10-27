@@ -103,10 +103,10 @@ namespace TD.SandDock
 			{
 				if (m.WParam.ToInt32() == 2)
 				{
-					Class20.ReleaseCapture();
-					base.Activate();
-					this.point_0 = base.PointToClient(Cursor.Position);
-					base.Capture = true;
+					Native.ReleaseCapture();
+					Activate();
+					this.point_0 = PointToClient(Cursor.Position);
+					Capture = true;
 					m.Result = IntPtr.Zero;
 					return;
 				}
@@ -115,15 +115,15 @@ namespace TD.SandDock
 			{
 				if (m.WParam.ToInt32() == 2)
 				{
-					this.OnDoubleClick(EventArgs.Empty);
+					OnDoubleClick(EventArgs.Empty);
 					m.Result = IntPtr.Zero;
 					return;
 				}
 			}
 			else if (m.Msg == 164)
 			{
-				base.Capture = false;
-				if (this.method_0())
+				Capture = false;
+				if (method_0())
 				{
 					m.Result = IntPtr.Zero;
 					return;

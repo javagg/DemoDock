@@ -20,16 +20,16 @@ namespace TD.SandDock
             AllowFloat = allowFloat;
 		}
 
-		internal void method_0(DockingRules[] dockingRules_0)
+		internal void method_0(DockingRules[] rules)
 		{
-		    foreach (var dockingRules in dockingRules_0)
+		    foreach (var rule in rules)
 		    {
-		        AllowDockLeft = AllowDockLeft && dockingRules.AllowDockLeft;
-                AllowDockRight = AllowDockRight && dockingRules.AllowDockRight;
-                AllowDockTop = AllowDockTop && dockingRules.AllowDockTop;
-                AllowDockBottom = AllowDockBottom && dockingRules.AllowDockBottom;
-                AllowTab = AllowTab && dockingRules.AllowTab;
-                AllowFloat = AllowFloat && dockingRules.AllowFloat;
+		        AllowDockLeft = AllowDockLeft && rule.AllowDockLeft;
+                AllowDockRight = AllowDockRight && rule.AllowDockRight;
+                AllowDockTop = AllowDockTop && rule.AllowDockTop;
+                AllowDockBottom = AllowDockBottom && rule.AllowDockBottom;
+                AllowTab = AllowTab && rule.AllowTab;
+                AllowFloat = AllowFloat && rule.AllowFloat;
 		    }
 		}
 

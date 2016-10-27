@@ -94,11 +94,11 @@ namespace TD.SandDock
 			{
 				if (this.bool_1)
 				{
-					Class12.smethod_0(null, rectangle_1, bool_2, this.int_5);
+					Native.smethod_0(null, rectangle_1, bool_2, this.int_5);
 				}
 				else
 				{
-					Class12.smethod_1(null, rectangle_1);
+					Native.smethod_1(null, rectangle_1);
 				}
 				this.rectangle_0 = rectangle_1;
 				this.bool_0 = bool_2;
@@ -123,11 +123,11 @@ namespace TD.SandDock
 			{
 				if (!this.bool_1)
 				{
-					Class12.smethod_1(null, this.rectangle_0);
+					Native.smethod_1(null, this.rectangle_0);
 				}
 				else
 				{
-					Class12.smethod_0(null, this.rectangle_0, this.bool_0, this.int_5);
+					Native.smethod_0(null, this.rectangle_0, this.bool_0, this.int_5);
 				}
 			}
 			this.rectangle_0 = Rectangle.Empty;

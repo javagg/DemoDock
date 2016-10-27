@@ -13,7 +13,7 @@ namespace TD.SandDock
 		{
 			base.SetStyle(ControlStyles.ResizeRedraw | ControlStyles.AllPaintingInWmPaint | ControlStyles.OptimizedDoubleBuffer, true);
 			base.SetStyle(ControlStyles.Selectable, false);
-			this.class4_0 = new AutoHideBar.Class4(this);
+			this.class4_0 = new Class4(this);
 			this.timer_0 = new Timer();
 			this.timer_0.Interval = SystemInformation.DoubleClickTime;
 			this.timer_0.Tick += this.timer_0_Tick;

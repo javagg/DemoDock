@@ -11,14 +11,11 @@ namespace TD.SandDock
 		{
 		}
 
-		//[DllImport("uxtheme.dll", CharSet = CharSet.Auto)]
-		//private static extern int GetCurrentThemeName(StringBuilder pszThemeFileName, int dwMaxNameChars, StringBuilder pszColorBuff, int dwMaxColorChars, StringBuilder pszSizeBuff, int cchMaxSizeChars);
-
 		public static bool Boolean_0
 		{
 			get
 			{
-				string text = Class14.String_0;
+				string text = String_0;
 				text = Path.GetFileName(text).ToLower();
 				return text == "luna.msstyles";
 			}
@@ -29,7 +26,7 @@ namespace TD.SandDock
 			get
 			{
 				StringBuilder stringBuilder = new StringBuilder(512);
-				//Class14.GetCurrentThemeName(stringBuilder, stringBuilder.Capacity, null, 0, null, 0);
+				Native.GetCurrentThemeName(stringBuilder, stringBuilder.Capacity, null, 0, null, 0);
 				return stringBuilder.ToString();
 			}
 		}
@@ -39,7 +36,7 @@ namespace TD.SandDock
 			get
 			{
 				StringBuilder stringBuilder = new StringBuilder(512);
-				//Class14.GetCurrentThemeName(null, 0, stringBuilder, stringBuilder.Capacity, null, 0);
+                Native.GetCurrentThemeName(null, 0, stringBuilder, stringBuilder.Capacity, null, 0);
 				return stringBuilder.ToString();
 			}
 		}

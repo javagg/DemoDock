@@ -43,9 +43,9 @@ namespace TD.SandDock
 	{
 		protected DockControl()
 		{
-			if (DockControl.image_0 == null)
+			if (image_0 == null)
 			{
-				DockControl.image_0 = Image.FromStream(typeof(DockControl).Assembly.GetManifestResourceStream("TD.SandDock.sanddock.png"));
+				image_0 = Image.FromStream(typeof(DockControl).Assembly.GetManifestResourceStream("TD.SandDock.sanddock.png"));
 			}
 			MetaData = new WindowMetaData();
 			this.dockingRules = CreateDockingRules();

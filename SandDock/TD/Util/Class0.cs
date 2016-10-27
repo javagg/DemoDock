@@ -4,6 +4,7 @@ using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Windows.Forms;
 using System.Windows.Forms.VisualStyles;
+using TD.SandDock;
 
 namespace TD.Util
 {
@@ -89,7 +90,7 @@ namespace TD.Util
 				}
 				point_1.X++;
 			}
-			Class0.SetWindowPos(this.form0_0.Handle, -1, point_1.X, point_1.Y, size.Width, size.Height, 80);
+			Native.SetWindowPos(form0_0.Handle, new IntPtr(-1), point_1.X, point_1.Y, size.Width, size.Height, 80);
 			VisualStyleElement normal = VisualStyleElement.ToolTip.Standard.Normal;
 			if (Application.RenderWithVisualStyles && VisualStyleRenderer.IsElementDefined(normal))
 			{
@@ -133,7 +134,7 @@ namespace TD.Util
 			}
 			if (this.bool_0)
 			{
-				string text = this.delegate0_0(new Point(e.X, e.Y));
+				string text = Event_0(new Point(e.X, e.Y));
 				if (text == null || text.Length == 0)
 				{
 					this.method_1();
@@ -203,10 +204,7 @@ namespace TD.Util
 			this.form0_0.Font = this.control_0.Font;
 		}
 
-		[DllImport("user32.dll")]
-		private static extern bool SetWindowPos(IntPtr hWnd, int hWndInsertAfter, int x, int y, int cx, int cy, int flags);
-
-		private static bool smethod_0()
+        private static bool smethod_0()
 		{
 			bool result = false;
 			if (Environment.OSVersion.Platform == PlatformID.Win32NT)
@@ -224,7 +222,7 @@ namespace TD.Util
 			{
 				return;
 			}
-			string text = this.delegate0_0(point);
+			string text = Event_0(point);
 			if (text != null && text.Length != 0)
 			{
 				Form form = this.method_3(this.control_0);
@@ -261,19 +259,19 @@ namespace TD.Util
 			}
 		}
 
-		public event Class0.Delegate0 Event_0
-		{
-			[MethodImpl(MethodImplOptions.Synchronized)]
-			add
-			{
-				this.delegate0_0 = (Class0.Delegate0)Delegate.Combine(this.delegate0_0, value);
-			}
-			[MethodImpl(MethodImplOptions.Synchronized)]
-			remove
-			{
-				this.delegate0_0 = (Class0.Delegate0)Delegate.Remove(this.delegate0_0, value);
-			}
-		}
+	    public event Delegate0 Event_0;
+		//{
+		//	[MethodImpl(MethodImplOptions.Synchronized)]
+		//	add
+		//	{
+		//		this.delegate0_0 = (Class0.Delegate0)Delegate.Combine(this.delegate0_0, value);
+		//	}
+		//	[MethodImpl(MethodImplOptions.Synchronized)]
+		//	remove
+		//	{
+		//		this.delegate0_0 = (Class0.Delegate0)Delegate.Remove(this.delegate0_0, value);
+		//	}
+		//}
 
 		private bool bool_0;
 
@@ -283,9 +281,9 @@ namespace TD.Util
 
 		private Control control_0;
 
-		private Class0.Delegate0 delegate0_0;
+	//	private Delegate0 delegate0_0;
 
-		private Class0.Form0 form0_0;
+		private Form0 form0_0;
 
 		private Form form_0;
 
@@ -371,9 +369,6 @@ namespace TD.Util
 				TextRenderer.DrawText(e.Graphics, this.Text, this.Font, clientRectangle, SystemColors.InfoText, this.textFormatFlags_0);
 			}
 
-			[DllImport("user32.dll")]
-			private static extern bool SystemParametersInfo(int nAction, int nParam, ref int i, int nUpdate);
-
 			public bool Boolean_0
 			{
 				get
@@ -398,9 +393,9 @@ namespace TD.Util
 				get
 				{
 					int value = 0;
-					if (Class0.smethod_0())
+					if (smethod_0())
 					{
-						Class0.Form0.SystemParametersInfo(4132, 0, ref value, 0);
+						Native.SystemParametersInfo(4132, 0, ref value, 0);
 						return Convert.ToBoolean(value);
 					}
 					return false;

@@ -442,10 +442,12 @@ namespace TD.SandDock
 
 			public void method_14()
 			{
-				SetWindowPos(new HandleRef(this, base.Handle), -1, this.rectangle_0.X, this.rectangle_0.Y, this.rectangle_0.Width, this.rectangle_0.Height, 80);
-			}
+			//	Native.SetWindowPos(new HandleRef(this, Handle), -1, this.rectangle_0.X, this.rectangle_0.Y, this.rectangle_0.Width, this.rectangle_0.Height, 80);
+                Native.SetWindowPos(Handle, new IntPtr(-1), this.rectangle_0.X, this.rectangle_0.Y, this.rectangle_0.Width, this.rectangle_0.Height, 80);
 
-			private DockTarget method_2(Point point_0)
+            }
+
+            private DockTarget method_2(Point point_0)
 			{
 				DockTarget dockTarget = new Class7.DockTarget(Class7.DockTargetType.SplitExistingSystem);
 				dockTarget.layoutSystem = this.controlLayoutSystem_0;
@@ -626,9 +628,6 @@ namespace TD.SandDock
 					graphics_0.DrawLine(pen, 87, 57, 64, 57);
 				}
 			}
-
-			[DllImport("user32.dll")]
-			private static extern bool SetWindowPos(HandleRef hWnd, int hWndInsertAfter, int x, int y, int cx, int cy, int flags);
 
 			private void timer_0_Tick(object sender, EventArgs e)
 			{

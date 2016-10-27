@@ -129,7 +129,7 @@ namespace TD.SandDock
 				num |= 16;
 			}
 			IntPtr zero = IntPtr.Zero;
-			FloatingContainer.SetWindowPos(new HandleRef(this, this.form2_0.Handle), new HandleRef(this, zero), rectangle_2.X, rectangle_2.Y, rectangle_2.Width, rectangle_2.Height, num);
+			Native.SetWindowPos(form2_0.Handle, IntPtr.Zero, rectangle_2.X, rectangle_2.Y, rectangle_2.Width, rectangle_2.Height, num);
 			this.form2_0.Visible = bool_3;
 			if (bool_3)
 			{
@@ -176,12 +176,6 @@ namespace TD.SandDock
 		{
 			this.form2_0.Activate();
 		}
-
-		[DllImport("user32.dll")]
-		private static extern bool SetWindowPos(HandleRef hWnd, HandleRef hWndInsertAfter, int x, int y, int cx, int cy, int flags);
-
-		[DllImport("user32.dll")]
-		private static extern bool ShowWindow(IntPtr hWnd, int nCmdShow);
 
 		internal override bool Boolean_6 => false;
 

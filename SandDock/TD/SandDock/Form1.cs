@@ -17,13 +17,14 @@ namespace TD.SandDock
 
 		public void method_0(Rectangle rectangle_0, bool bool_1)
 		{
-			Form1.SetWindowPos(new HandleRef(this, base.Handle), new HandleRef(this, IntPtr.Zero), rectangle_0.X, rectangle_0.Y, rectangle_0.Width, rectangle_0.Height, 80);
-		}
+			//Native.SetWindowPos(new HandleRef(this, base.Handle), new HandleRef(this, IntPtr.Zero), rectangle_0.X, rectangle_0.Y, rectangle_0.Width, rectangle_0.Height, 80);
+            Native.SetWindowPos(Handle, IntPtr.Zero, rectangle_0.X, rectangle_0.Y, rectangle_0.Width, rectangle_0.Height, 80);
+        }
 
-		protected override void OnHandleCreated(EventArgs e)
+        protected override void OnHandleCreated(EventArgs e)
 		{
 			base.OnHandleCreated(e);
-			Form1.SetLayeredWindowAttributes(base.Handle, 0, 128, 2);
+			Native.SetLayeredWindowAttributes(Handle, 0, 128, 2);
 		}
 
 		protected override void OnPaint(PaintEventArgs e)
@@ -39,12 +40,6 @@ namespace TD.SandDock
 				e.Graphics.DrawRectangle(SystemPens.ControlDark, clientRectangle);
 			}
 		}
-
-		[DllImport("user32.dll", CharSet = CharSet.Auto, ExactSpelling = true, SetLastError = true)]
-		private static extern bool SetLayeredWindowAttributes(IntPtr hwnd, int crKey, byte bAlpha, int dwFlags);
-
-		[DllImport("user32.dll")]
-		private static extern bool SetWindowPos(HandleRef hWnd, HandleRef hWndInsertAfter, int x, int y, int cx, int cy, int flags);
 
 		protected override CreateParams CreateParams
 		{

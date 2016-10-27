@@ -45,7 +45,7 @@
     <Compile Include="SmartQuant.Docking.WinForms\DockControl.cs" />
     <Compile Include="TD\SandDock\Class10.cs" />
     <Compile Include="TD\SandDock\Class11.cs" />
-    <Compile Include="TD\SandDock\Class12.cs" />
+    <Compile Include="TD\SandDock\Native.cs" />
     <Compile Include="TD\SandDock\Class14.cs" />
     <Compile Include="TD\SandDock\Class15.cs" />
     <Compile Include="TD\SandDock\Class17.cs" />
