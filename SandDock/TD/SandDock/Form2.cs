@@ -9,9 +9,9 @@ namespace TD.SandDock
 		public Form2(FloatingContainer container)
 		{
 			this.class5_0 = container;
-			base.FormBorderStyle = FormBorderStyle.SizableToolWindow;
-			base.StartPosition = FormStartPosition.Manual;
-			base.ShowInTaskbar = false;
+			FormBorderStyle = FormBorderStyle.SizableToolWindow;
+			StartPosition = FormStartPosition.Manual;
+			ShowInTaskbar = false;
 		}
 
 		private bool method_0()
@@ -34,7 +34,7 @@ namespace TD.SandDock
 			if (this.class5_0.ActiveControl == null)
 			{
 				ControlLayoutSystem controlLayoutSystem = LayoutUtilities.FindControlLayoutSystem(this.class5_0);
-				if (controlLayoutSystem != null && controlLayoutSystem.SelectedControl != null)
+				if (controlLayoutSystem?.SelectedControl != null)
 				{
 					this.class5_0.ActiveControl = controlLayoutSystem.SelectedControl;
 				}

@@ -1,8 +1,34 @@
 using System;
+using System.Drawing;
 
 namespace TD.SandDock
 {
-	public class WindowMetaData
+    internal class Class18
+    {
+        internal Class18()
+        {
+            int[] array = new int[1];
+            this.Int32_0 = array;
+            this.SizeF_0 = new SizeF(250f, 400f);
+        }
+
+        public Guid Guid_0 { get; set; }
+
+        public int[] Int32_0 { get; set; }
+
+        public int Int32_1 { get; set; }
+
+        public SizeF SizeF_0 { get; set; }
+    }
+
+    internal class Class19 : Class18
+    {
+        public int Int32_2 { get; set; }
+
+        public int Int32_3 { get; set; }
+    }
+
+    public class WindowMetaData
 	{
 		internal WindowMetaData()
 		{
@@ -10,12 +36,12 @@ namespace TD.SandDock
 
 		internal void method_0(DateTime dateTime_1)
 		{
-			this.LastFocused = dateTime_1;
+			LastFocused = dateTime_1;
 		}
 
 		internal void method_1(ContainerDockLocation containerDockLocation_1)
 		{
-			this.LastFixedDockSide = containerDockLocation_1;
+			LastFixedDockSide = containerDockLocation_1;
 		}
 
 		internal void method_2(int int_1)
@@ -25,17 +51,17 @@ namespace TD.SandDock
 
 		internal void method_3(DockSituation dockSituation_2)
 		{
-			this.LastOpenDockSituation = dockSituation_2;
+			LastOpenDockSituation = dockSituation_2;
 		}
 
 		internal void method_4(DockSituation dockSituation_2)
 		{
-			this.LastFixedDockSituation = dockSituation_2;
+			LastFixedDockSituation = dockSituation_2;
 		}
 
-		internal void method_5(Guid guid_1)
+		internal void method_5(Guid guid)
 		{
-			this.LastFloatingWindowGuid = guid_1;
+			LastFloatingWindowGuid = guid;
 		}
 
 		internal bool Boolean_0 => this.int_0 != -1;

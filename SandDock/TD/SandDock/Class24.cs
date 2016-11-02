@@ -18,11 +18,9 @@ namespace TD.SandDock
 
 		public override object ConvertTo(ITypeDescriptorContext context, CultureInfo culture, object value, Type destinationType)
 		{
-			if (destinationType == null)
-			{
-				throw new ArgumentNullException();
-			}
-			if (destinationType == typeof(InstanceDescriptor) && value.GetType().Name == "SplitLayoutSystem")
+		    if (destinationType == null)
+		        throw new ArgumentNullException();
+		    if (destinationType == typeof(InstanceDescriptor) && value.GetType().Name == "SplitLayoutSystem")
 			{
 				Type type = value.GetType();
 				Type baseType = type.BaseType;

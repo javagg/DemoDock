@@ -32,22 +32,18 @@ namespace TD.SandDock
 
 		public DocumentLayoutSystem(SizeF workingSize, DockControl[] windows, DockControl selectedWindow) : this()
 		{
-			base.WorkingSize = workingSize;
-			base.Controls.AddRange(windows);
-			if (selectedWindow != null)
-			{
-				this.SelectedControl = selectedWindow;
-			}
+			WorkingSize = workingSize;
+			Controls.AddRange(windows);
+		    if (selectedWindow != null)
+		        SelectedControl = selectedWindow;
 		}
 
 		[Obsolete("Use the constructor that takes a SizeF instead.")]
 		public DocumentLayoutSystem(int desiredWidth, int desiredHeight, DockControl[] controls, DockControl selectedControl) : this(desiredWidth, desiredHeight)
 		{
-			base.Controls.AddRange(controls);
-			if (selectedControl != null)
-			{
-				this.SelectedControl = selectedControl;
-			}
+			Controls.AddRange(controls);
+		    if (selectedControl != null)
+		        SelectedControl = selectedControl;
 		}
 
 		protected override void CalculateLayout(RendererBase renderer, Rectangle bounds, bool floating, out Rectangle titlebarBounds, out Rectangle tabstripBounds, out Rectangle clientBounds, out Rectangle joinCatchmentBounds)

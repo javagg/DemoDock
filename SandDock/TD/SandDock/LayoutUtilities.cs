@@ -31,7 +31,7 @@ namespace TD.SandDock
 		    if (controlLayoutSystem_0 == null)
 		        throw new ArgumentNullException();
 
-		    DockContainer dockContainer = controlLayoutSystem_0.DockContainer;
+		    var dockContainer = controlLayoutSystem_0.DockContainer;
 			if (controlLayoutSystem_0.Control0_0 != null)
 			{
 				if (controlLayoutSystem_0.Control0_0.ControlLayoutSystem_0 == controlLayoutSystem_0)
@@ -53,7 +53,7 @@ namespace TD.SandDock
 		{
 		    if (dockControl_0 == null)
 		        throw new ArgumentNullException();
-		    ControlLayoutSystem layoutSystem = dockControl_0.LayoutSystem;
+		    var layoutSystem = dockControl_0.LayoutSystem;
 			if (layoutSystem == null)
 			{
 				return;
@@ -71,7 +71,7 @@ namespace TD.SandDock
 			layoutSystem.Controls.Remove(dockControl_0);
 			if (layoutSystem.Controls.Count == 0)
 			{
-				LayoutUtilities.smethod_10(layoutSystem);
+				smethod_10(layoutSystem);
 			}
 			if (containsFocus && dockControl_0.Manager != null)
 			{
@@ -200,7 +200,7 @@ namespace TD.SandDock
 						for (int j = 0; j < array.Length; j++)
 						{
 							ControlLayoutSystem controlLayoutSystem = array[j];
-							if (controlLayoutSystem.Guid_0 == class18_0.Guid_0)
+							if (controlLayoutSystem.Guid == class18_0.Guid_0)
 							{
 								ControlLayoutSystem result = controlLayoutSystem;
 								return result;
@@ -217,7 +217,7 @@ namespace TD.SandDock
 					for (int k = 0; k < array2.Length; k++)
 					{
 						ControlLayoutSystem controlLayoutSystem2 = array2[k];
-						if (controlLayoutSystem2.Guid_0 == class18_0.Guid_0)
+						if (controlLayoutSystem2.Guid == class18_0.Guid_0)
 						{
 							ControlLayoutSystem result = controlLayoutSystem2;
 							return result;
@@ -235,7 +235,7 @@ namespace TD.SandDock
 				    {
 				        foreach (var controlLayoutSystem3 in smethod_3(dockContainer_2))
 				        {
-				            if (controlLayoutSystem3.Guid_0 == class18_0.Guid_0)
+				            if (controlLayoutSystem3.Guid == class18_0.Guid_0)
 				            {
 				                ControlLayoutSystem result = controlLayoutSystem3;
 				                return result;

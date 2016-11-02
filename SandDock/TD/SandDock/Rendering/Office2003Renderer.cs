@@ -13,7 +13,7 @@ namespace TD.SandDock.Rendering
 
 		public Office2003Renderer(WindowsColorScheme colorScheme)
 		{
-			base.ColorScheme = colorScheme;
+			ColorScheme = colorScheme;
 		}
 
 		protected internal override Rectangle AdjustDockControlClientBounds(ControlLayoutSystem layoutSystem, DockControl control, Rectangle clientBounds)

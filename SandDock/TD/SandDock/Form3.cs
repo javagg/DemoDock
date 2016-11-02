@@ -1,6 +1,5 @@
 using System;
 using System.Drawing;
-using System.Runtime.InteropServices;
 using System.Windows.Forms;
 
 namespace TD.SandDock
@@ -48,10 +47,13 @@ namespace TD.SandDock
 		{
 			get
 			{
-				CreateParams createParams = base.CreateParams;
-				createParams.ExStyle |= 524288;
-				return createParams;
+				var cp = base.CreateParams;
+				cp.ExStyle |= WS_SYSMENU;
+				return cp;
 			}
-		}
-	}
+        }
+
+        private const int WS_SYSMENU = 0x00080000; //524288 
+
+    }
 }

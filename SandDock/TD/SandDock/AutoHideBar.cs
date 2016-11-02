@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Drawing;
 using System.Drawing.Text;
+using System.Linq;
 using System.Windows.Forms;
 using TD.SandDock.Rendering;
 
@@ -11,16 +12,14 @@ namespace TD.SandDock
 	{
 		public AutoHideBar()
 		{
-			base.SetStyle(ControlStyles.ResizeRedraw | ControlStyles.AllPaintingInWmPaint | ControlStyles.OptimizedDoubleBuffer, true);
-			base.SetStyle(ControlStyles.Selectable, false);
+			SetStyle(ControlStyles.ResizeRedraw | ControlStyles.AllPaintingInWmPaint | ControlStyles.OptimizedDoubleBuffer, true);
+			SetStyle(ControlStyles.Selectable, false);
 			this.class4_0 = new Class4(this);
-			this.timer_0 = new Timer();
-			this.timer_0.Interval = SystemInformation.DoubleClickTime;
-			this.timer_0.Tick += this.timer_0_Tick;
-			this.timer_1 = new Timer();
-			this.timer_1.Interval = 800;
-			this.timer_1.Tick += this.timer_1_Tick;
-			base.Visible = false;
+		    this.timer_0 = new Timer {Interval = SystemInformation.DoubleClickTime};
+		    this.timer_0.Tick += this.timer_0_Tick;
+		    this.timer_1 = new Timer {Interval = 800};
+		    this.timer_1.Tick += this.timer_1_Tick;
+			Visible = false;
 		}
 
 		protected override void Dispose(bool disposing)
@@ -47,10 +46,8 @@ namespace TD.SandDock
 		internal void method_0(ControlLayoutSystem controlLayoutSystem_1)
 		{
 			this.method_2();
-			if (this.ControlLayoutSystem_0 == controlLayoutSystem_1)
-			{
-				this.control1_0.PerformLayout();
-			}
+		    if (ControlLayoutSystem_0 == controlLayoutSystem_1)
+		        control1_0.PerformLayout();
 		}
 
 		internal void method_1()
@@ -61,7 +58,7 @@ namespace TD.SandDock
 		private void method_2()
 		{
 			int num = 0;
-			if (this.ControlLayoutSystem_0 != null && !this.Class4_0.method_0(this.ControlLayoutSystem_0))
+			if (this.ControlLayoutSystem_0 != null && !this.Class4_0.Contains(this.ControlLayoutSystem_0))
 			{
 				this.method_6(true);
 			}
@@ -150,18 +147,11 @@ namespace TD.SandDock
 
 		private DockControl method_3(Point point_1)
 		{
-			foreach (ControlLayoutSystem controlLayoutSystem in this.Class4_0)
-			{
-				foreach (DockControl dockControl in controlLayoutSystem.Controls)
-				{
-					Rectangle rectangle_ = dockControl.rectangle_1;
-					if (rectangle_.Contains(point_1))
-					{
-						return dockControl;
-					}
-				}
-			}
-			return null;
+		    return (this.Class4_0.Cast<ControlLayoutSystem>()
+		        .SelectMany(controlLayoutSystem => controlLayoutSystem.Controls.Cast<DockControl>(),(controlLayoutSystem, dockControl) => new {controlLayoutSystem, dockControl})
+		        .Select(@t => new {@t, rectangle_ = @t.dockControl.rectangle_1})
+		        .Where(@t => @t.rectangle_.Contains(point_1))
+		        .Select(@t => @t.@t.dockControl)).FirstOrDefault();
 		}
 
 		private void method_4(PopupContainer control1_1, Rectangle rectangle_1, Rectangle rectangle_2)
@@ -557,60 +547,43 @@ namespace TD.SandDock
 		{
 			public Class4(AutoHideBar parent)
 			{
-				this.control0_0 = parent;
+				_autoHideBar = parent;
 			}
 
-			public bool method_0(ControlLayoutSystem controlLayoutSystem_0)
-			{
-				return base.List.Contains(controlLayoutSystem_0);
-			}
+			public bool Contains(ControlLayoutSystem layout) => List.Contains(layout);
 
-			public int method_1(ControlLayoutSystem controlLayoutSystem_0)
-			{
-				return base.List.Add(controlLayoutSystem_0);
-			}
+		    public int Add(ControlLayoutSystem layout) => List.Add(layout);
 
-			public void method_2(ControlLayoutSystem controlLayoutSystem_0)
-			{
-				base.List.Remove(controlLayoutSystem_0);
-			}
+		    public void Remove(ControlLayoutSystem layout) => List.Remove(layout);
 
-			protected override void OnClear()
+		    protected override void OnClear()
 			{
-				foreach (ControlLayoutSystem controlLayoutSystem in this)
-				{
-					controlLayoutSystem.method_4(null);
-				}
+			    foreach (ControlLayoutSystem controlLayoutSystem in this)
+			        controlLayoutSystem.method_4(null);
 			}
 
 			protected override void OnClearComplete()
 			{
-				this.control0_0.method_2();
+				_autoHideBar.method_2();
 			}
 
 			protected override void OnInsertComplete(int index, object value)
 			{
 				ControlLayoutSystem controlLayoutSystem = (ControlLayoutSystem)value;
-				controlLayoutSystem.method_4(this.control0_0);
-				this.control0_0.method_2();
+				controlLayoutSystem.method_4(this._autoHideBar);
+				_autoHideBar.method_2();
 			}
 
 			protected override void OnRemoveComplete(int index, object value)
 			{
 				ControlLayoutSystem controlLayoutSystem = (ControlLayoutSystem)value;
 				controlLayoutSystem.method_4(null);
-				this.control0_0.method_2();
+				_autoHideBar.method_2();
 			}
 
-			public ControlLayoutSystem this[int int_0]
-			{
-				get
-				{
-					return (ControlLayoutSystem)base.List[int_0];
-				}
-			}
+			public ControlLayoutSystem this[int index] => (ControlLayoutSystem)List[index];
 
-			private AutoHideBar control0_0;
+		    private readonly AutoHideBar _autoHideBar;
 		}
 
 		private delegate void Delegate1(bool quick);

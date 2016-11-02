@@ -24,7 +24,7 @@ namespace TD.SandDock.Rendering
 			if (value is string)
 			{
 				string a;
-				if ((a = (string)value) != null)
+				if ((a = value as string) != null)
 				{
 					if (a == "Everett")
 					{
@@ -75,8 +75,8 @@ namespace TD.SandDock.Rendering
 
 		public override StandardValuesCollection GetStandardValues(ITypeDescriptorContext context)
 		{
-			ArrayList arrayList = new ArrayList();
-			if (context?.Instance is DockContainer)
+			var arrayList = new ArrayList();
+			if (context.Instance is DockContainer)
 			{
 				arrayList.Add("(default)");
 			}
@@ -91,4 +91,9 @@ namespace TD.SandDock.Rendering
 
 	    public override bool GetStandardValuesSupported(ITypeDescriptorContext context) => true;
 	}
+
+    internal class Class26 : Class25
+    {
+        public override StandardValuesCollection GetStandardValues(ITypeDescriptorContext context) => new StandardValuesCollection(new[] { "Everett", "Office 2003", "Whidbey", "Milborne", "Office 2007" });
+    }
 }

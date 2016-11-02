@@ -50,92 +50,77 @@ namespace TD.SandDock.Rendering
 
 		protected override void GetColorsFromSystem()
 		{
-			switch (this.windowsColorScheme_0)
+			switch (_colorScheme)
 			{
 			case WindowsColorScheme.Automatic:
 			{
-				string text = (!WhidbeyRenderer.smethod_0() || !Class14.Boolean_0) ? "none" : Class14.String_1;
+				string text = !WhidbeyRenderer.smethod_0() || !Class14.Boolean_0 ? "none" : Class14.String_1;
 				string a;
 				if ((a = text) != null)
 				{
 					if (a == "NormalColor")
 					{
-						this.ApplyLunaBlueColors();
+						ApplyLunaBlueColors();
 						break;
 					}
 					if (a == "HomeStead")
 					{
-						this.ApplyLunaOliveColors();
+						ApplyLunaOliveColors();
 						break;
 					}
 					if (a == "Metallic")
 					{
-						this.ApplyLunaSilverColors();
+						ApplyLunaSilverColors();
 						break;
 					}
 				}
-				this.ApplyStandardColors();
+				ApplyStandardColors();
 				break;
 			}
 			case WindowsColorScheme.Standard:
-				this.ApplyStandardColors();
+				ApplyStandardColors();
 				break;
 			case WindowsColorScheme.LunaBlue:
-				this.ApplyLunaBlueColors();
+				ApplyLunaBlueColors();
 				break;
 			case WindowsColorScheme.LunaOlive:
-				this.ApplyLunaOliveColors();
+				ApplyLunaOliveColors();
 				break;
 			case WindowsColorScheme.LunaSilver:
-				this.ApplyLunaSilverColors();
+				ApplyLunaSilverColors();
 				break;
 			}
 			base.GetColorsFromSystem();
 		}
 
-		private void method_1(Control control_0, Control control_1, Graphics graphics_0, Rectangle rectangle_0)
+		private void method_1(Control control_0, Control control_1, Graphics g, Rectangle rect)
 		{
-			if (control_0.ClientRectangle.Width > 0 && control_0.ClientRectangle.Height > 0 && rectangle_0.Width > 0 && rectangle_0.Height > 0)
+			if (control_0.ClientRectangle.Width > 0 && control_0.ClientRectangle.Height > 0 && rect.Width > 0 && rect.Height > 0)
 			{
-				Color layoutBackgroundColor = this.LayoutBackgroundColor1;
-				Color layoutBackgroundColor2 = this.LayoutBackgroundColor2;
-				Point point = control_1.PointToClient(control_0.PointToScreen(new Point(0, 0)));
-				Point point2 = control_1.PointToClient(control_0.PointToScreen(new Point(control_0.ClientRectangle.Right, 0)));
-				using (LinearGradientBrush linearGradientBrush = new LinearGradientBrush(point, point2, layoutBackgroundColor, layoutBackgroundColor2))
-				{
-					graphics_0.FillRectangle(linearGradientBrush, rectangle_0);
-				}
-				return;
+				var point = control_1.PointToClient(control_0.PointToScreen(new Point(0, 0)));
+				var point2 = control_1.PointToClient(control_0.PointToScreen(new Point(control_0.ClientRectangle.Right, 0)));
+			    using (var brush = new LinearGradientBrush(point, point2, LayoutBackgroundColor1, LayoutBackgroundColor2))
+			        g.FillRectangle(brush, rect);
 			}
 		}
 
 		public override void StartRenderSession(HotkeyPrefix hotKeys)
 		{
-			this.textFormatFlags_0 = (TextFormatFlags.EndEllipsis | TextFormatFlags.SingleLine | TextFormatFlags.VerticalCenter | TextFormatFlags.PreserveGraphicsClipping | TextFormatFlags.NoPadding);
-			if (hotKeys != HotkeyPrefix.None)
-			{
-				if (hotKeys == HotkeyPrefix.Hide)
-				{
-					this.textFormatFlags_0 |= TextFormatFlags.HidePrefix;
-				}
-			}
-			else
-			{
-				this.textFormatFlags_0 |= TextFormatFlags.NoPrefix;
-			}
-			this.int_0++;
+			TextFormat = TextFormatFlags.EndEllipsis | TextFormatFlags.SingleLine | TextFormatFlags.VerticalCenter | TextFormatFlags.PreserveGraphicsClipping | TextFormatFlags.NoPadding;
+		    TextFormat |= hotKeys != HotkeyPrefix.None && hotKeys == HotkeyPrefix.Hide ? TextFormatFlags.HidePrefix : TextFormatFlags.NoPrefix;
+		    this.int_0++;
 		}
 
 		public WindowsColorScheme ColorScheme
 		{
 			get
 			{
-				return this.windowsColorScheme_0;
+				return _colorScheme;
 			}
 			set
 			{
-				this.windowsColorScheme_0 = value;
-				this.GetColorsFromSystem();
+				_colorScheme = value;
+				GetColorsFromSystem();
 			}
 		}
 
@@ -143,12 +128,12 @@ namespace TD.SandDock.Rendering
 		{
 			get
 			{
-				return this.color_0;
+				return _layoutBackgroundColor1;
 			}
 			set
 			{
-				this.color_0 = value;
-				base.CustomColors = true;
+				_layoutBackgroundColor1 = value;
+				CustomColors = true;
 			}
 		}
 
@@ -156,31 +141,23 @@ namespace TD.SandDock.Rendering
 		{
 			get
 			{
-				return this.color_1;
+				return _layoutBackgroundColor2;
 			}
 			set
 			{
-				this.color_1 = value;
-				base.CustomColors = true;
+				_layoutBackgroundColor2 = value;
+				CustomColors = true;
 			}
 		}
 
-		protected TextFormatFlags TextFormat
-		{
-			get
-			{
-				return this.textFormatFlags_0;
-			}
-		}
+		protected TextFormatFlags TextFormat { get; private set; }
 
-		private Color color_0;
+	    private Color _layoutBackgroundColor1;
 
-		private Color color_1;
+		private Color _layoutBackgroundColor2;
 
 		private int int_0;
 
-		private TextFormatFlags textFormatFlags_0;
-
-		private WindowsColorScheme windowsColorScheme_0;
+	    private WindowsColorScheme _colorScheme;
 	}
 }

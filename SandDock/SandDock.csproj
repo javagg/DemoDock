@@ -43,14 +43,9 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="SmartQuant.Docking.WinForms\DockControl.cs" />
-    <Compile Include="TD\SandDock\Class10.cs" />
-    <Compile Include="TD\SandDock\Class11.cs" />
     <Compile Include="TD\SandDock\Native.cs" />
     <Compile Include="TD\SandDock\Class14.cs" />
     <Compile Include="TD\SandDock\Class15.cs" />
-    <Compile Include="TD\SandDock\Class17.cs" />
-    <Compile Include="TD\SandDock\Class18.cs" />
-    <Compile Include="TD\SandDock\Class19.cs" />
     <Compile Include="TD\SandDock\Class20.cs" />
     <Compile Include="TD\SandDock\Class22.cs" />
     <Compile Include="TD\SandDock\Class23.cs" />
@@ -58,12 +53,6 @@
     <Compile Include="TD\SandDock\FloatingContainer.cs">
       <SubType>Component</SubType>
     </Compile>
-    <Compile Include="TD\SandDock\Class6.cs" />
-    <Compile Include="TD\SandDock\Class7.cs" />
-    <Compile Include="TD\SandDock\Class8.cs" />
-    <Compile Include="TD\SandDock\Class9.cs" />
-    <Compile Include="TD\SandDock\ContainerDockEdge.cs" />
-    <Compile Include="TD\SandDock\ContainerDockLocation.cs" />
     <Compile Include="TD\SandDock\AutoHideBar.cs">
       <SubType>Component</SubType>
     </Compile>
@@ -78,11 +67,7 @@
       <SubType>Component</SubType>
     </Compile>
     <Compile Include="TD\SandDock\DockControl.cs" />
-    <Compile Include="TD\SandDock\DockingHints.cs" />
-    <Compile Include="TD\SandDock\DockingManager.cs" />
     <Compile Include="TD\SandDock\DockingRules.cs" />
-    <Compile Include="TD\SandDock\DockSide.cs" />
-    <Compile Include="TD\SandDock\DockSituation.cs" />
     <Compile Include="TD\SandDock\DocumentContainer.cs">
       <SubType>Component</SubType>
     </Compile>
@@ -103,25 +88,20 @@
     <Compile Include="TD\SandDock\SandDockLanguage.cs" />
     <Compile Include="TD\SandDock\SandDockManager.cs" />
     <Compile Include="TD\SandDock\SplitLayoutSystem.cs" />
-    <Compile Include="TD\SandDock\Struct0.cs" />
     <Compile Include="TD\SandDock\TabbedDocument.cs">
       <SubType>Component</SubType>
     </Compile>
-    <Compile Include="TD\SandDock\TabControl.cs">
-      <SubType>Component</SubType>
-    </Compile>
+    <Compile Include="TD\SandDock\TabControl.cs" />
     <Compile Include="TD\SandDock\TabPage.cs">
       <SubType>Component</SubType>
     </Compile>
     <Compile Include="TD\SandDock\WindowMetaData.cs" />
-    <Compile Include="TD\SandDock\WindowOpenMethod.cs" />
     <Compile Include="TD\SandDock\Design\DockContainerDesigner.cs" />
     <Compile Include="TD\SandDock\Design\DockControlDesigner.cs" />
     <Compile Include="TD\SandDock\Design\DocumentContainerDesigner.cs" />
     <Compile Include="TD\SandDock\Rendering\BoxModel.cs" />
     <Compile Include="TD\SandDock\Rendering\Class16.cs" />
     <Compile Include="TD\SandDock\Rendering\Class25.cs" />
-    <Compile Include="TD\SandDock\Rendering\Class26.cs" />
     <Compile Include="TD\SandDock\Rendering\EverettRenderer.cs" />
     <Compile Include="TD\SandDock\Rendering\ITabControlRenderer.cs" />
     <Compile Include="TD\SandDock\Rendering\MilborneRenderer.cs" />

@@ -35,7 +35,7 @@ namespace TD.SandDock
 		protected override void OnPaint(PaintEventArgs e)
 		{
 			base.OnPaint(e);
-			DockControl.smethod_0(this, e.Graphics, this.borderStyle);
+			DockControl.smethod_0(this, e.Graphics, _borderStyle);
 		}
 
 		protected override bool ProcessCmdKey(ref Message msg, Keys keyData)
@@ -73,7 +73,7 @@ namespace TD.SandDock
 		{
 			if (m.Msg == 256 && m.WParam.ToInt32() == 9)
 			{
-				if ((Control.ModifierKeys & Keys.Shift) != Keys.Shift)
+				if ((ModifierKeys & Keys.Shift) != Keys.Shift)
 				{
 					this.int_8++;
 				}
@@ -123,7 +123,6 @@ namespace TD.SandDock
 		{
 			get
 			{
-                
 				return base.BackColor;
 			}
 			set
@@ -140,11 +139,11 @@ namespace TD.SandDock
 		{
 			get
 			{
-				return this.integralClose;
+				return _integralClose;
 			}
 			set
 			{
-				this.integralClose = value;
+				_integralClose = value;
 				CalculateAllMetricsAndLayout();
 			}
 		}
@@ -156,11 +155,11 @@ namespace TD.SandDock
 		{
 			get
 			{
-				return this.borderStyle;
+				return _borderStyle;
 			}
 			set
 			{
-				this.borderStyle = value;
+				_borderStyle = value;
 				OnResize(EventArgs.Empty);
 			}
 		}
@@ -207,22 +206,22 @@ namespace TD.SandDock
 		{
 			get
 			{
-				return this.documentOverflowMode_0;
+				return _documentOverflowMode;
 			}
 			set
 			{
-				this.documentOverflowMode_0 = value;
+				_documentOverflowMode = value;
 				CalculateAllMetricsAndLayout();
 			}
 		}
 
-		private bool integralClose;
+		private bool _integralClose;
 
-		private Rendering.BorderStyle borderStyle = Rendering.BorderStyle.Flat;
+		private Rendering.BorderStyle _borderStyle = Rendering.BorderStyle.Flat;
 
 		private DockControl[] dockControl_0;
 
-		private DocumentOverflowMode documentOverflowMode_0 = DocumentOverflowMode.Scrollable;
+		private DocumentOverflowMode _documentOverflowMode = DocumentOverflowMode.Scrollable;
 
 		private const int int_3 = 256;
 

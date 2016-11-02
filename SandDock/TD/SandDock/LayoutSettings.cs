@@ -11,7 +11,7 @@ namespace TD.SandDock
 
 		public override void Save()
 		{
-			this.IsDefault = false;
+			IsDefault = false;
 			base.Save();
 		}
 

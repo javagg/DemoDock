@@ -1,7 +1,5 @@
 using System;
 using System.Drawing;
-using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices;
 using System.Windows.Forms;
 using System.Windows.Forms.VisualStyles;
 using TD.SandDock;
@@ -13,17 +11,17 @@ namespace TD.Util
 		public Class0(Control control)
 		{
 			this.control_0 = control;
-			control.MouseMove += new MouseEventHandler(this.method_2);
-			control.MouseLeave += new EventHandler(this.method_4);
-			control.MouseDown += new MouseEventHandler(this.method_5);
-			control.MouseWheel += new MouseEventHandler(this.method_6);
-			control.Disposed += new EventHandler(this.method_7);
-			control.FontChanged += new EventHandler(this.method_8);
-			this.form0_0 = new Class0.Form0(this);
-			this.form0_0.MouseMove += new MouseEventHandler(this.form0_0_MouseMove);
+			control.MouseMove += this.method_2;
+			control.MouseLeave += this.method_4;
+			control.MouseDown += this.method_5;
+			control.MouseWheel += this.method_6;
+			control.Disposed += this.method_7;
+			control.FontChanged += this.method_8;
+			this.form0_0 = new Form0(this);
+			this.form0_0.MouseMove += this.form0_0_MouseMove;
 			this.timer_0 = new Timer();
 			this.timer_0.Interval = SystemInformation.DoubleClickTime;
-			this.timer_0.Tick += new EventHandler(this.timer_0_Tick);
+			this.timer_0.Tick += this.timer_0_Tick;
 		}
 
 		public void Dispose()
@@ -41,7 +39,7 @@ namespace TD.Util
 				this.control_0.Disposed -= new EventHandler(this.method_7);
 				this.control_0.FontChanged -= new EventHandler(this.method_8);
 				this.control_0 = null;
-				this.timer_0.Tick -= new EventHandler(this.timer_0_Tick);
+				this.timer_0.Tick -= this.timer_0_Tick;
 				this.timer_0.Dispose();
 				this.bool_2 = true;
 			}
@@ -205,14 +203,9 @@ namespace TD.Util
 		}
 
         private static bool smethod_0()
-		{
-			bool result = false;
-			if (Environment.OSVersion.Platform == PlatformID.Win32NT)
-			{
-				result = (Environment.OSVersion.Version >= new Version(5, 1, 0, 0));
-			}
-			return result;
-		}
+        {
+            return Environment.OSVersion.Platform == PlatformID.Win32NT && Environment.OSVersion.Version >= new Version(5, 1, 0, 0);
+        }
 
 		private void timer_0_Tick(object sender, EventArgs e)
 		{
@@ -223,7 +216,7 @@ namespace TD.Util
 				return;
 			}
 			string text = Event_0(point);
-			if (text != null && text.Length != 0)
+			if (!string.IsNullOrEmpty(text))
 			{
 				Form form = this.method_3(this.control_0);
 				Form activeForm = Form.ActiveForm;
@@ -260,18 +253,6 @@ namespace TD.Util
 		}
 
 	    public event Delegate0 Event_0;
-		//{
-		//	[MethodImpl(MethodImplOptions.Synchronized)]
-		//	add
-		//	{
-		//		this.delegate0_0 = (Class0.Delegate0)Delegate.Combine(this.delegate0_0, value);
-		//	}
-		//	[MethodImpl(MethodImplOptions.Synchronized)]
-		//	remove
-		//	{
-		//		this.delegate0_0 = (Class0.Delegate0)Delegate.Remove(this.delegate0_0, value);
-		//	}
-		//}
 
 		private bool bool_0;
 
@@ -280,8 +261,6 @@ namespace TD.Util
 		private bool bool_2;
 
 		private Control control_0;
-
-	//	private Delegate0 delegate0_0;
 
 		private Form0 form0_0;
 
@@ -317,15 +296,10 @@ namespace TD.Util
 				base.StartPosition = FormStartPosition.Manual;
 			}
 
-			protected override void Dispose(bool disposing)
-			{
-				base.Dispose(disposing);
-			}
-
 			public SizeF method_0(string string_0)
 			{
 				SizeF result;
-				using (Graphics graphics = base.CreateGraphics())
+				using (var graphics = CreateGraphics())
 				{
 					VisualStyleElement normal = VisualStyleElement.ToolTip.Standard.Normal;
 					if (Application.RenderWithVisualStyles && VisualStyleRenderer.IsElementDefined(normal))
@@ -347,7 +321,7 @@ namespace TD.Util
 
 			protected override void OnPaint(PaintEventArgs e)
 			{
-				VisualStyleElement normal = VisualStyleElement.ToolTip.Standard.Normal;
+				var normal = VisualStyleElement.ToolTip.Standard.Normal;
 				if (Application.RenderWithVisualStyles && VisualStyleRenderer.IsElementDefined(normal))
 				{
 					VisualStyleRenderer visualStyleRenderer = new VisualStyleRenderer(normal);

@@ -14,7 +14,7 @@ namespace TD.SandDock.Rendering
 
 		public WhidbeyRenderer(WindowsColorScheme colorScheme)
 		{
-			base.ColorScheme = colorScheme;
+			ColorScheme = colorScheme;
 		}
 
 		protected override void ApplyLunaBlueColors()

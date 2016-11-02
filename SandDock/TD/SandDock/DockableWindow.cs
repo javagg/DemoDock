@@ -22,11 +22,9 @@ namespace TD.SandDock
 
 	    private void method_18()
 		{
-			if (this.Text.Length == 0)
-			{
-				this.Text = "Dockable Window";
-			}
-			base.SetPositionMetaData(DockSituation.Docked, ContainerDockLocation.Right);
+		    if (Text.Length == 0)
+		        Text = "Dockable Window";
+		    SetPositionMetaData(DockSituation.Docked, ContainerDockLocation.Right);
 		}
 
 		public override void Open()

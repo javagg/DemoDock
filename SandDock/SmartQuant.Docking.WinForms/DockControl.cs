@@ -69,9 +69,7 @@ namespace SmartQuant.Docking.WinForms
         {
             var stringValue = GetStringValue(key, defaultValue.ToString(CultureInfo.InvariantCulture));
             byte result;
-            return byte.TryParse(stringValue, NumberStyles.None, CultureInfo.InvariantCulture, out result)
-                ? result
-                : defaultValue;
+            return byte.TryParse(stringValue, NumberStyles.None, CultureInfo.InvariantCulture, out result) ? result : defaultValue;
         }
 
         public IEnumerator<KeyValuePair<string, string>> GetEnumerator() => _settings.GetEnumerator();
@@ -131,7 +129,6 @@ namespace SmartQuant.Docking.WinForms
     public struct LayoutInfo
     {
         public string Layout;
-
         public LayoutLink[] Links;
     }
 
@@ -139,7 +136,6 @@ namespace SmartQuant.Docking.WinForms
     public struct LayoutLink
     {
         public string TypeName;
-
         public Guid Guid;
     }
 
@@ -147,7 +143,6 @@ namespace SmartQuant.Docking.WinForms
     public struct SettingsGroup
     {
         public string TypeName;
-
         public SettingsItem[] Items;
     }
 
@@ -160,7 +155,6 @@ namespace SmartQuant.Docking.WinForms
     public struct SettingsItem
     {
         public string Key;
-
         public string Value;
     }
 

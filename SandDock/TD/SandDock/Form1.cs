@@ -9,16 +9,15 @@ namespace TD.SandDock
 	{
 		public Form1(bool hollow)
 		{
-			this.bool_0 = hollow;
-			this.BackColor = SystemColors.Highlight;
-			base.ShowInTaskbar = false;
-			base.SetStyle(ControlStyles.ResizeRedraw, true);
+			_hollow = hollow;
+			BackColor = SystemColors.Highlight;
+			ShowInTaskbar = false;
+			SetStyle(ControlStyles.ResizeRedraw, true);
 		}
 
-		public void method_0(Rectangle rectangle_0, bool bool_1)
+		public void method_0(Rectangle rect, bool bool_1)
 		{
-			//Native.SetWindowPos(new HandleRef(this, base.Handle), new HandleRef(this, IntPtr.Zero), rectangle_0.X, rectangle_0.Y, rectangle_0.Width, rectangle_0.Height, 80);
-            Native.SetWindowPos(Handle, IntPtr.Zero, rectangle_0.X, rectangle_0.Y, rectangle_0.Width, rectangle_0.Height, 80);
+            Native.SetWindowPos(Handle, IntPtr.Zero, rect.X, rect.Y, rect.Width, rect.Height, 80);
         }
 
         protected override void OnHandleCreated(EventArgs e)
@@ -30,14 +29,14 @@ namespace TD.SandDock
 		protected override void OnPaint(PaintEventArgs e)
 		{
 			base.OnPaint(e);
-			if (this.bool_0)
+			if (_hollow)
 			{
-				Rectangle clientRectangle = base.ClientRectangle;
-				clientRectangle.Width--;
-				clientRectangle.Height--;
-				e.Graphics.DrawRectangle(SystemPens.ControlDark, clientRectangle);
-				clientRectangle.Inflate(-1, -1);
-				e.Graphics.DrawRectangle(SystemPens.ControlDark, clientRectangle);
+				var rect = ClientRectangle;
+				rect.Width--;
+				rect.Height--;
+				e.Graphics.DrawRectangle(SystemPens.ControlDark, rect);
+				rect.Inflate(-1, -1);
+				e.Graphics.DrawRectangle(SystemPens.ControlDark, rect);
 			}
 		}
 
@@ -45,20 +44,20 @@ namespace TD.SandDock
 		{
 			get
 			{
-				CreateParams createParams = base.CreateParams;
+				var createParams = base.CreateParams;
 				createParams.Style = -2147483648;
-				createParams.ExStyle |= 524288;
+				createParams.ExStyle |= WS_SYSMENU;
 				return createParams;
 			}
 		}
 
-		private bool bool_0;
+		private bool _hollow;
 
 		private const int int_0 = 2;
 
-		private const int int_1 = 524288;
+		private const int WS_SYSMENU = 0x00080000; //524288 
 
-		private const int int_2 = 16;
+        private const int int_2 = 16;
 
 		private const int int_3 = 64;
 

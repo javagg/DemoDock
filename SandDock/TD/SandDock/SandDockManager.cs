@@ -60,15 +60,14 @@ namespace TD.SandDock
 	{
 		public SandDockManager()
 		{
-			this.rendererBase_0 = new WhidbeyRenderer();
+			_renderer = new WhidbeyRenderer();
 			this.arrayList_0 = new ArrayList();
-			this.hashtable_0 = new Hashtable();
-			this.arrayList_1 = new ArrayList();
+			this._windows = new Hashtable();
+			_autoHideBars = new ArrayList();
 		}
 
 		public static void ActivateProduct(string licenseKey)
 		{
-			//Class1.ActivateProduct(licenseKey);
 		}
 
 		private string ConvertBoolToString(bool value) => !value ? "0" : "1";
@@ -155,9 +154,7 @@ namespace TD.SandDock
 
 		protected virtual DockContainer CreateNewDockContainerCore(ContainerDockLocation dockLocation)
 		{
-		    return dockLocation == ContainerDockLocation.Center && EnableTabbedDocuments
-		        ? new DocumentContainer()
-		        : new DockContainer();
+		    return dockLocation == ContainerDockLocation.Center && EnableTabbedDocuments ? new DocumentContainer(): new DockContainer();
 		}
 
         protected override void Dispose(bool disposing)
@@ -173,15 +170,12 @@ namespace TD.SandDock
 					dockContainer.Dispose();
 				}
 				this.arrayList_0.Clear();
-				AutoHideBar[] array3 = new AutoHideBar[this.arrayList_1.Count];
-				this.arrayList_1.CopyTo(array3);
-				AutoHideBar[] array4 = array3;
-				for (int j = 0; j < array4.Length; j++)
-				{
-					AutoHideBar control = array4[j];
-					control.Dispose();
-				}
-				this.arrayList_1.Clear();
+				var array3 = new AutoHideBar[_autoHideBars.Count];
+				_autoHideBars.CopyTo(array3);
+				var array4 = array3;
+			    foreach (var control in array4)
+			        control.Dispose();
+			    _autoHideBars.Clear();
 			}
 			base.Dispose(disposing);
 		}
@@ -198,7 +192,7 @@ namespace TD.SandDock
 
 		public DockControl FindControl(Guid guid)
 		{
-			DockControl dockControl = (DockControl)this.hashtable_0[guid];
+			DockControl dockControl = (DockControl)this._windows[guid];
 			if (dockControl != null)
 			{
 				return dockControl;
@@ -222,36 +216,8 @@ namespace TD.SandDock
 
         private Control FindDockSystemContainer(IDesignerHost designerHost, Control parent)
 		{
-		    var ctl =
-		        parent.Controls.Cast<Control>()
-		            .FirstOrDefault(
-		                c => c.Dock == DockStyle.Fill && c.Site != null && c.Site.DesignMode && !c.Controls.IsReadOnly);
+		    var ctl = parent.Controls.Cast<Control>().FirstOrDefault(c => c.Dock == DockStyle.Fill && c.Site != null && c.Site.DesignMode && !c.Controls.IsReadOnly);
 		    return ctl != null ? FindDockSystemContainer(designerHost, ctl) : parent;
-
-   //         IEnumerator enumerator = parent.Controls.GetEnumerator();
-			//Control result;
-			//try
-			//{
-			//	while (enumerator.MoveNext())
-			//	{
-			//	    Control control = (Control)enumerator.Current;
-			//	    if (control.Dock == DockStyle.Fill && control.Site != null && control.Site.DesignMode && !control.Controls.IsReadOnly)
-			//	    {
-			//	        result = this.FindDockSystemContainer(designerHost, control);
-			//	        return result;
-			//	    }
-			//	}
-			//    return parent;
-			//}
-			//finally
-			//{
-			//	IDisposable disposable = enumerator as IDisposable;
-			//	if (disposable != null)
-			//	{
-			//		disposable.Dispose();
-			//	}
-			//}
-			//return result;
 		}
 
 		internal FloatingContainer FindFloatingDockContainer(Guid guid) => GetFloatingDockContainerList().FirstOrDefault(@class => @class.Guid_0 == guid);
@@ -278,7 +244,7 @@ namespace TD.SandDock
 			if (dock != DockStyle.Fill && dock != DockStyle.None)
 			{
 				AutoHideBar result;
-				foreach (AutoHideBar control in this.arrayList_1)
+				foreach (AutoHideBar control in this._autoHideBars)
 				{
 					if (control.Dock == dock)
 					{
@@ -339,12 +305,12 @@ namespace TD.SandDock
 
 		public DockControl[] GetDockControls()
 		{
-			var array = new DockControl[this.hashtable_0.Count];
-			this.hashtable_0.Values.CopyTo(array, 0);
+			var array = new DockControl[this._windows.Count];
+			this._windows.Values.CopyTo(array, 0);
 			return array;
 		}
 
-		public DockControl[] GetDockControls(DockSituation dockSituation) => this.hashtable_0.Values.Cast<DockControl>().Where(control => control.DockSituation == dockSituation).ToArray();
+		public DockControl[] GetDockControls(DockSituation dockSituation) => this._windows.Values.Cast<DockControl>().Where(control => control.DockSituation == dockSituation).ToArray();
 
 	    private FloatingContainer[] GetFloatingDockContainerList() => this.arrayList_0.Cast<DockContainer>().Where(container => container.IsFloating).Cast<FloatingContainer>().ToArray();
 
@@ -369,14 +335,14 @@ namespace TD.SandDock
 		    XmlTextWriter xmlTextWriter = new XmlTextWriter(stringWriter) {Formatting = Formatting.Indented};
 		    xmlTextWriter.WriteStartDocument();
 			xmlTextWriter.WriteStartElement("Layout");
-		    foreach (var dockControl in this.hashtable_0.Values.Cast<DockControl>().Where(c => c.PersistState))
+		    foreach (var dockControl in this._windows.Values.Cast<DockControl>().Where(c => c.PersistState))
 		        SaveWindowLayout(dockControl, xmlTextWriter);
 
 		    DockContainer[] orderedDockedDockContainerList = this.GetOrderedDockedDockContainerList();
 			for (int i = 0; i < orderedDockedDockContainerList.Length; i++)
 			{
 				DockContainer dockContainer = orderedDockedDockContainerList[i];
-				if (dockContainer.LayoutSystem.Boolean_2)
+				if (dockContainer.LayoutSystem.PersistState)
 				{
 					SaveContainerLayout(dockContainer, xmlTextWriter);
 				}
@@ -385,13 +351,13 @@ namespace TD.SandDock
 			for (int j = 0; j < floatingDockContainerList.Length; j++)
 			{
 				DockContainer dockContainer2 = floatingDockContainerList[j];
-				if (dockContainer2.LayoutSystem.Boolean_2)
+				if (dockContainer2.LayoutSystem.PersistState)
 				{
 					SaveContainerLayout(dockContainer2, xmlTextWriter);
 				}
 			}
 			DocumentContainer documentContainer = this.FindDockedContainer(DockStyle.Fill) as DocumentContainer;
-			if (documentContainer != null && this.SerializeTabbedDocuments && documentContainer.LayoutSystem.Boolean_2)
+			if (documentContainer != null && this.SerializeTabbedDocuments && documentContainer.LayoutSystem.PersistState)
 			{
 				this.SaveContainerLayout(documentContainer, xmlTextWriter);
 			}
@@ -404,18 +370,15 @@ namespace TD.SandDock
 
 		private DockContainer[] GetOrderedDockedDockContainerList()
 		{
-			if (this.DockSystemContainer == null)
+		    if (DockSystemContainer == null)
+		        return new DockContainer[0];
+
+            ArrayList arrayList = new ArrayList();
+			for (var i = 0; i < DockSystemContainer.Controls.Count; i++)
 			{
-				return new DockContainer[0];
-			}
-			ArrayList arrayList = new ArrayList();
-			for (int i = 0; i < this.DockSystemContainer.Controls.Count; i++)
-			{
-				Control control = this.DockSystemContainer.Controls[i];
-				if (this.arrayList_0.Contains(control) && !(control is DocumentContainer))
-				{
-					arrayList.Add(control);
-				}
+				var control = DockSystemContainer.Controls[i];
+			    if (this.arrayList_0.Contains(control) && !(control is DocumentContainer))
+			        arrayList.Add(control);
 			}
 			return (DockContainer[])arrayList.ToArray(typeof(DockContainer));
 		}
@@ -449,11 +412,9 @@ namespace TD.SandDock
 
 	    public void LoadLayout()
 		{
-			var layoutSettings = new LayoutSettings(GetSettingsKey());
-			if (!layoutSettings.IsDefault && !string.IsNullOrEmpty(layoutSettings.LayoutXml))
-			{
-				this.SetLayout(layoutSettings.LayoutXml);
-			}
+			var settings = new LayoutSettings(GetSettingsKey());
+		    if (!settings.IsDefault && !string.IsNullOrEmpty(settings.LayoutXml))
+		        SetLayout(settings.LayoutXml);
 		}
 
 		protected internal virtual void OnActiveTabbedDocumentChanged(EventArgs e) => ActiveTabbedDocumentChanged?.Invoke(this, e);
@@ -461,19 +422,15 @@ namespace TD.SandDock
 	    private void OnActiveTabbedDocumentDockSituationChanged(object sender, EventArgs e)
 		{
 			DockControl dockControl = (DockControl)sender;
-			if (dockControl.DockSituation != DockSituation.Document)
-			{
-				this.SetActiveTabbedDocument(this.FindMostRecentlyUsedWindow(DockSituation.Document));
-			}
+		    if (dockControl.DockSituation != DockSituation.Document)
+		        SetActiveTabbedDocument(FindMostRecentlyUsedWindow(DockSituation.Document));
 		}
 
 		protected internal virtual void OnDockControlActivated(DockControlEventArgs e)
 		{
 		    DockControlActivated?.Invoke(this, e);
 		    if (e.DockControl.DockSituation == DockSituation.Document)
-			{
-				this.SetActiveTabbedDocument(e.DockControl);
-			}
+		        SetActiveTabbedDocument(e.DockControl);
 		}
 
 		protected virtual void OnDockControlAdded(DockControlEventArgs e)
@@ -658,7 +615,7 @@ namespace TD.SandDock
 			{
 				dockContainer.method_4();
 			}
-			foreach (AutoHideBar control in this.arrayList_1)
+			foreach (AutoHideBar control in this._autoHideBars)
 			{
 				control.method_1();
 			}
@@ -674,7 +631,7 @@ namespace TD.SandDock
 			}
 			if (container == null)
 			{
-				container = this.CreateNewDockContainer(LayoutUtilities.smethod_7(dockStyle), ContainerDockEdge.Outside, contentSize);
+				container = CreateNewDockContainer(LayoutUtilities.smethod_7(dockStyle), ContainerDockEdge.Outside, contentSize);
 			}
 			container.Dock = dockStyle;
 			container.ContentSize = contentSize;
@@ -684,7 +641,7 @@ namespace TD.SandDock
 				{
 					if (xmlNode.Name == "SplitLayoutSystem")
 					{
-						SplitLayoutSystem splitLayoutSystem = this.ReadSplitLayoutSystem(xmlNode, container);
+						SplitLayoutSystem splitLayoutSystem = ReadSplitLayoutSystem(xmlNode, container);
 						if (splitLayoutSystem != null)
 						{
 							container.LayoutSystem = splitLayoutSystem;
@@ -744,7 +701,7 @@ namespace TD.SandDock
 			controlLayoutSystem.Collapsed = collapsed;
 			if (empty != Guid.Empty)
 			{
-				controlLayoutSystem.Guid_0 = empty;
+				controlLayoutSystem.Guid = empty;
 			}
 			return controlLayoutSystem;
 		}
@@ -779,7 +736,7 @@ namespace TD.SandDock
 
 		private SplitLayoutSystem ReadSplitLayoutSystem(XmlNode splitNode, DockContainer container)
 		{
-			SizeF workingSize = SandDockManager.ConvertStringToSizeF(splitNode.Attributes["WorkingSize"].Value);
+			SizeF workingSize = ConvertStringToSizeF(splitNode.Attributes["WorkingSize"].Value);
 			workingSize.Width = Math.Max(workingSize.Width, 1f);
 			workingSize.Height = Math.Max(workingSize.Height, 1f);
 			Orientation splitMode = (Orientation)int.Parse(splitNode.Attributes["SplitMode"].Value);
@@ -825,11 +782,9 @@ namespace TD.SandDock
 
 		internal void RegisterAutoHideBar(AutoHideBar bar)
 		{
-			if (!this.arrayList_1.Contains(bar))
-			{
-				this.arrayList_1.Add(bar);
-			}
-			bar.AllowDrop = this.SelectTabsOnDrag;
+		    if (!_autoHideBars.Contains(bar))
+		        _autoHideBars.Add(bar);
+		    bar.AllowDrop = SelectTabsOnDrag;
 		}
 
 		internal void RegisterDockContainer(DockContainer container)
@@ -856,17 +811,17 @@ namespace TD.SandDock
 
 		internal void RegisterWindow(DockControl control)
 		{
-			this.hashtable_0[control.Guid] = control;
+			this._windows[control.Guid] = control;
 			this.OnDockControlAdded(new DockControlEventArgs(control));
 		}
 
 		internal void ReRegisterWindow(DockControl control, Guid oldGuid)
 		{
-			if (this.hashtable_0.Contains(oldGuid))
+			if (this._windows.Contains(oldGuid))
 			{
-				this.hashtable_0.Remove(oldGuid);
+				this._windows.Remove(oldGuid);
 			}
-			this.hashtable_0[control.Guid] = control;
+			this._windows[control.Guid] = control;
 		}
 
 		private void SaveContainerLayout(DockContainer container, XmlTextWriter writer)
@@ -929,7 +884,7 @@ namespace TD.SandDock
 				if (layoutSystem is ControlLayoutSystem)
 				{
 					ControlLayoutSystem controlLayoutSystem = (ControlLayoutSystem)layoutSystem;
-					writer.WriteAttributeString("Guid", controlLayoutSystem.Guid_0.ToString());
+					writer.WriteAttributeString("Guid", controlLayoutSystem.Guid.ToString());
 					writer.WriteAttributeString("Collapsed", this.ConvertBoolToString(controlLayoutSystem.Collapsed));
 					if (controlLayoutSystem.SelectedControl != null && controlLayoutSystem.SelectedControl.PersistState)
 					{
@@ -954,7 +909,7 @@ namespace TD.SandDock
 				writer.WriteAttributeString("SplitMode", ((int)splitLayoutSystem.SplitMode).ToString());
 				foreach (LayoutSystemBase layoutSystemBase in splitLayoutSystem.LayoutSystems)
 				{
-					if (layoutSystemBase.Boolean_2)
+					if (layoutSystemBase.PersistState)
 					{
 						this.SaveLayoutSystem(layoutSystemBase, writer);
 					}
@@ -970,22 +925,20 @@ namespace TD.SandDock
 
 		private void SetActiveTabbedDocument(DockControl value)
 		{
-			if (value != null && value.DockSituation != DockSituation.Document)
+		    if (value != null && value.DockSituation != DockSituation.Document)
+		        throw new ArgumentException("The specified window is not currently being displayed as a document, therefore it cannot be set as the active document.", "value");
+		    if (value != ActiveTabbedDocument)
 			{
-				throw new ArgumentException("The specified window is not currently being displayed as a document, therefore it cannot be set as the active document.", "value");
-			}
-			if (value != this.dockControl_0)
-			{
-				if (this.dockControl_0 != null)
+				if (this.ActiveTabbedDocument != null)
 				{
-					this.dockControl_0.DockSituationChanged -= new EventHandler(this.OnActiveTabbedDocumentDockSituationChanged);
-					this.dockControl_0.method_1();
+					this.ActiveTabbedDocument.DockSituationChanged -= OnActiveTabbedDocumentDockSituationChanged;
+					this.ActiveTabbedDocument.method_1();
 				}
-				this.dockControl_0 = value;
-				if (this.dockControl_0 != null)
+				this.ActiveTabbedDocument = value;
+				if (this.ActiveTabbedDocument != null)
 				{
-					this.dockControl_0.DockSituationChanged += new EventHandler(this.OnActiveTabbedDocumentDockSituationChanged);
-					this.dockControl_0.method_1();
+					this.ActiveTabbedDocument.DockSituationChanged += new EventHandler(this.OnActiveTabbedDocumentDockSituationChanged);
+					this.ActiveTabbedDocument.method_1();
 				}
 				this.OnActiveTabbedDocumentChanged(EventArgs.Empty);
 			}
@@ -1073,7 +1026,7 @@ namespace TD.SandDock
 				for (int k = 0; k < dockControls.Length; k++)
 				{
 					DockControl dockControl = dockControls[k];
-					if (!dockControl.Boolean_1)
+					if (!dockControl.IsInContainer)
 					{
 						if (dockControl.CloseAction == DockControlCloseAction.Dispose)
 						{
@@ -1101,15 +1054,13 @@ namespace TD.SandDock
 
 		private bool ShouldSerializeRenderer()
 		{
-			return !(this.rendererBase_0 is WhidbeyRenderer);
+			return !(_renderer is WhidbeyRenderer);
 		}
 
 		internal void UnregisterAutoHideBar(AutoHideBar bar)
 		{
-			if (this.arrayList_1.Contains(bar))
-			{
-				this.arrayList_1.Remove(bar);
-			}
+		    if (_autoHideBars.Contains(bar))
+		        _autoHideBars.Remove(bar);
 		}
 
 		internal void UnregisterDockContainer(DockContainer container)
@@ -1118,134 +1069,70 @@ namespace TD.SandDock
 			{
 				this.arrayList_0.Remove(container);
 			}
-			if (this.DocumentContainer == container)
-			{
-				this.DocumentContainer = null;
-			}
+		    if (DocumentContainer == container)
+		        DocumentContainer = null;
 		}
 
 		internal void UnregisterWindow(DockControl control)
 		{
-			this.hashtable_0.Remove(control.Guid);
-			this.OnDockControlRemoved(new DockControlEventArgs(control));
+			_windows.Remove(control.Guid);
+			OnDockControlRemoved(new DockControlEventArgs(control));
 		}
 
 		[Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-		public DockControl ActiveTabbedDocument
-		{
-			get
-			{
-				return this.dockControl_0;
-			}
-		}
+		public DockControl ActiveTabbedDocument { get; private set; }
 
-		[Category("Behavior"), DefaultValue(true), Description("Indicates whether DockContainers can be resized by the user.")]
+	    [Category("Behavior"), DefaultValue(true), Description("Indicates whether DockContainers can be resized by the user.")]
 		public bool AllowDockContainerResize
 		{
 			get
 			{
-				return this.bool_0;
+				return _allowDockContainerResize;
 			}
 			set
 			{
-				this.bool_0 = value;
-				DockContainer[] orderedDockedDockContainerList = this.GetOrderedDockedDockContainerList();
-				for (int i = 0; i < orderedDockedDockContainerList.Length; i++)
-				{
-					DockContainer dockContainer = orderedDockedDockContainerList[i];
-					dockContainer.CalculateAllMetricsAndLayout();
-				}
+				_allowDockContainerResize = value;
+			    foreach (var dockContainer in GetOrderedDockedDockContainerList())
+			        dockContainer.CalculateAllMetricsAndLayout();
 			}
 		}
 
 		[Category("Behavior"), DefaultValue(true), Description("Indicates whether the user will be able to use the keyboard to navigate between tabbed documents and dockable windows.")]
-		public bool AllowKeyboardNavigation
-		{
-			get
-			{
-				return this.bool_1;
-			}
-			set
-			{
-				this.bool_1 = value;
-			}
-		}
+		public bool AllowKeyboardNavigation { get; set; } = true;
 
-		[Category("Behavior"), DefaultValue(true), Description("Indicates whether the middle mouse button can be used to close windows by their tabs.")]
-		public bool AllowMiddleButtonClosure
-		{
-			get
-			{
-				return this.bool_3;
-			}
-			set
-			{
-				this.bool_3 = value;
-			}
-		}
+	    [Category("Behavior"), DefaultValue(true), Description("Indicates whether the middle mouse button can be used to close windows by their tabs.")]
+		public bool AllowMiddleButtonClosure { get; set; } = true;
 
-		[Category("Behavior"), DefaultValue(false), Description("Indicates whether the user-configured window layout is automatically persisted.")]
-		public bool AutoSaveLayout
-		{
-			get
-			{
-				return this.bool_7;
-			}
-			set
-			{
-				this.bool_7 = value;
-			}
-		}
+	    [Category("Behavior"), DefaultValue(false), Description("Indicates whether the user-configured window layout is automatically persisted.")]
+		public bool AutoSaveLayout { get; set; }
 
-		[Category("Appearance"), DefaultValue(typeof(TD.SandDock.Rendering.BorderStyle), "Flat"), Description("The type of border to be drawn around the tabbed document area.")]
-		public TD.SandDock.Rendering.BorderStyle BorderStyle
+	    [Category("Appearance"), DefaultValue(typeof(TD.SandDock.Rendering.BorderStyle), "Flat"), Description("The type of border to be drawn around the tabbed document area.")]
+		public Rendering.BorderStyle BorderStyle
 		{
 			get
 			{
-				return this.borderStyle_0;
+				return _borderStyle;
 			}
 			set
 			{
-				this.borderStyle_0 = value;
-				if (this.DocumentContainer != null)
-				{
-					this.DocumentContainer.BorderStyle = this.borderStyle_0;
-				}
+				_borderStyle = value;
+			    if (DocumentContainer != null)
+			        DocumentContainer.BorderStyle = _borderStyle;
 			}
 		}
 
 		[Category("Appearance"), DefaultValue(typeof(DockingHints), "TranslucentFill"), Description("Indicates the type of visual artifacts drawn to the screen to indicate size and position while docking.")]
-		public DockingHints DockingHints
-		{
-			get
-			{
-				return this.dockingHints_0;
-			}
-			set
-			{
-				this.dockingHints_0 = value;
-			}
-		}
+		public DockingHints DockingHints { get; set; } = DockingHints.TranslucentFill;
 
-		[Category("Behavior"), DefaultValue(typeof(DockingManager), "Whidbey"), Description("Indicates the method of user interaction during a docking operation.")]
-		public DockingManager DockingManager
-		{
-			get
-			{
-				return this.dockingManager_0;
-			}
-			set
-			{
-				this.dockingManager_0 = value;
-			}
-		}
+	    [Category("Behavior"), DefaultValue(typeof(DockingManager), "Whidbey"), Description("Indicates the method of user interaction during a docking operation.")]
+		public DockingManager DockingManager { get; set; } = DockingManager.Whidbey;
 
-		[Category("Advanced"), Description("The control that will act as a container for all docked windows. You should rarely, if ever, need to change this property.")]
+	    [Category("Advanced"), Description("The control that will act as a container for all docked windows. You should rarely, if ever, need to change this property.")]
 		public Control DockSystemContainer
 		{
 			get
 			{
-				return this.control_0;
+				return _dockSystemContainer;
 			}
 			set
 			{
@@ -1253,7 +1140,7 @@ namespace TD.SandDock
 			        throw new ArgumentNullException(nameof(value));
 			    if (value is DockContainer)
 			        throw new ArgumentException("A DockContainer cannot act as a host for a SandDock layout.");
-			    if (value != this.control_0)
+			    if (_dockSystemContainer != value)
 				{
 					ArrayList arrayList = new ArrayList();
 					foreach (DockContainer dockContainer in this.arrayList_0)
@@ -1263,14 +1150,14 @@ namespace TD.SandDock
 					        arrayList.Add(dockContainer);
 					    }
 					}
-					if (this.control_0 != null)
+					if (this._dockSystemContainer != null)
 					{
-						this.control_0.Resize -= this.OnDockSystemContainerResize;
+						this._dockSystemContainer.Resize -= OnDockSystemContainerResize;
 					}
-					this.control_0 = value;
-					if (this.control_0 != null)
+					this._dockSystemContainer = value;
+					if (this._dockSystemContainer != null)
 					{
-						this.control_0.Resize += this.OnDockSystemContainerResize;
+						this._dockSystemContainer.Resize += OnDockSystemContainerResize;
 					}
 					value.Controls.AddRange((Control[])arrayList.ToArray(typeof(Control)));
 					return;
@@ -1289,17 +1176,15 @@ namespace TD.SandDock
 		{
 			get
 			{
-				return this.documentOverflowMode_0;
+				return _documentOverflow;
 			}
 			set
 			{
-				if (value != this.documentOverflowMode_0)
+				if (_documentOverflow != value)
 				{
-					this.documentOverflowMode_0 = value;
-					if (this.DocumentContainer != null)
-					{
-						this.DocumentContainer.DocumentOverflow = this.DocumentOverflow;
-					}
+					_documentOverflow = value;
+				    if (DocumentContainer != null)
+				        DocumentContainer.DocumentOverflow = _documentOverflow;
 				}
 			}
 		}
@@ -1315,15 +1200,13 @@ namespace TD.SandDock
 		{
 			get
 			{
-				return this.bool_2;
+				return _enableTabbedDocuments;
 			}
 			set
 			{
-				if (this.FindDockedContainer(DockStyle.Fill) != null)
-				{
-					throw new InvalidOperationException("This property can only be changed when there are no DockControls being shown in the centre of the container.");
-				}
-				this.bool_2 = value;
+			    if (FindDockedContainer(DockStyle.Fill) != null)
+			        throw new InvalidOperationException("This property can only be changed when there are no DockControls being shown in the centre of the container.");
+			    _enableTabbedDocuments = value;
 			}
 		}
 
@@ -1332,17 +1215,15 @@ namespace TD.SandDock
 		{
 			get
 			{
-				return this.bool_8;
+				return _integralClose;
 			}
 			set
 			{
-				if (value != this.bool_8)
+				if (_integralClose != value)
 				{
-					this.bool_8 = value;
-					if (this.DocumentContainer != null)
-					{
-						this.DocumentContainer.IntegralClose = this.IntegralClose;
-					}
+					_integralClose = value;
+				    if (DocumentContainer != null)
+				        DocumentContainer.IntegralClose = _integralClose;
 				}
 			}
 		}
@@ -1358,28 +1239,26 @@ namespace TD.SandDock
 		{
 			get
 			{
-				return this.form_0;
+				return _ownerForm;
 			}
 			set
 			{
-				if (this.form_0 != null && this.form_0 == value)
+			    if (_ownerForm != null && _ownerForm == value)
+			        return;
+			    if (_ownerForm != null)
 				{
-					return;
+					this._ownerForm.Activated -= new EventHandler(this.OnOwnerFormActivated);
+					this._ownerForm.Deactivate -= new EventHandler(this.OnOwnerFormDeactivated);
+					this._ownerForm.Load -= new EventHandler(this.OnOwnerFormLoad);
+					this._ownerForm.Closing -= new CancelEventHandler(this.OnOwnerFormClosing);
 				}
-				if (this.form_0 != null)
+				this._ownerForm = value;
+				if (this._ownerForm != null)
 				{
-					this.form_0.Activated -= new EventHandler(this.OnOwnerFormActivated);
-					this.form_0.Deactivate -= new EventHandler(this.OnOwnerFormDeactivated);
-					this.form_0.Load -= new EventHandler(this.OnOwnerFormLoad);
-					this.form_0.Closing -= new CancelEventHandler(this.OnOwnerFormClosing);
-				}
-				this.form_0 = value;
-				if (this.form_0 != null)
-				{
-					this.form_0.Activated += new EventHandler(this.OnOwnerFormActivated);
-					this.form_0.Deactivate += new EventHandler(this.OnOwnerFormDeactivated);
-					this.form_0.Load += new EventHandler(this.OnOwnerFormLoad);
-					this.form_0.Closing += new CancelEventHandler(this.OnOwnerFormClosing);
+					this._ownerForm.Activated += new EventHandler(this.OnOwnerFormActivated);
+					this._ownerForm.Deactivate += new EventHandler(this.OnOwnerFormDeactivated);
+					this._ownerForm.Load += new EventHandler(this.OnOwnerFormLoad);
+					this._ownerForm.Closing += new CancelEventHandler(this.OnOwnerFormClosing);
 				}
 			}
 		}
@@ -1392,22 +1271,20 @@ namespace TD.SandDock
 		{
 			get
 			{
-				return this.rendererBase_0;
+				return _renderer;
 			}
 			set
 			{
-				if (value == null)
+			    if (value == null)
+			        throw new ArgumentNullException();
+			    if (_renderer != null)
 				{
-					throw new ArgumentNullException();
+					_renderer.MetricsChanged -= OnRendererMetricsChanged;
+					_renderer.Dispose();
 				}
-				if (this.rendererBase_0 != null)
-				{
-					this.rendererBase_0.MetricsChanged -= this.OnRendererMetricsChanged;
-					this.rendererBase_0.Dispose();
-				}
-				this.rendererBase_0 = value;
-				this.rendererBase_0.MetricsChanged += this.OnRendererMetricsChanged;
-				this.PropagateNewRenderer();
+				_renderer = value;
+				_renderer.MetricsChanged += OnRendererMetricsChanged;
+				PropagateNewRenderer();
 			}
 		}
 
@@ -1416,14 +1293,14 @@ namespace TD.SandDock
 		{
 			get
 			{
-				return this.bool_6;
+				return _selectTabsOnDrag;
 			}
 			set
 			{
-				this.bool_6 = value;
+				_selectTabsOnDrag = value;
 			    foreach (DockContainer dockContainer in this.arrayList_0)
 			        dockContainer.AllowDrop = value;
-			    foreach (AutoHideBar control in this.arrayList_1)
+			    foreach (AutoHideBar control in this._autoHideBars)
 			        control.AllowDrop = value;
 			}
 		}
@@ -1442,15 +1319,11 @@ namespace TD.SandDock
 				base.Site = value;
 				if (value != null)
 				{
-					IDesignerHost designerHost = (IDesignerHost)this.GetService(typeof(IDesignerHost));
-					if (designerHost != null && designerHost.RootComponent is Form)
-					{
-						this.form_0 = (Form)designerHost.RootComponent;
-					}
-					if (designerHost != null && designerHost.RootComponent is Control && this.DockSystemContainer == null)
-					{
-						this.DockSystemContainer = this.FindDockSystemContainer(designerHost, (Control)designerHost.RootComponent);
-					}
+					var designerHost = (IDesignerHost)GetService(typeof(IDesignerHost));
+				    if (designerHost?.RootComponent is Form)
+				        _ownerForm = (Form) designerHost.RootComponent;
+				    if (designerHost?.RootComponent is Control && DockSystemContainer == null)
+				        DockSystemContainer = FindDockSystemContainer(designerHost, (Control) designerHost.RootComponent);
 				}
 			}
 		}
@@ -1475,60 +1348,28 @@ namespace TD.SandDock
 
         public event ShowControlContextMenuEventHandler ShowControlContextMenu;
 
-		//private ActiveFilesListEventHandler activeFilesListEventHandler_0;
-
 		internal ArrayList arrayList_0;
 
-		internal ArrayList arrayList_1;
+		private readonly ArrayList _autoHideBars;
 
-		private bool bool_0 = true;
+		private bool _allowDockContainerResize = true;
 
-		private bool bool_1 = true;
+	    private bool _enableTabbedDocuments = true;
 
-		private bool bool_2 = true;
+	    private bool _selectTabsOnDrag;
 
-		private bool bool_3 = true;
+	    private bool _integralClose;
 
-        private bool bool_6;
+        private Rendering.BorderStyle _borderStyle = Rendering.BorderStyle.Flat;
 
-		private bool bool_7;
+		private Control _dockSystemContainer;
 
-		private bool bool_8;
+	    private DocumentOverflowMode _documentOverflow = DocumentOverflowMode.Scrollable;
 
-        private TD.SandDock.Rendering.BorderStyle borderStyle_0 = TD.SandDock.Rendering.BorderStyle.Flat;
+		private Form _ownerForm;
 
-		private Control control_0;
+		private readonly Hashtable _windows;
 
-		//private DockControlClosingEventHandler dockControlClosingEventHandler_0;
-
-		//private DockControlEventHandler dockControlEventHandler_0;
-
-		//private DockControlEventHandler dockControlEventHandler_1;
-
-		//private DockControlEventHandler dockControlEventHandler_2;
-
-		private DockControl dockControl_0;
-
-		private DockingHints dockingHints_0 = DockingHints.TranslucentFill;
-
-		private DockingManager dockingManager_0 = DockingManager.Whidbey;
-
-        private DocumentOverflowMode documentOverflowMode_0 = DocumentOverflowMode.Scrollable;
-
-		//private EventHandler eventHandler_0;
-
-		//private EventHandler eventHandler_1;
-
-		//private EventHandler eventHandler_2;
-
-		private Form form_0;
-
-		private Hashtable hashtable_0;
-
-        private RendererBase rendererBase_0;
-
-		//private ResolveDockControlEventHandler resolveDockControlEventHandler_0;
-
-		//private ShowControlContextMenuEventHandler showControlContextMenuEventHandler_0;
+        private RendererBase _renderer;
 	}
 }

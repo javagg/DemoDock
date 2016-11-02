@@ -21,11 +21,9 @@ namespace TD.SandDock
 		protected override void CreateHandle()
 		{
 			int newIndex = -1;
-			if (Parent != null)
-			{
-				newIndex = Parent.Controls.IndexOf(this);
-			}
-			base.CreateHandle();
+		    if (Parent != null)
+		        newIndex = Parent.Controls.IndexOf(this);
+		    base.CreateHandle();
 		    Parent?.Controls.SetChildIndex(this, newIndex);
 		}
 
@@ -42,14 +40,12 @@ namespace TD.SandDock
 
 		protected override void OnPaintBackground(PaintEventArgs pevent)
 		{
-			if (base.ClientRectangle == Rectangle.Empty)
-			{
-				return;
-			}
+		    if (ClientRectangle == Rectangle.Empty)
+		        return;
 		    var parent = Parent as TabControl;
 		    if (parent != null && parent.Renderer.ShouldDrawTabControlBackground)
 			{
-				parent.Renderer.DrawTabControlBackground(pevent.Graphics, base.ClientRectangle, this.BackColor, true);
+				parent.Renderer.DrawTabControlBackground(pevent.Graphics, ClientRectangle, BackColor, true);
 				return;
 			}
 			base.OnPaintBackground(pevent);
@@ -77,7 +73,7 @@ namespace TD.SandDock
 			set
 			{
 				base.BackColor = value;
-                (Parent as TabControl)?.Invalidate(this.TabBounds);
+                (Parent as TabControl)?.Invalidate(TabBounds);
 			}
 		}
 
@@ -136,13 +132,13 @@ namespace TD.SandDock
 		{
 			get
 			{
-				return this.int_0;
+				return _maximumTabWidth;
 			}
 			set
 			{
 			    if (value < 0)
 			        throw new ArgumentException("Value must be greater than or equal to zero.");
-			    this.int_0 = value;
+			    _maximumTabWidth = value;
 			    (Parent as TabControl)?.method_3();
 			}
 		}
@@ -155,11 +151,11 @@ namespace TD.SandDock
 		{
 			get
 			{
-				return this.image_0;
+				return _tabImage;
 			}
 			set
 			{
-				this.image_0 = value;
+				_tabImage = value;
 			    (Parent as TabControl)?.method_3();
 			}
 		}
@@ -235,11 +231,9 @@ namespace TD.SandDock
 
 		internal double double_0;
 
-		//private EventHandler eventHandler_0;
+		private Image _tabImage;
 
-		private Image image_0;
-
-		private int int_0;
+		private int _maximumTabWidth;
 
 		internal int int_1;
 	}

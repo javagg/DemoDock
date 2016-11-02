@@ -20,7 +20,7 @@ namespace TD.SandDock
 
 		protected override void Dispose(bool disposing)
 		{
-			if (disposing && !base.IsDisposed)
+			if (disposing && !IsDisposed)
 			{
 				if (base.ContainsFocus && this.control0_0.Manager.OwnerForm != null && this.control0_0.Manager.OwnerForm.IsMdiContainer && this.control0_0.Manager.OwnerForm.ActiveMdiChild != null)
 				{
@@ -44,7 +44,7 @@ namespace TD.SandDock
 
 		private void method_0(Point point_0)
 		{
-			this.class9_0 = new Class9(this.control0_0, this, point_0);
+			this.class9_0 = new ResizingManager(this.control0_0, this, point_0);
 			this.class9_0.Event_0 += this.method_2;
 			this.class9_0.ResizingManagerFinished += this.method_3;
 		}
@@ -259,7 +259,7 @@ namespace TD.SandDock
 
 		private Class0 class0_0;
 
-		private Class9 class9_0;
+		private ResizingManager class9_0;
 
 		private AutoHideBar control0_0;
 
