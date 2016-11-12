@@ -3,7 +3,7 @@ using System.Drawing;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Windows.Forms;
-
+using TD.Util;
 namespace TD.SandDock
 {
 	internal static class Native
@@ -102,7 +102,7 @@ namespace TD.SandDock
 		private static extern IntPtr CreateBitmap(int nWidth, int nHeight, int nPlanes, int nBitsPerPixel, short[] lpvBits);
 
 		[DllImport("gdi32.dll")]
-		private static extern IntPtr CreateBrushIndirect(Class13 lb);
+		private static extern IntPtr CreateBrushIndirect(Logbrush lb);
 
 		[DllImport("gdi32.dll")]
 		private static extern bool DeleteObject(HandleRef hObject);
@@ -122,75 +122,58 @@ namespace TD.SandDock
         [DllImport("user32.dll")]
         public static extern bool SystemParametersInfo(int nAction, int nParam, ref int i, int nUpdate);
 
-        public static void smethod_0(Control control_0, Rectangle rectangle_0, bool bool_0, int int_0)
+        public static void DrawIndicators(Control control, Rectangle bounds, bool bool_0, int size)
 		{
-			smethod_1(control_0, new Rectangle(rectangle_0.X, rectangle_0.Y, rectangle_0.Width, 4));
-			if (!bool_0)
-			{
-				smethod_1(control_0, new Rectangle(rectangle_0.X, rectangle_0.Y + 4, 4, rectangle_0.Height - 8));
-				smethod_1(control_0, new Rectangle(rectangle_0.Right - 4, rectangle_0.Y + 4, 4, rectangle_0.Height - 8));
-				smethod_1(control_0, new Rectangle(rectangle_0.X, rectangle_0.Bottom - 4, rectangle_0.Width, 4));
-				return;
-			}
-			smethod_1(control_0, new Rectangle(rectangle_0.X, rectangle_0.Y + 4, 4, rectangle_0.Height - 4 - int_0));
-			smethod_1(control_0, new Rectangle(rectangle_0.Right - 4, rectangle_0.Y + 4, 4, rectangle_0.Height - 4 - int_0));
-			smethod_1(control_0, new Rectangle(rectangle_0.X, rectangle_0.Bottom - int_0, 10, 4));
-			smethod_1(control_0, new Rectangle(rectangle_0.X + 80, rectangle_0.Bottom - int_0, rectangle_0.Width - 80, 4));
-			smethod_1(control_0, new Rectangle(rectangle_0.X + 10, rectangle_0.Bottom - 4, 70, 4));
-			smethod_1(control_0, new Rectangle(rectangle_0.X + 10, rectangle_0.Bottom - int_0, 4, int_0 - 4));
-			smethod_1(control_0, new Rectangle(rectangle_0.X + 76, rectangle_0.Bottom - int_0, 4, int_0 - 4));
+			DrawIndicator(control, new Rectangle(bounds.X, bounds.Y, bounds.Width, 4));
+		    if (bool_0)
+		    {
+		        DrawIndicator(control, new Rectangle(bounds.X, bounds.Y + 4, 4, bounds.Height - 4 - size));
+		        DrawIndicator(control, new Rectangle(bounds.Right - 4, bounds.Y + 4, 4, bounds.Height - 4 - size));
+		        DrawIndicator(control, new Rectangle(bounds.X, bounds.Bottom - size, 10, 4));
+		        DrawIndicator(control, new Rectangle(bounds.X + 80, bounds.Bottom - size, bounds.Width - 80, 4));
+		        DrawIndicator(control, new Rectangle(bounds.X + 10, bounds.Bottom - 4, 70, 4));
+		        DrawIndicator(control, new Rectangle(bounds.X + 10, bounds.Bottom - size, 4, size - 4));
+		        DrawIndicator(control, new Rectangle(bounds.X + 76, bounds.Bottom - size, 4, size - 4));
+		    }
+		    else
+		    {
+		        DrawIndicator(control, new Rectangle(bounds.X, bounds.Y + 4, 4, bounds.Height - 8));
+		        DrawIndicator(control, new Rectangle(bounds.Right - 4, bounds.Y + 4, 4, bounds.Height - 8));
+		        DrawIndicator(control, new Rectangle(bounds.X, bounds.Bottom - 4, bounds.Width, 4));
+		    }
 		}
 
-		public static void smethod_1(Control control_0, Rectangle rectangle_0)
+		public static void DrawIndicator(Control control, Rectangle bounds)
 		{
-			IntPtr handle = IntPtr.Zero;
-			if (!(rectangle_0 == Rectangle.Empty))
-			{
-				if (control_0 == null)
-				{
-					handle = IntPtr.Zero;
-				}
-				else
-				{
-					handle = control_0.Handle;
-				}
-				IntPtr dC = GetDC(new HandleRef(control_0, handle));
-				IntPtr handle2 = smethod_2();
-				IntPtr handle3 = SelectObject(new HandleRef(control_0, dC), new HandleRef(null, handle2));
-				PatBlt(new HandleRef(control_0, dC), rectangle_0.X, rectangle_0.Y, rectangle_0.Width, rectangle_0.Height, 5898313);
-				SelectObject(new HandleRef(control_0, dC), new HandleRef(null, handle3));
-				DeleteObject(new HandleRef(null, handle2));
-				ReleaseDC(new HandleRef(control_0, handle), new HandleRef(null, dC));
-				return;
-			}
+		    if (bounds == Rectangle.Empty) return;
+            var handle = control?.Handle ?? IntPtr.Zero;
+            var dc = GetDC(new HandleRef(control, handle));
+		    var brush = CreateBrush();
+		    var handle3 = SelectObject(new HandleRef(control, dc), new HandleRef(null, brush));
+		    PatBlt(new HandleRef(control, dc), bounds.X, bounds.Y, bounds.Width, bounds.Height, 5898313);
+		    SelectObject(new HandleRef(control, dc), new HandleRef(null, handle3));
+		    DeleteObject(new HandleRef(null, brush));
+		    ReleaseDC(new HandleRef(control, handle), new HandleRef(null, dc));
 		}
 
-		private static IntPtr smethod_2()
+        [GuessedName]
+		private static IntPtr CreateBrush()
 		{
-			short[] array = new short[8];
-			for (int i = 0; i < 8; i++)
-			{
-				array[i] = (short)(21845 << (i & 1));
-			}
-			IntPtr intPtr = CreateBitmap(8, 8, 1, 1, array);
-			IntPtr result = CreateBrushIndirect(new Class13
-			{
-				int_1 = ColorTranslator.ToWin32(Color.Black),
-				int_0 = 3,
-				intptr_0 = intPtr
-			});
-			DeleteObject(new HandleRef(null, intPtr));
-			return result;
+			var array = new short[8];
+		    for (var i = 0; i < 8; i++)
+		        array[i] = (short) (21845 << (i & 1));
+		    var bitmap = CreateBitmap(8, 8, 1, 1, array);
+		    var brush = CreateBrushIndirect(new Logbrush {Color = ColorTranslator.ToWin32(Color.Black), Style = 3, Hatch = bitmap});
+			DeleteObject(new HandleRef(null, bitmap));
+			return brush;
 		}
 
 		[StructLayout(LayoutKind.Sequential)]
-		private class Class13
+		private class Logbrush
 		{
-		    public int int_0;
-
-			public int int_1;
-
-			public IntPtr intptr_0;
+		    public int Style;
+			public int Color;
+			public IntPtr Hatch;
 		}
 	}
 }

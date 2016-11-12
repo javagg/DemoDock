@@ -8,25 +8,21 @@ namespace TD.SandDock.Design
 	{
 	    protected override bool GetHitTest(Point point)
 		{
-			point = this.dockContainer_1.PointToClient(point);
-			LayoutSystemBase layoutSystemAt = this.dockContainer_1.GetLayoutSystemAt(point);
-			if (layoutSystemAt is DocumentLayoutSystem)
-			{
-				DocumentLayoutSystem documentLayoutSystem = (DocumentLayoutSystem)layoutSystemAt;
-				if (documentLayoutSystem.LeftScrollButtonBounds.Contains(point) || documentLayoutSystem.RightScrollButtonBounds.Contains(point))
-				{
-					return true;
-				}
-			}
-			return base.GetHitTest(point);
+			point = _container.PointToClient(point);
+			var layoutSystem = _container.GetLayoutSystemAt(point);
+		    if (!(layoutSystem is DocumentLayoutSystem)) return base.GetHitTest(point);
+		    var documentLayoutSystem = (DocumentLayoutSystem) layoutSystem;
+		    if (documentLayoutSystem.LeftScrollButtonBounds.Contains(point) || documentLayoutSystem.RightScrollButtonBounds.Contains(point))
+		        return true;
+		    return base.GetHitTest(point);
 		}
 
 		public override void Initialize(IComponent component)
 		{
 			base.Initialize(component);
-			this.dockContainer_1 = (DockContainer)component;
+			_container = (DockContainer)component;
 		}
 
-		private DockContainer dockContainer_1;
+		private DockContainer _container;
 	}
 }

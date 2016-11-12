@@ -20,40 +20,23 @@ namespace TD.SandDock
 		{
 		    if (destinationType == null)
 		        throw new ArgumentNullException();
-		    if (destinationType == typeof(InstanceDescriptor) && value.GetType().Name == "SplitLayoutSystem")
-			{
-				Type type = value.GetType();
-				Type baseType = type.BaseType;
-				MemberInfo constructor = type.GetConstructor(new Type[]
-				{
-					typeof(SizeF),
-					typeof(Orientation),
-					this.MakeArrayType(baseType)
-				});
-				PropertyInfo property = type.GetProperty("LayoutSystems", BindingFlags.Instance | BindingFlags.Public);
-				ICollection collection = (ICollection)property.GetValue(value, null);
-				object[] array = (object[])Activator.CreateInstance(this.MakeArrayType(baseType), new object[]
-				{
-					collection.Count
-				});
-				collection.CopyTo(array, 0);
-				PropertyInfo property2 = type.GetProperty("WorkingSize", BindingFlags.Instance | BindingFlags.Public);
-				SizeF sizeF = (SizeF)property2.GetValue(value, null);
-				PropertyInfo property3 = type.GetProperty("SplitMode", BindingFlags.Instance | BindingFlags.Public);
-				Orientation orientation = (Orientation)property3.GetValue(value, null);
-				return new InstanceDescriptor(constructor, new object[]
-				{
-					sizeF,
-					orientation,
-					array
-				});
-			}
-			return base.ConvertTo(context, culture, value, destinationType);
+		    if (destinationType != typeof(InstanceDescriptor) || value.GetType().Name != "SplitLayoutSystem")
+		        return base.ConvertTo(context, culture, value, destinationType);
+
+            Type type = value.GetType();
+		    Type baseType = type.BaseType;
+		    MemberInfo constructor = type.GetConstructor(new[]{typeof(SizeF),typeof(Orientation),MakeArrayType(baseType)});
+		    PropertyInfo property = type.GetProperty("LayoutSystems", BindingFlags.Instance | BindingFlags.Public);
+		    ICollection collection = (ICollection)property.GetValue(value, null);
+		    object[] array = (object[])Activator.CreateInstance(MakeArrayType(baseType), collection.Count);
+		    collection.CopyTo(array, 0);
+		    PropertyInfo property2 = type.GetProperty("WorkingSize", BindingFlags.Instance | BindingFlags.Public);
+		    SizeF sizeF = (SizeF)property2.GetValue(value, null);
+		    PropertyInfo property3 = type.GetProperty("SplitMode", BindingFlags.Instance | BindingFlags.Public);
+		    Orientation orientation = (Orientation)property3.GetValue(value, null);
+		    return new InstanceDescriptor(constructor, new object[]{sizeF,orientation,array});
 		}
 
-		private Type MakeArrayType(Type firstType)
-		{
-			return firstType.Assembly.GetType(firstType.FullName + "[]");
-		}
+		private Type MakeArrayType(Type firstType) => firstType.Assembly.GetType(firstType.FullName + "[]");
 	}
 }

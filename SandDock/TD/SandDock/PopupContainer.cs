@@ -13,9 +13,9 @@ namespace TD.SandDock
 			this.control0_0 = bar;
 			SetStyle(ControlStyles.ResizeRedraw | ControlStyles.AllPaintingInWmPaint | ControlStyles.OptimizedDoubleBuffer, true);
 			SetStyle(ControlStyles.Selectable, false);
-		    this.class0_0 = new Class0(this) {Boolean_0 = false};
-		    this.class0_0.Event_0 += this.method_4;
-			this.BackColor = SystemColors.Control;
+		    this._toolTips0 = new ToolTips(this) {Boolean_0 = false};
+		    this._toolTips0.Event_0 += this.method_4;
+			BackColor = SystemColors.Control;
 		}
 
 		protected override void Dispose(bool disposing)
@@ -29,10 +29,10 @@ namespace TD.SandDock
 				this.control0_0.method_6(true);
 				this.control0_0 = null;
 				this.ControlLayoutSystem_0 = null;
-				if (this.class0_0 != null)
+				if (this._toolTips0 != null)
 				{
-					this.class0_0.Dispose();
-					this.class0_0 = null;
+					this._toolTips0.Dispose();
+					this._toolTips0 = null;
 				}
 				if (this.class9_0 != null)
 				{
@@ -253,11 +253,11 @@ namespace TD.SandDock
 					break;
 				}
 				base.Bounds = bounds;
-				this.ControlLayoutSystem_0.Int32_0 = value;
+				this.ControlLayoutSystem_0.PopupSize = value;
 			}
 		}
 
-		private Class0 class0_0;
+		private ToolTips _toolTips0;
 
 		private ResizingManager class9_0;
 

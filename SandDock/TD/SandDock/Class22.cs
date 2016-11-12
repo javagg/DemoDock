@@ -19,11 +19,11 @@ namespace TD.SandDock
 			{
 				if (xmlNode_0.Attributes["LastFocused"] != null)
 				{
-					dockControl.MetaData.method_0(DateTime.FromFileTime((long)converter.ConvertFromString(null, CultureInfo.InvariantCulture, xmlNode_0.Attributes["LastFocused"].Value)));
+					dockControl.MetaData.SaveFocused(DateTime.FromFileTime((long)converter.ConvertFromString(null, CultureInfo.InvariantCulture, xmlNode_0.Attributes["LastFocused"].Value)));
 				}
 				if (xmlNode_0.Attributes["DockedSize"] != null)
 				{
-					dockControl.MetaData.method_2((int)converter2.ConvertFromString(xmlNode_0.Attributes["DockedSize"].Value));
+					dockControl.MetaData.SaveDockedContentSize((int)converter2.ConvertFromString(xmlNode_0.Attributes["DockedSize"].Value));
 				}
 				if (xmlNode_0.Attributes["PopupSize"] != null)
 				{
@@ -33,11 +33,11 @@ namespace TD.SandDock
 				dockControl.FloatingSize = (Size)converter3.ConvertFromString(null, CultureInfo.InvariantCulture, xmlNode_0.Attributes["FloatingSize"].Value);
 				if (xmlNode_0.Attributes["LastOpenDockSituation"] != null)
 				{
-					dockControl.MetaData.method_3((DockSituation)Enum.Parse(typeof(DockSituation), xmlNode_0.Attributes["LastOpenDockSituation"].Value));
+					dockControl.MetaData.SaveOpenDockSituation((DockSituation)Enum.Parse(typeof(DockSituation), xmlNode_0.Attributes["LastOpenDockSituation"].Value));
 				}
 				if (xmlNode_0.Attributes["LastFixedDockSituation"] != null)
 				{
-					dockControl.MetaData.method_4((DockSituation)Enum.Parse(typeof(DockSituation), xmlNode_0.Attributes["LastFixedDockSituation"].Value));
+					dockControl.MetaData.SaveFixedDockSituation((DockSituation)Enum.Parse(typeof(DockSituation), xmlNode_0.Attributes["LastFixedDockSituation"].Value));
 				}
 				if (xmlNode_0.Attributes["LastFixedDockLocation"] != null)
 				{
@@ -46,11 +46,11 @@ namespace TD.SandDock
 					{
 						containerDockLocation = ContainerDockLocation.Right;
 					}
-					dockControl.MetaData.method_1(containerDockLocation);
+					dockControl.MetaData.SaveFixedDockSide(containerDockLocation);
 				}
 				if (xmlNode_0.Attributes["LastFloatingWindowGuid"] != null)
 				{
-					dockControl.MetaData.method_5(new Guid(xmlNode_0.Attributes["LastFloatingWindowGuid"].Value));
+					dockControl.MetaData.SaveFloatingWindowGuid(new Guid(xmlNode_0.Attributes["LastFloatingWindowGuid"].Value));
 				}
 				if (xmlNode_0.Attributes["LastDockContainerCount"] != null)
 				{
@@ -134,7 +134,7 @@ namespace TD.SandDock
 			xmlTextWriter_0.WriteAttributeString(string_0 + "WorkingSize", SandDockManager.ConvertSizeFToString(class18_0.SizeF_0));
 			xmlTextWriter_0.WriteAttributeString(string_0 + "WindowGroupGuid", class18_0.Guid_0.ToString());
 			xmlTextWriter_0.WriteAttributeString(string_0 + "IndexInWindowGroup", converter.ConvertToString(null, CultureInfo.InvariantCulture, class18_0.Int32_1));
-			xmlTextWriter_0.WriteAttributeString(string_0 + "SplitPath", Class22.smethod_5(class18_0.Int32_0));
+			xmlTextWriter_0.WriteAttributeString(string_0 + "SplitPath", smethod_5(class18_0.Int32_0));
 		}
 
 		private static string smethod_5(int[] int_0)

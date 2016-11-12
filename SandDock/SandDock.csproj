@@ -51,7 +51,7 @@
     <Compile Include="TD\SandDock\Class23.cs" />
     <Compile Include="TD\SandDock\Class24.cs" />
     <Compile Include="TD\SandDock\FloatingContainer.cs">
-      <SubType>Component</SubType>
+      <SubType>Form</SubType>
     </Compile>
     <Compile Include="TD\SandDock\AutoHideBar.cs">
       <SubType>Component</SubType>
@@ -68,21 +68,12 @@
     </Compile>
     <Compile Include="TD\SandDock\DockControl.cs" />
     <Compile Include="TD\SandDock\DockingRules.cs" />
-    <Compile Include="TD\SandDock\DocumentContainer.cs">
-      <SubType>Component</SubType>
-    </Compile>
+    <Compile Include="TD\SandDock\DocumentContainer.cs" />
     <Compile Include="TD\SandDock\DocumentLayoutSystem.cs" />
-    <Compile Include="TD\SandDock\Form1.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="TD\SandDock\Form2.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="TD\SandDock\Form3.cs">
-      <SubType>Form</SubType>
-    </Compile>
     <Compile Include="TD\SandDock\LayoutSettings.cs" />
-    <Compile Include="TD\SandDock\LayoutSystemBase.cs" />
+    <Compile Include="TD\SandDock\LayoutSystemBase.cs">
+      <SubType>Form</SubType>
+    </Compile>
     <Compile Include="TD\SandDock\LayoutUtilities.cs" />
     <Compile Include="TD\SandDock\ResolveDockControlEventArgs.cs" />
     <Compile Include="TD\SandDock\SandDockLanguage.cs" />
@@ -110,7 +101,7 @@
     <Compile Include="TD\SandDock\Rendering\RendererBase.cs" />
     <Compile Include="TD\SandDock\Rendering\ThemeAwareRendererBase.cs" />
     <Compile Include="TD\SandDock\Rendering\WhidbeyRenderer.cs" />
-    <Compile Include="TD\Util\Class0.cs" />
+    <Compile Include="TD\Util\ToolTips.cs" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Properties\" />

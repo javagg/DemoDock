@@ -9,18 +9,17 @@ namespace TD.SandDock
 	{
 		public TabbedDocument()
 		{
-			method_18();
+			Init();
 		}
 
 		public TabbedDocument(SandDockManager manager, Control control, string text) : base(manager, control, text)
 		{
-			method_18();
+			Init();
 		}
 
 		protected override DockingRules CreateDockingRules() => new DockingRules(false, true, false);
         
-        // Init
-	    private void method_18()
+	    private void Init()
 		{
 	        if (Text.Length == 0)
 	            Text = "Tabbed Document";

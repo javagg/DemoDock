@@ -4,146 +4,126 @@ using System.ComponentModel;
 using System.ComponentModel.Design;
 using System.Drawing;
 using System.Drawing.Drawing2D;
+using System.Linq;
 using System.Windows.Forms;
 using System.Windows.Forms.Design;
-using TD.SandDock.Rendering;
 
 namespace TD.SandDock.Design
 {
-	internal class DockControlDesigner : ParentControlDesigner
-	{
-	    protected override void Dispose(bool disposing)
-		{
-			this.dockControl_0.ControlAdded -= this.dockControl_0_ControlRemoved;
-			this.dockControl_0.ControlRemoved -= this.dockControl_0_ControlRemoved;
-			this.iselectionService_0.SelectionChanged -= this.iselectionService_0_SelectionChanged;
-			base.Dispose(disposing);
-		}
+    internal class DockControlDesigner : ParentControlDesigner
+    {
+        protected override void Dispose(bool disposing)
+        {
+            _control.ControlAdded -= OnControlAddedOrRemoved;
+            _control.ControlRemoved -= OnControlAddedOrRemoved;
+            _selectionService.SelectionChanged -= OnSelectionChanged;
+            base.Dispose(disposing);
+        }
 
-		private void dockControl_0_ControlRemoved(object sender, ControlEventArgs e)
-		{
-			if (this.dockControl_0.Controls.Count == 0 || this.dockControl_0.Controls.Count == 1)
-			{
-				this.dockControl_0.Invalidate();
-			}
-		}
+        private void OnControlAddedOrRemoved(object sender, ControlEventArgs e)
+        {
+            if (_control.Controls.Count == 0 || _control.Controls.Count == 1)
+                _control.Invalidate();
+        }
 
-		public override void Initialize(IComponent component)
-		{
-			base.Initialize(component);
-			if (!(component is DockControl))
-			{
-				SandDockLanguage.ShowCachedAssemblyError(component.GetType().Assembly, base.GetType().Assembly);
-			}
-			this.icomponentChangeService_0 = (IComponentChangeService)this.GetService(typeof(IComponentChangeService));
-			this.idesignerHost_0 = (IDesignerHost)this.GetService(typeof(IDesignerHost));
-			this.iselectionService_0 = (ISelectionService)this.GetService(typeof(ISelectionService));
-			this.dockControl_0 = (DockControl)component;
-			this.dockControl_0.method_2();
-			this.iselectionService_0.SelectionChanged += new EventHandler(this.iselectionService_0_SelectionChanged);
-			this.dockControl_0.ControlAdded += new ControlEventHandler(this.dockControl_0_ControlRemoved);
-			this.dockControl_0.ControlRemoved += new ControlEventHandler(this.dockControl_0_ControlRemoved);
-			if (this.dockControl_0.Collapsed)
-			{
-				this.Collapsed = true;
-				this.dockControl_0.Collapsed = false;
-			}
-		}
+        public override void Initialize(IComponent component)
+        {
+            base.Initialize(component);
+            if (!(component is DockControl))
+                SandDockLanguage.ShowCachedAssemblyError(component.GetType().Assembly, GetType().Assembly);
 
-		private void iselectionService_0_SelectionChanged(object sender, EventArgs e)
-		{
-			bool componentSelected;
-			if ((componentSelected = this.iselectionService_0.GetComponentSelected(base.Component)) != this.bool_1)
-			{
-				this.bool_1 = componentSelected;
-				((DockControl)base.Component).LayoutSystem.vmethod_9();
-			}
-		}
+            _changeService = (IComponentChangeService)GetService(typeof(IComponentChangeService));
+            _designerHost = (IDesignerHost)GetService(typeof(IDesignerHost));
+            _selectionService = (ISelectionService)GetService(typeof(ISelectionService));
+            _control = (DockControl)component;
+            _control.method_2();
+            _selectionService.SelectionChanged += OnSelectionChanged;
+            _control.ControlAdded += OnControlAddedOrRemoved;
+            _control.ControlRemoved += OnControlAddedOrRemoved;
+            if (_control.Collapsed)
+            {
+                Collapsed = true;
+                _control.Collapsed = false;
+            }
+        }
 
-		protected override void OnPaintAdornments(PaintEventArgs pe)
-		{
-			base.OnPaintAdornments(pe);
-			if (this.dockControl_0.Controls.Count == 0)
-			{
-				Rectangle clientRectangle = this.dockControl_0.ClientRectangle;
-				clientRectangle.Inflate(-10, -10);
-				using (Font font = new Font(this.dockControl_0.Font.Name, 6.75f))
-				{
-					TextRenderer.DrawText(pe.Graphics, "To redock windows, click and drag their tabs or titlebars to other locations on your form.", font, clientRectangle, SystemColors.ControlDarkDark, TextFormatFlags.HorizontalCenter | TextFormatFlags.VerticalCenter | TextFormatFlags.WordBreak);
-				}
-			}
-			if (this.dockControl_0.BorderStyle == Rendering.BorderStyle.None)
-			{
-				using (Pen pen = new Pen(SystemColors.ControlDark))
-				{
-					pen.DashStyle = DashStyle.Dot;
-					Rectangle clientRectangle2 = this.dockControl_0.ClientRectangle;
-					clientRectangle2.Width--;
-					clientRectangle2.Height--;
-					pe.Graphics.DrawRectangle(pen, clientRectangle2);
-				}
-			}
-		}
+        private void OnSelectionChanged(object sender, EventArgs e)
+        {
+            var selected = _selectionService.GetComponentSelected(Component);
+            if (selected == _selected) return;
+            _selected = selected;
+            ((DockControl)Component).LayoutSystem.vmethod_9();
+        }
 
-		protected override void PreFilterProperties(IDictionary properties)
-		{
-			base.PreFilterProperties(properties);
-			string[] array = {
-				"Collapsed"
-			};
-			string[] array2 = array;
-			foreach (string key in array2)
-			{
-			    var propertyDescriptor = (PropertyDescriptor)properties[key];
-			    if (propertyDescriptor != null)
-			    {
-			        properties[key] = TypeDescriptor.CreateProperty(typeof(DockControlDesigner), propertyDescriptor, new Attribute[0]);
-			    }
-			}
-		}
+        protected override void OnPaintAdornments(PaintEventArgs pe)
+        {
+            base.OnPaintAdornments(pe);
+            if (_control.Controls.Count == 0)
+            {
+                var rect = _control.ClientRectangle;
+                rect.Inflate(-10, -10);
+                using (var font = new Font(_control.Font.Name, 6.75f))
+                    TextRenderer.DrawText(pe.Graphics,
+                        "To redock windows, click and drag their tabs or titlebars to other locations on your form.", font,
+                        rect, SystemColors.ControlDarkDark, TextFormatFlags.HorizontalCenter | TextFormatFlags.VerticalCenter | TextFormatFlags.WordBreak);
+            }
+            if (_control.BorderStyle != Rendering.BorderStyle.None) return;
+            using (var pen = new Pen(SystemColors.ControlDark))
+            {
+                pen.DashStyle = DashStyle.Dot;
+                var rect = _control.ClientRectangle;
+                rect.Width--;
+                rect.Height--;
+                pe.Graphics.DrawRectangle(pen, rect);
+            }
+        }
 
-		public bool Collapsed
-		{
-			get
-			{
-				return (bool)base.ShadowProperties["Collapsed"];
-			}
-			set
-			{
-				base.ShadowProperties["Collapsed"] = value;
-				if (this.dockControl_0.LayoutSystem != null && !DockControlDesigner.bool_0)
-				{
-					DockControlDesigner.bool_0 = true;
-					try
-					{
-						foreach (DockControl dockControl in this.dockControl_0.LayoutSystem.Controls)
-						{
-							if (dockControl != this.dockControl_0)
-							{
-								TypeDescriptor.GetProperties(dockControl)["Collapsed"].SetValue(dockControl, value);
-							}
-						}
-					}
-					finally
-					{
-						DockControlDesigner.bool_0 = false;
-					}
-				}
-			}
-		}
+        protected override void PreFilterProperties(IDictionary properties)
+        {
+            base.PreFilterProperties(properties);
+            foreach (var key in new[] { "Collapsed" })
+            {
+                var p = (PropertyDescriptor)properties[key];
+                if (p != null)
+                    properties[key] = TypeDescriptor.CreateProperty(typeof(DockControlDesigner), p);
+            }
+        }
 
-		public override SelectionRules SelectionRules => SelectionRules.None;
+        public bool Collapsed
+        {
+            get
+            {
+                return (bool)ShadowProperties["Collapsed"];
+            }
+            set
+            {
+                ShadowProperties["Collapsed"] = value;
+                if (_control.LayoutSystem == null || _collapsed) return;
+                _collapsed = true;
+                try
+                {
+                    foreach (var control in _control.LayoutSystem.Controls.Cast<DockControl>().Where(c => c != _control))
+                        TypeDescriptor.GetProperties(control)["Collapsed"].SetValue(control, value);
+                }
+                finally
+                {
+                    _collapsed = false;
+                }
+            }
+        }
 
-	    private static bool bool_0;
+        public override SelectionRules SelectionRules => SelectionRules.None;
 
-		private bool bool_1;
+        private static bool _collapsed;
 
-		private DockControl dockControl_0;
+        private bool _selected;
 
-		private IComponentChangeService icomponentChangeService_0;
+        private DockControl _control;
 
-		private IDesignerHost idesignerHost_0;
+        private IComponentChangeService _changeService;
 
-		private ISelectionService iselectionService_0;
-	}
+        private IDesignerHost _designerHost;
+
+        private ISelectionService _selectionService;
+    }
 }

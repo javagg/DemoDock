@@ -19,39 +19,24 @@ namespace TD.SandDock
 		{
 		    if (destinationType == null)
 		        throw new ArgumentNullException();
-		    if (destinationType == typeof(InstanceDescriptor))
-			{
-				if (value.GetType().Name == "ControlLayoutSystem" || value.GetType().Name == "DocumentLayoutSystem")
-				{
-					Type type = value.GetType();
-					type.Assembly.GetType("TD.SandDock.LayoutSystemBase");
-					Type type2 = type.Assembly.GetType("TD.SandDock.DockControl");
-					ConstructorInfo constructor = type.GetConstructor(new Type[]
-					{
-						typeof(SizeF),
-						this.MakeArrayType(type2),
-						type2
-					});
-					PropertyInfo property = type.GetProperty("Controls", BindingFlags.Instance | BindingFlags.Public);
-					ICollection collection = (ICollection)property.GetValue(value, null);
-					object[] array = (object[])Activator.CreateInstance(this.MakeArrayType(type2), new object[]
-					{
-						collection.Count
-					});
-					collection.CopyTo(array, 0);
-					PropertyInfo property2 = type.GetProperty("WorkingSize", BindingFlags.Instance | BindingFlags.Public);
-					SizeF sizeF = (SizeF)property2.GetValue(value, null);
-					PropertyInfo property3 = type.GetProperty("SelectedControl", BindingFlags.Instance | BindingFlags.Public);
-					object value2 = property3.GetValue(value, null);
-					return new InstanceDescriptor(constructor, new[]
-					{
-						sizeF,
-						array,
-						value2
-					});
-				}
-			}
-			return base.ConvertTo(context, culture, value, destinationType);
+		    if (destinationType != typeof(InstanceDescriptor))
+		        return base.ConvertTo(context, culture, value, destinationType);
+		    if (value.GetType().Name != "ControlLayoutSystem" && value.GetType().Name != "DocumentLayoutSystem")
+		        return base.ConvertTo(context, culture, value, destinationType);
+
+            Type type = value.GetType();
+		    type.Assembly.GetType("TD.SandDock.LayoutSystemBase");
+		    Type type2 = type.Assembly.GetType("TD.SandDock.DockControl");
+		    ConstructorInfo constructor = type.GetConstructor(new[]{typeof(SizeF),MakeArrayType(type2),type2});
+		    PropertyInfo property = type.GetProperty("Controls", BindingFlags.Instance | BindingFlags.Public);
+		    ICollection collection = (ICollection)property.GetValue(value, null);
+		    object[] array = (object[])Activator.CreateInstance(MakeArrayType(type2), collection.Count);
+		    collection.CopyTo(array, 0);
+		    PropertyInfo property2 = type.GetProperty("WorkingSize", BindingFlags.Instance | BindingFlags.Public);
+		    SizeF sizeF = (SizeF)property2.GetValue(value, null);
+		    PropertyInfo property3 = type.GetProperty("SelectedControl", BindingFlags.Instance | BindingFlags.Public);
+		    object value2 = property3.GetValue(value, null);
+		    return new InstanceDescriptor(constructor, new[]{sizeF,array,value2});
 		}
 
 		private Type MakeArrayType(Type firstType)

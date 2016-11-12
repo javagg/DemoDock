@@ -20,11 +20,9 @@ namespace TD.SandDock
 
 		protected override void CreateHandle()
 		{
-			int newIndex = -1;
-		    if (Parent != null)
-		        newIndex = Parent.Controls.IndexOf(this);
+		    var i = Parent?.Controls.IndexOf(this) ?? -1;
 		    base.CreateHandle();
-		    Parent?.Controls.SetChildIndex(this, newIndex);
+		    Parent?.Controls.SetChildIndex(this, i);
 		}
 
 	    protected override void OnCreateControl()
@@ -44,11 +42,9 @@ namespace TD.SandDock
 		        return;
 		    var parent = Parent as TabControl;
 		    if (parent != null && parent.Renderer.ShouldDrawTabControlBackground)
-			{
-				parent.Renderer.DrawTabControlBackground(pevent.Graphics, ClientRectangle, BackColor, true);
-				return;
-			}
-			base.OnPaintBackground(pevent);
+		        parent.Renderer.DrawTabControlBackground(pevent.Graphics, ClientRectangle, BackColor, true);
+		    else
+		        base.OnPaintBackground(pevent);
 		}
 
 		[Browsable(false), EditorBrowsable(EditorBrowsableState.Never)]
@@ -229,7 +225,7 @@ namespace TD.SandDock
 
 		internal bool bool_0;
 
-		internal double double_0;
+		internal double double_0tw;
 
 		private Image _tabImage;
 

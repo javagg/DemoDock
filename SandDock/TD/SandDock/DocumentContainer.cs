@@ -12,10 +12,44 @@ namespace TD.SandDock
         Last
     }
 
+    public static class WMConstants
+    {
+        public const int SWP_SHOWWINDOW = 64;
+        
+        public const int SWP_NOACTIVATE = 16;
+
+        public const int SWP_HIDEWINDOW = 128;
+
+        public const int SWP_NOZORDER = 4;
+
+        public const int WM_KEYFIRST = 256;
+        public const int WM_KEYLAST = 264;
+        public const int WM_KEYUP = 257;
+        public const int WM_SYSKEYDOWN = 260;
+        public const int WM_SYSKEYUP = 261;
+        public const int WM_PAINT = 15;
+        private const int int_5 = 9;
+        private const int int_6 = 17;
+        private const int MK_MBUTTON = 16;
+        public const int WM_MOUSEACTIVATE = 33;
+        public const int WM_NCLBUTTONDOWN= 161;
+
+        public const int WM_NCLBUTTONDBLCLK = 163;
+        public const int WM_NCRBUTTONDOWN = 164;
+
+        public const int VK_SHIFT = 0x10;
+        
+        public const int VK_CONTROL = 0x11;
+
+        public const int VK_MENU = 0x12;
+
+        public const int MK_RBUTTON = 2;
+    }
+
     [Designer(typeof(DocumentContainerDesigner)), ToolboxItem(false)]
 	public class DocumentContainer : DockContainer, IMessageFilter
 	{
-		public DocumentContainer()
+	    public DocumentContainer()
 		{
 			Dock = DockStyle.Fill;
 			BackColor = SystemColors.AppWorkspace;
@@ -71,7 +105,7 @@ namespace TD.SandDock
 
 		bool IMessageFilter.PreFilterMessage(ref Message m)
 		{
-			if (m.Msg == 256 && m.WParam.ToInt32() == 9)
+			if (m.Msg == WMConstants.WM_KEYFIRST && m.WParam.ToInt32() == 9)
 			{
 				if ((ModifierKeys & Keys.Shift) != Keys.Shift)
 				{
@@ -92,18 +126,18 @@ namespace TD.SandDock
 				this.method_17();
 				return true;
 			}
-			if (m.Msg == 256 && m.WParam.ToInt32() == 16)
+			if (m.Msg == WMConstants.WM_KEYFIRST && m.WParam.ToInt32() == 16)
 			{
 				return true;
 			}
-			if (m.Msg == 257)
+			if (m.Msg == WMConstants.WM_KEYUP)
 			{
 				if (m.WParam.ToInt32() == 17)
 				{
 					goto IL_DB;
 				}
 			}
-			if (m.Msg != 256)
+			if (m.Msg != WMConstants.WM_KEYFIRST)
 			{
 				return false;
 			}
@@ -222,16 +256,6 @@ namespace TD.SandDock
 		private DockControl[] dockControl_0;
 
 		private DocumentOverflowMode _documentOverflowMode = DocumentOverflowMode.Scrollable;
-
-		private const int int_3 = 256;
-
-		private const int int_4 = 257;
-
-		private const int int_5 = 9;
-
-		private const int int_6 = 17;
-
-		private const int int_7 = 16;
 
 		private int int_8 = -1;
 	}
