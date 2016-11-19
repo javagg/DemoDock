@@ -438,7 +438,7 @@ namespace TD.SandDock
 		    DockContainer?.Invalidate(this.rectangle_2);
 		}
 
-        private new bool Boolean_2
+        private bool Boolean_2
 		{
 			get
 			{
@@ -458,7 +458,7 @@ namespace TD.SandDock
 			}
 		}
 
-		private new DockControl DockControl_0
+		private DockControl DockControl_0
 		{
 			get
 			{
