@@ -61,14 +61,14 @@ namespace TD.SandDock
     {
         public DockContainer()
         {
-            this._splitLayout = new SplitLayoutSystem();
-            this._splitLayout.vmethod_2(this);
-            base.SetStyle(ControlStyles.ResizeRedraw | ControlStyles.AllPaintingInWmPaint | ControlStyles.OptimizedDoubleBuffer, true);
-            base.SetStyle(ControlStyles.Selectable, false);
-            this.layoutSystems = new ArrayList();
-            this._toolTips0 = new ToolTips(this) { Boolean_0 = false };
-            this._toolTips0.Event_0 += this.method_16;
-            this.BackColor = SystemColors.Control;
+            _splitLayout = new SplitLayoutSystem();
+            _splitLayout.SetDockContainer(this);
+            SetStyle(ControlStyles.ResizeRedraw | ControlStyles.AllPaintingInWmPaint | ControlStyles.OptimizedDoubleBuffer, true);
+            SetStyle(ControlStyles.Selectable, false);
+            layoutSystems = new ArrayList();
+            _toolTips0 = new ToolTips(this) { Boolean_0 = false };
+            _toolTips0.Event_0 += method_16;
+            BackColor = SystemColors.Control;
         }
 
         public void CalculateAllMetricsAndLayout()
@@ -79,39 +79,39 @@ namespace TD.SandDock
             if (Capture && !IsFloating)
                 Capture = false;
 
-            this.rectangle_1 = this.DisplayRectangle;
+            rectangle_1 = DisplayRectangle;
             if (!AllowResize)
             {
-                this.rectangle_0 = Rectangle.Empty;
+                rectangle_0 = Rectangle.Empty;
             }
             else
             {
                 switch (Dock)
                 {
                     case DockStyle.Top:
-                        this.rectangle_0 = new Rectangle(this.rectangle_1.Left, this.rectangle_1.Bottom - 4, this.rectangle_1.Width, 4);
-                        this.rectangle_1.Height = this.rectangle_1.Height - 4;
+                        rectangle_0 = new Rectangle(rectangle_1.Left, rectangle_1.Bottom - 4, rectangle_1.Width, 4);
+                        rectangle_1.Height = rectangle_1.Height - 4;
                         break;
                     case DockStyle.Bottom:
-                        this.rectangle_0 = new Rectangle(this.rectangle_1.Left, this.rectangle_1.Top, this.rectangle_1.Width, 4);
-                        this.rectangle_1.Offset(0, 4);
-                        this.rectangle_1.Height = this.rectangle_1.Height - 4;
+                        rectangle_0 = new Rectangle(rectangle_1.Left, rectangle_1.Top, rectangle_1.Width, 4);
+                        rectangle_1.Offset(0, 4);
+                        rectangle_1.Height = rectangle_1.Height - 4;
                         break;
                     case DockStyle.Left:
-                        this.rectangle_0 = new Rectangle(this.rectangle_1.Right - 4, this.rectangle_1.Top, 4, this.rectangle_1.Height);
-                        this.rectangle_1.Width = this.rectangle_1.Width - 4;
+                        rectangle_0 = new Rectangle(rectangle_1.Right - 4, rectangle_1.Top, 4, rectangle_1.Height);
+                        rectangle_1.Width = rectangle_1.Width - 4;
                         break;
                     case DockStyle.Right:
-                        this.rectangle_0 = new Rectangle(this.rectangle_1.Left, this.rectangle_1.Top, 4, this.rectangle_1.Height);
-                        this.rectangle_1.Offset(4, 0);
-                        this.rectangle_1.Width = this.rectangle_1.Width - 4;
+                        rectangle_0 = new Rectangle(rectangle_1.Left, rectangle_1.Top, 4, rectangle_1.Height);
+                        rectangle_1.Offset(4, 0);
+                        rectangle_1.Width = rectangle_1.Width - 4;
                         break;
                     default:
-                        this.rectangle_0 = Rectangle.Empty;
+                        rectangle_0 = Rectangle.Empty;
                         break;
                 }
             }
-            this.method_10(this._splitLayout, this.rectangle_1);
+            method_10(_splitLayout, rectangle_1);
             Invalidate();
         }
 
@@ -124,7 +124,7 @@ namespace TD.SandDock
             if (controls == null)
                 throw new ArgumentNullException(nameof(controls));
 
-            var layout = this.vmethod_1();
+            var layout = vmethod_1();
             layout.WorkingSize = size;
             if (controls.Length != 0)
                 layout.Controls.AddRange(controls);
@@ -135,30 +135,31 @@ namespace TD.SandDock
         {
             if (disposing)
             {
-                if (this._renderer != null)
+                if (_renderer != null)
                 {
-                    this._renderer.Dispose();
-                    this._renderer = null;
+                    _renderer.Dispose();
+                    _renderer = null;
                 }
                 Manager = null;
-                this._toolTips0.Event_0 -= this.method_16;
-                this._toolTips0.Dispose();
+                _toolTips0.Event_0 -= method_16;
+                _toolTips0.Dispose();
             }
             base.Dispose(disposing);
         }
 
         public LayoutSystemBase GetLayoutSystemAt(Point position)
         {
+           // layoutSystems.Cast<LayoutSystemBase>()
             LayoutSystemBase layoutSystemBase = null;
-            foreach (LayoutSystemBase layoutSystemBase2 in this.layoutSystems)
+            foreach (LayoutSystemBase layoutSystemBase2 in layoutSystems)
             {
-                if (layoutSystemBase2.Bounds.Contains(position) && (!(layoutSystemBase2 is ControlLayoutSystem) || !((ControlLayoutSystem)layoutSystemBase2).Collapsed))
+                if (!layoutSystemBase2.Bounds.Contains(position) ||
+                    (layoutSystemBase2 is ControlLayoutSystem && ((ControlLayoutSystem) layoutSystemBase2).Collapsed))
+                    continue;
+                layoutSystemBase = layoutSystemBase2;
+                if (layoutSystemBase is ControlLayoutSystem)
                 {
-                    layoutSystemBase = layoutSystemBase2;
-                    if (layoutSystemBase is ControlLayoutSystem)
-                    {
-                        break;
-                    }
+                    break;
                 }
             }
             return layoutSystemBase;
@@ -181,22 +182,21 @@ namespace TD.SandDock
             using (var graphics = CreateGraphics())
             {
                 Renderer.StartRenderSession(HotkeyPrefix.None);
-                layoutSystem.Layout(Renderer, graphics, bounds, layoutSystem == this._splitLayout && IsFloating);
+                layoutSystem.Layout(Renderer, graphics, bounds, layoutSystem == _splitLayout && IsFloating);
                 Renderer.FinishRenderSession();
             }
         }
 
         internal void OnActivated(object sender, EventArgs e)
         {
-            foreach (var controlLayoutSystem in this.layoutSystems.OfType<ControlLayoutSystem>().Where(controlLayoutSystem => controlLayoutSystem.method_8()))
+            foreach (var controlLayoutSystem in layoutSystems.OfType<ControlLayoutSystem>().Where(controlLayoutSystem => controlLayoutSystem.method_8()))
             {
-                break;
             }
         }
 
         internal void OnDeactivate(object sender, EventArgs e)
         {
-            foreach (ControlLayoutSystem layoutSystemBase in this.layoutSystems.OfType<ControlLayoutSystem>())
+            foreach (var layoutSystemBase in layoutSystems.OfType<ControlLayoutSystem>())
             {
                 layoutSystemBase.method_9();
             }
@@ -204,20 +204,20 @@ namespace TD.SandDock
 
         private void method_13()
         {
-            this.class11_0.Event_0 -= this.method_14;
-            this.class11_0.ResizingManagerFinished -= this.method_15;
-            this.class11_0 = null;
+            class11_0.Cancalled -= method_14;
+            class11_0.ResizingManagerFinished -= method_15;
+            class11_0 = null;
         }
 
         private void method_14(object sender, EventArgs e)
         {
-            this.method_13();
+            method_13();
         }
 
         private void method_15(int size)
         {
-            this.method_13();
-            this.ContentSize = size;
+            method_13();
+            ContentSize = size;
         }
 
         private string method_16(Point point)
@@ -228,22 +228,22 @@ namespace TD.SandDock
 
         internal void method_2()
         {
-            this.int_1++;
-            this._splitLayout.vmethod_2(null);
-            foreach (var layoutSystemBase in this.layoutSystems.OfType<ControlLayoutSystem>())
+            int_1++;
+            _splitLayout.SetDockContainer(null);
+            foreach (var layoutSystemBase in layoutSystems.OfType<ControlLayoutSystem>())
                 layoutSystemBase.Controls.Clear();
-            this._splitLayout = new SplitLayoutSystem();
+            _splitLayout = new SplitLayoutSystem();
         }
 
         internal void method_3()
         {
-            if (this.int_1 > 0)
+            if (int_1 > 0)
             {
-                this.int_1--;
+                int_1--;
             }
-            if (this.int_1 == 0)
+            if (int_1 == 0)
             {
-                this.vmethod_2();
+                vmethod_2();
             }
         }
 
@@ -254,12 +254,12 @@ namespace TD.SandDock
 
         private void method_5(bool bool_2)
         {
-            this.layoutSystems.Clear();
+            layoutSystems.Clear();
             _layoutSystem = null;
-            this.method_7(this._splitLayout);
-            if (!bool_2 && this.int_1 == 0)
+            method_7(_splitLayout);
+            if (!bool_2 && int_1 == 0)
             {
-                this.method_9();
+                method_9();
                 Application.Idle += OnIdle;
             }
         }
@@ -271,22 +271,22 @@ namespace TD.SandDock
             while (LayoutSystem.Optimize())
                 flag = true;
             if (flag)
-                this.method_5(true);
+                method_5(true);
         }
 
         private void method_7(LayoutSystemBase layoutSystemBase_1)
         {
-            this.layoutSystems.Add(layoutSystemBase_1);
+            layoutSystems.Add(layoutSystemBase_1);
             if (layoutSystemBase_1 is SplitLayoutSystem)
             {
                 foreach (LayoutSystemBase layoutSystemBase_2 in ((SplitLayoutSystem)layoutSystemBase_1).LayoutSystems)
                 {
-                    this.method_7(layoutSystemBase_2);
+                    method_7(layoutSystemBase_2);
                 }
             }
         }
 
-        internal bool method_8() => !this.layoutSystems.OfType<ControlLayoutSystem>().Any();
+        internal bool method_8() => !layoutSystems.OfType<ControlLayoutSystem>().Any();
 
         internal void method_9()
         {
@@ -355,76 +355,74 @@ namespace TD.SandDock
             //{
             //	return;
             //}
-            if (this._layoutSystem != null)
+            if (_layoutSystem != null)
             {
-                this._layoutSystem.OnMouseDown(e);
+                _layoutSystem.OnMouseDown(e);
                 return;
             }
-            if (this.rectangle_0.Contains(e.X, e.Y) && this.Manager != null && e.Button == MouseButtons.Left)
+            if (rectangle_0.Contains(e.X, e.Y) && Manager != null && e.Button == MouseButtons.Left)
             {
-                this.class11_0?.Dispose();
-                this.class11_0 = new Class11(this.Manager, this, new Point(e.X, e.Y));
-                this.class11_0.Event_0 += this.method_14;
-                this.class11_0.ResizingManagerFinished += this.method_15;
+                class11_0?.Dispose();
+                class11_0 = new Class11(Manager, this, new Point(e.X, e.Y));
+                class11_0.Cancalled += method_14;
+                class11_0.ResizingManagerFinished += method_15;
             }
         }
 
         protected override void OnMouseLeave(EventArgs e)
         {
             base.OnMouseLeave(e);
-            if (this._layoutSystem != null)
+            if (_layoutSystem != null)
             {
-                this._layoutSystem.OnMouseLeave();
-                this._layoutSystem = null;
+                _layoutSystem.OnMouseLeave();
+                _layoutSystem = null;
             }
         }
 
         protected override void OnMouseMove(MouseEventArgs e)
         {
             base.OnMouseMove(e);
-            if (!base.Capture)
+            if (!Capture)
             {
-                LayoutSystemBase layoutSystemAt = this.GetLayoutSystemAt(new Point(e.X, e.Y));
+                LayoutSystemBase layoutSystemAt = GetLayoutSystemAt(new Point(e.X, e.Y));
                 if (layoutSystemAt != null)
                 {
-                    if (this._layoutSystem != null)
+                    if (_layoutSystem != null)
                     {
-                        if (this._layoutSystem != layoutSystemAt)
+                        if (_layoutSystem != layoutSystemAt)
                         {
-                            this._layoutSystem.OnMouseLeave();
+                            _layoutSystem.OnMouseLeave();
                         }
                     }
                     layoutSystemAt.OnMouseMove(e);
-                    this._layoutSystem = layoutSystemAt;
+                    _layoutSystem = layoutSystemAt;
                     return;
                 }
-                if (this._layoutSystem != null)
+                if (_layoutSystem != null)
                 {
-                    this._layoutSystem.OnMouseLeave();
-                    this._layoutSystem = null;
+                    _layoutSystem.OnMouseLeave();
+                    _layoutSystem = null;
                 }
-                if (!this.rectangle_0.Contains(e.X, e.Y))
+                if (!rectangle_0.Contains(e.X, e.Y))
                 {
                     Cursor.Current = Cursors.Default;
                     return;
                 }
-                if (this.Boolean_1)
+                if (Boolean_1)
                 {
                     Cursor.Current = Cursors.VSplit;
                     return;
                 }
                 Cursor.Current = Cursors.HSplit;
-                return;
             }
             else
             {
-                if (this._layoutSystem == null)
+                if (_layoutSystem == null)
                 {
-                    this.class11_0?.OnMouseMove(new Point(e.X, e.Y));
+                    class11_0?.OnMouseMove(new Point(e.X, e.Y));
                     return;
                 }
-                this._layoutSystem.OnMouseMove(e);
-                return;
+                _layoutSystem.OnMouseMove(e);
             }
         }
 
@@ -435,12 +433,12 @@ namespace TD.SandDock
             //{
             //	return;
             //}
-            if (this._layoutSystem != null)
+            if (_layoutSystem != null)
             {
-                this._layoutSystem.OnMouseUp(e);
+                _layoutSystem.OnMouseUp(e);
                 return;
             }
-            this.class11_0?.Commit();
+            class11_0?.Commit();
         }
 
         protected override void OnPaint(PaintEventArgs e)
@@ -451,11 +449,11 @@ namespace TD.SandDock
             Renderer.StartRenderSession(HotkeyPrefix.None);
             LayoutSystem.vmethod_4(Renderer, e.Graphics, Font);
             if (AllowResize)
-                Renderer.DrawSplitter(container, this, e.Graphics, this.rectangle_0,Dock == DockStyle.Top || Dock == DockStyle.Bottom? Orientation.Horizontal: Orientation.Vertical);
+                Renderer.DrawSplitter(container, this, e.Graphics, rectangle_0,Dock == DockStyle.Top || Dock == DockStyle.Bottom? Orientation.Horizontal: Orientation.Vertical);
             Renderer.FinishRenderSession();
             using (var brush = new SolidBrush(Color.FromArgb(50, Color.White)))
             using (var font = new Font(Font.FontFamily.Name, 14f, FontStyle.Bold))
-                e.Graphics.DrawString("evaluation", font, brush, this.rectangle_1.Left + 4, this.rectangle_1.Top - 4,StringFormat.GenericTypographic);
+                e.Graphics.DrawString("evaluation", font, brush, rectangle_1.Left + 4, rectangle_1.Top - 4,StringFormat.GenericTypographic);
         }
 
         protected override void OnPaintBackground(PaintEventArgs pevent)
@@ -486,7 +484,7 @@ namespace TD.SandDock
 
         internal virtual void vmethod_2()
         {
-            this.method_5(false);
+            method_5(false);
         }
 
         [Browsable(false)]
@@ -531,11 +529,11 @@ namespace TD.SandDock
             }
         }
 
-        internal bool Boolean_0 => DesignMode;
+        internal bool IsInDesign => DesignMode;
 
         internal bool Boolean_1 => Dock == DockStyle.Left || Dock == DockStyle.Right;
 
-        internal bool Boolean_2 => this.int_1 > 0;
+        internal bool Boolean_2 => int_1 > 0;
 
         [Browsable(false)]
         internal virtual bool Boolean_6 => Dock != DockStyle.Fill && Dock != DockStyle.None;
@@ -550,9 +548,9 @@ namespace TD.SandDock
             {
                 value = Math.Max(value, 32);
                 if (_contentSize == value) return;
-                this.bool_1 = true;
+                bool_1 = true;
                 _contentSize = value;
-                this.method_9();
+                method_9();
             }
         }
 
@@ -594,7 +592,7 @@ namespace TD.SandDock
         [Browsable(false)]
         public bool HasSingleControlLayoutSystem => LayoutSystem.LayoutSystems.Count == 1 && LayoutSystem.LayoutSystems[0] is ControlLayoutSystem;
 
-        internal int Int32_0 => this.Boolean_1 ? this.rectangle_1.Width : this.rectangle_1.Height;
+        internal int Int32_0 => Boolean_1 ? rectangle_1.Width : rectangle_1.Height;
 
         [Browsable(false)]
         public virtual bool IsFloating => false;
@@ -614,16 +612,15 @@ namespace TD.SandDock
                 bool_0 = true;
                 try
                 {
-                    this._splitLayout?.vmethod_2(null);
-                    if (!this.bool_1)
+                    _splitLayout?.SetDockContainer(null);
+                    if (!bool_1)
                     {
-                        this._contentSize = Convert.ToInt32(Boolean_1 ? value.WorkingSize.Width : value.WorkingSize.Height);
-                        this.bool_1 = true;
+                        _contentSize = Convert.ToInt32(Boolean_1 ? value.WorkingSize.Width : value.WorkingSize.Height);
+                        bool_1 = true;
                     }
                     _splitLayout = value;
-                    _splitLayout.vmethod_2(this);
-                    this.vmethod_2();
-                    return;
+                    _splitLayout.SetDockContainer(this);
+                    vmethod_2();
                 }
                 finally
                 {
@@ -647,11 +644,11 @@ namespace TD.SandDock
                 _manager = value;
                 if (_manager == null) return;
                 _manager.RegisterDockContainer(this);
-                LayoutSystem.vmethod_2(this);
+                LayoutSystem.SetDockContainer(this);
             }
         }
 
-        internal Rectangle Rectangle_0 => this.rectangle_0;
+        internal Rectangle Rectangle_0 => rectangle_0;
 
         internal virtual RendererBase Renderer => Manager?.Renderer ?? (_renderer ?? (_renderer = new WhidbeyRenderer()));
 

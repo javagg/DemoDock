@@ -8,17 +8,30 @@ using TD.SandDock.Rendering;
 
 namespace TD.SandDock
 {
-	internal class AutoHideBar : Control
+    internal class Class20
+    {
+        private const int SM_REMOTESESSION = 0x1000;
+        public static bool Boolean_0 => Native.GetSystemMetrics(SM_REMOTESESSION) != 0;
+
+        public static Color Color_0 => ColorTranslator.FromWin32(Native.GetSysColor(COLOR_GRADIENTACTIVECAPTION));
+
+        private const int COLOR_GRADIENTACTIVECAPTION = 27;
+        public const int int_0 = -1;
+
+        public const int int_2 = 33;
+    }
+
+    internal class AutoHideBar : Control
 	{
 		public AutoHideBar()
 		{
 			SetStyle(ControlStyles.ResizeRedraw | ControlStyles.AllPaintingInWmPaint | ControlStyles.OptimizedDoubleBuffer, true);
 			SetStyle(ControlStyles.Selectable, false);
-			this.LayoutSystems = new LayoutSystemCollection(this);
-		    this.timer_0 = new Timer {Interval = SystemInformation.DoubleClickTime};
-		    this.timer_0.Tick += this.timer_0_Tick;
-		    this.timer_1 = new Timer {Interval = 800};
-		    this.timer_1.Tick += this.timer_1_Tick;
+			LayoutSystems = new LayoutSystemCollection(this);
+		    timer_0 = new Timer {Interval = SystemInformation.DoubleClickTime};
+		    timer_0.Tick += OnTimerTick;
+		    timer_1 = new Timer {Interval = 800};
+		    timer_1.Tick += timer_1_Tick;
 			Visible = false;
 		}
 
@@ -26,48 +39,48 @@ namespace TD.SandDock
 		{
 			if (disposing)
 			{
-				this.method_6(true);
-				this.timer_0.Tick -= this.timer_0_Tick;
-				this.timer_0.Dispose();
-				this.timer_0 = null;
-				this.timer_1.Tick -= this.timer_1_Tick;
-				this.timer_1.Dispose();
-				this.timer_1 = null;
-				if (this.control1_0 != null)
+				method_6(true);
+				timer_0.Tick -= OnTimerTick;
+				timer_0.Dispose();
+				timer_0 = null;
+				timer_1.Tick -= timer_1_Tick;
+				timer_1.Dispose();
+				timer_1 = null;
+				if (_popupContainer != null)
 				{
-					this.control1_0.Dispose();
-					this.control1_0 = null;
+					_popupContainer.Dispose();
+					_popupContainer = null;
 				}
-				this.LayoutSystems.Clear();
+				LayoutSystems.Clear();
 			}
 			base.Dispose(disposing);
 		}
 
 		internal void method_0(ControlLayoutSystem controlLayoutSystem_1)
 		{
-			this.method_2();
+			method_2();
 		    if (LayoutSystem == controlLayoutSystem_1)
-		        control1_0.PerformLayout();
+		        _popupContainer.PerformLayout();
 		}
 
 		internal void PropagateNewRenderer()
 		{
-			this.method_2();
+			method_2();
 		}
 
 		private void method_2()
 		{
 			int num = 0;
-			if (LayoutSystem != null && !this.LayoutSystems.Contains(LayoutSystem))
+			if (LayoutSystem != null && !LayoutSystems.Contains(LayoutSystem))
 			{
-				this.method_6(true);
+				method_6(true);
 			}
 		    if (Manager == null) return;
 
 		    var renderer = Manager.Renderer;
 		    using (var graphics = CreateGraphics())
 		    {
-		        foreach (ControlLayoutSystem controlLayoutSystem in this.LayoutSystems)
+		        foreach (ControlLayoutSystem controlLayoutSystem in LayoutSystems)
 		        {
 		            num += 3;
 		            int num2 = 0;
@@ -76,13 +89,13 @@ namespace TD.SandDock
 		                foreach (DockControl dockControl in controlLayoutSystem.Controls)
 		                {
 		                    int num3;
-		                    if (!this.Boolean_0)
+		                    if (!Boolean_0)
 		                    {
-		                        num3 = (int)Math.Ceiling((double)graphics.MeasureString(dockControl.TabText, this.Font, 2147483647, EverettRenderer.StringFormat_0).Width);
+		                        num3 = (int)Math.Ceiling(graphics.MeasureString(dockControl.TabText, Font, 2147483647, EverettRenderer.HorizontalTextFormat).Width);
 		                    }
 		                    else
 		                    {
-		                        num3 = (int)Math.Ceiling((double)graphics.MeasureString(dockControl.TabText, this.Font, 2147483647, EverettRenderer.StringFormat_1).Height);
+		                        num3 = (int)Math.Ceiling(graphics.MeasureString(dockControl.TabText, Font, 2147483647, EverettRenderer.VerticalTextFormat).Height);
 		                    }
 		                    if (num3 > num2)
 		                    {
@@ -92,8 +105,8 @@ namespace TD.SandDock
 		            }
 		            foreach (DockControl dockControl2 in controlLayoutSystem.Controls)
 		            {
-		                Rectangle rectangle_ = new Rectangle(-1, -1, this.Int32_0 - 2, this.Int32_0 - 2);
-		                switch (this.Dock)
+		                Rectangle rectangle_ = new Rectangle(-1, -1, Int32_0 - 2, Int32_0 - 2);
+		                switch (Dock)
 		                {
 		                    case DockStyle.Bottom:
 		                        rectangle_.Offset(0, 3);
@@ -112,17 +125,17 @@ namespace TD.SandDock
 		                }
 		                else
 		                {
-		                    if (!this.Boolean_0)
+		                    if (!Boolean_0)
 		                    {
-		                        num4 += (int)Math.Ceiling((double)graphics.MeasureString(dockControl2.TabText, this.Font, 2147483647, EverettRenderer.StringFormat_0).Width);
+		                        num4 += (int)Math.Ceiling(graphics.MeasureString(dockControl2.TabText, Font, 2147483647, EverettRenderer.HorizontalTextFormat).Width);
 		                    }
 		                    else
 		                    {
-		                        num4 += (int)Math.Ceiling((double)graphics.MeasureString(dockControl2.TabText, this.Font, 2147483647, EverettRenderer.StringFormat_1).Height);
+		                        num4 += (int)Math.Ceiling(graphics.MeasureString(dockControl2.TabText, Font, 2147483647, EverettRenderer.VerticalTextFormat).Height);
 		                    }
 		                    num4 += 3;
 		                }
-		                if (this.Boolean_0)
+		                if (Boolean_0)
 		                {
 		                    rectangle_.Offset(0, num);
 		                    rectangle_.Height = num4;
@@ -134,12 +147,12 @@ namespace TD.SandDock
 		                    rectangle_.Width = num4;
 		                    num += num4;
 		                }
-		                dockControl2.rectangle_1 = rectangle_;
+		                dockControl2.CollapsedBounds = rectangle_;
 		            }
 		            num += 10;
 		        }
 		    }
-		    Visible = (this.LayoutSystems.Count != 0);
+		    Visible = (LayoutSystems.Count != 0);
 		    Invalidate();
 		}
 
@@ -147,36 +160,31 @@ namespace TD.SandDock
 		{
 		    return LayoutSystems.Cast<ControlLayoutSystem>()
 		        .SelectMany(layoutSystem => layoutSystem.Controls.Cast<DockControl>(),(controlLayoutSystem, dockControl) => new {controlLayoutSystem, dockControl})
-		        .Select(@t => new {@t, rectangle_ = @t.dockControl.rectangle_1})
-		        .Where(@t => @t.rectangle_.Contains(p))
-		        .Select(@t => @t.@t.dockControl).FirstOrDefault();
+		        .Select(t => new {t, rect = t.dockControl.CollapsedBounds})
+		        .Where(t => t.rect.Contains(p))
+		        .Select(t => t.t.dockControl).FirstOrDefault();
 		}
 
-		private void method_4(PopupContainer control1_1, Rectangle rectangle_1, Rectangle rectangle_2)
+		private void method_4(PopupContainer container, Rectangle bounds1, Rectangle bounds2)
 		{
-			this.bool_0 = true;
+			bool_0 = true;
 			try
 			{
-				float num = (float)(rectangle_2.X - rectangle_1.X);
-				float num2 = (float)(rectangle_2.Y - rectangle_1.Y);
-				float num3 = (float)(rectangle_2.Width - rectangle_1.Width);
-				float num4 = (float)(rectangle_2.Height - rectangle_1.Height);
-				int tickCount = Environment.TickCount;
-				while (Environment.TickCount < tickCount + 100)
+                while (Environment.TickCount < Environment.TickCount + 100)
 				{
-					float num5 = (float)(Environment.TickCount - tickCount) / 100f;
-					float num6 = (float)rectangle_1.X + num * num5;
-					float num7 = (float)rectangle_1.Y + num2 * num5;
-					float num8 = (float)rectangle_1.Width + num3 * num5;
-					float num9 = (float)rectangle_1.Height + num4 * num5;
-					Rectangle rectangle = new Rectangle((int)num6, (int)num7, (int)num8, (int)num9);
-					control1_1.SetBounds(rectangle.X, rectangle.Y, rectangle.Width, rectangle.Height, BoundsSpecified.All);
+					var ratio = (Environment.TickCount - Environment.TickCount) / 100f;
+					var x = bounds1.X + (bounds2.X - bounds1.X) * ratio;
+					var y = bounds1.Y + (bounds2.Y - bounds1.Y) * ratio;
+					var w = bounds1.Width + (bounds2.Width - bounds1.Width) * ratio;
+					var h = bounds1.Height + (bounds2.Height - bounds1.Height) * ratio;
+					var r = new Rectangle((int)x, (int)y, (int)w, (int)h);
+					container.SetBounds(r.X, r.Y, r.Width, r.Height, BoundsSpecified.All);
 					Application.DoEvents();
 				}
 			}
 			finally
 			{
-				this.bool_0 = false;
+				bool_0 = false;
 			}
 		}
 
@@ -188,15 +196,15 @@ namespace TD.SandDock
 		internal void method_6(bool bool_1)
 		{
 		    if (LayoutSystem == null) return;
-		    var control = this.control1_0;
-			bool_1 = bool_1 || !this.method_5();
-			this.timer_1.Enabled = false;
+		    var control = _popupContainer;
+			bool_1 = bool_1 || !method_5();
+			timer_1.Enabled = false;
 			if (!bool_1)
 			{
 				Rectangle rectangle_;
-				this.method_8(LayoutSystem.PopupSize, out rectangle_);
+				method_8(LayoutSystem.PopupSize, out rectangle_);
 				control.SuspendLayout();
-				this.method_4(control, control.Bounds, rectangle_);
+				method_4(control, control.Bounds, rectangle_);
 				control.ResumeLayout();
 			}
 			var controlLayoutSystem = LayoutSystem;
@@ -219,17 +227,17 @@ namespace TD.SandDock
 		        }
 		        return;
 		    }
-		    bool_1 = (bool_1 || !this.method_5());
+		    bool_1 = (bool_1 || !method_5());
 			dockControl_0.LayoutSystem.SelectedControl = dockControl_0;
 			if (dockControl_0.LayoutSystem.SelectedControl == dockControl_0)
 			{
 				try
 				{
-					if (this.LayoutSystem != dockControl_0.LayoutSystem)
+					if (LayoutSystem != dockControl_0.LayoutSystem)
 					{
-						this.method_6(true);
+						method_6(true);
 						Rectangle rectangle;
-						this.rectangle_0 = this.method_8(dockControl_0.LayoutSystem.PopupSize, out rectangle);
+						rectangle_0 = method_8(dockControl_0.LayoutSystem.PopupSize, out rectangle);
 						PopupContainer control = new PopupContainer(this);
 						foreach (DockControl dockControl in dockControl_0.LayoutSystem.Controls)
 						{
@@ -241,30 +249,30 @@ namespace TD.SandDock
 						}
 						control.ControlLayoutSystem_0 = dockControl_0.LayoutSystem;
 						control.Visible = false;
-						base.Parent.Controls.Add(control);
-						control.Bounds = this.rectangle_0;
+						Parent.Controls.Add(control);
+						control.Bounds = rectangle_0;
 						control.SuspendLayout();
 						control.Bounds = rectangle;
 						control.Visible = true;
 						control.BringToFront();
 						if (!bool_1)
 						{
-							this.method_4(control, rectangle, this.rectangle_0);
+							method_4(control, rectangle, rectangle_0);
 						}
-						control.Bounds = this.rectangle_0;
+						control.Bounds = rectangle_0;
 						control.ResumeLayout();
 						if (!control.IsDisposed && control.Parent != null)
 						{
-							this.control1_0 = control;
-							this.LayoutSystem = dockControl_0.LayoutSystem;
-							this.timer_1.Enabled = true;
+							_popupContainer = control;
+							LayoutSystem = dockControl_0.LayoutSystem;
+							timer_1.Enabled = true;
 							dockControl_0.OnAutoHidePopupOpened(EventArgs.Empty);
 						}
 					}
 				}
 				finally
 				{
-					if (bool_2 && this.LayoutSystem == dockControl_0.LayoutSystem)
+					if (bool_2 && LayoutSystem == dockControl_0.LayoutSystem)
 					{
 						dockControl_0.Activate();
 					}
@@ -292,7 +300,7 @@ namespace TD.SandDock
 			}
 			rectangle_1 = bounds;
 			int num = int_0 + 4;
-			switch (this.Dock)
+			switch (Dock)
 			{
 			case DockStyle.Top:
 				bounds.Height = num;
@@ -314,47 +322,47 @@ namespace TD.SandDock
 
 		public void method_9(Rectangle bounds)
 		{
-			this.control1_0.Invalidate(bounds);
+			_popupContainer.Invalidate(bounds);
 		}
 
 		protected override void OnDragOver(DragEventArgs drgevent)
 		{
 			base.OnDragOver(drgevent);
-			var dockControl = this.method_3(PointToClient(new Point(drgevent.X, drgevent.Y)));
+			var dockControl = method_3(PointToClient(new Point(drgevent.X, drgevent.Y)));
 		    if (dockControl != null)
-		        this.method_7(dockControl, true, true);
+		        method_7(dockControl, true, true);
 		}
 
 		protected override void OnLocationChanged(EventArgs e)
 		{
 			base.OnLocationChanged(e);
 		    if (LayoutSystem != null)
-		        BeginInvoke(new Delegate1(this.method_6), true);
+		        BeginInvoke(new Delegate1(method_6), true);
 		}
 
 		protected override void OnMouseDown(MouseEventArgs e)
 		{
 			base.OnMouseDown(e);
-			if (this.bool_0)
+			if (bool_0)
 			{
 				return;
 			}
-			var dockControl = this.method_3(new Point(e.X, e.Y));
+			var dockControl = method_3(new Point(e.X, e.Y));
 		    if (dockControl != null)
-		        this.method_7(dockControl, false, true);
+		        method_7(dockControl, false, true);
 		}
 
 		protected override void OnMouseMove(MouseEventArgs e)
 		{
 			base.OnMouseMove(e);
-		    if (this.bool_0) return;
+		    if (bool_0) return;
 
 		    var left = new Point(e.X, e.Y);
-		    if (left != this.point_0)
+		    if (left != point_0)
 		    {
-		        this.point_0 = left;
-		        this.timer_0.Enabled = false;
-		        this.timer_0.Enabled = true;
+		        point_0 = left;
+		        timer_0.Enabled = false;
+		        timer_0.Enabled = true;
 		    }
 		}
 
@@ -365,7 +373,7 @@ namespace TD.SandDock
 				base.OnPaint(e);
 				return;
 			}
-			DockSide dockSide = DockSide.Right;
+			var dockSide = DockSide.Right;
 			switch (Dock)
 			{
 			case DockStyle.Top:
@@ -379,24 +387,18 @@ namespace TD.SandDock
 				break;
 			}
 			Manager.Renderer.StartRenderSession(HotkeyPrefix.None);
-			foreach (ControlLayoutSystem controlLayoutSystem in this.LayoutSystems)
+			foreach (ControlLayoutSystem controlLayoutSystem in LayoutSystems)
 			{
 				foreach (DockControl dockControl in controlLayoutSystem.Controls)
 				{
-					DrawItemState drawItemState = DrawItemState.Default;
-					if (dockControl == controlLayoutSystem.SelectedControl)
-					{
-						drawItemState |= DrawItemState.Selected;
-					}
-					string text = dockControl.TabText;
-					if (Manager.Renderer.TabTextDisplay == TabTextDisplayMode.SelectedTab)
-					{
-						if (dockControl != controlLayoutSystem.SelectedControl)
-						{
-							text = "";
-						}
-					}
-					Manager.Renderer.DrawCollapsedTab(e.Graphics, dockControl.rectangle_1, dockSide, dockControl.Image_0, text, this.Font, dockControl.BackColor, dockControl.ForeColor, drawItemState, this.Boolean_0);
+					var state = DrawItemState.Default;
+				    if (dockControl == controlLayoutSystem.SelectedControl)
+				        state |= DrawItemState.Selected;
+				    var text = dockControl.TabText;
+				    if (Manager.Renderer.TabTextDisplay == TabTextDisplayMode.SelectedTab && dockControl != controlLayoutSystem.SelectedControl)
+				        text = "";
+
+				    Manager.Renderer.DrawCollapsedTab(e.Graphics, dockControl.CollapsedBounds, dockSide, dockControl.CollapsedImage, text, Font, dockControl.BackColor, dockControl.ForeColor, state, Boolean_0);
 				}
 			}
 			Manager.Renderer.FinishRenderSession();
@@ -414,25 +416,25 @@ namespace TD.SandDock
 		{
 			base.OnResize(e);
 		    if (LayoutSystem != null)
-		        BeginInvoke(new Delegate1(this.method_6), true);
+		        BeginInvoke(new Delegate1(method_6), true);
 		}
 
-		private void timer_0_Tick(object sender, EventArgs e)
+		private void OnTimerTick(object sender, EventArgs e)
 		{
-			this.timer_0.Enabled = false;
-		    if (this.bool_0) return;
-		    var dockControl = this.method_3(PointToClient(Cursor.Position));
+			timer_0.Enabled = false;
+		    if (bool_0) return;
+		    var dockControl = method_3(PointToClient(Cursor.Position));
 		    if (dockControl != null)
-		        this.method_7(dockControl, false, false);
+		        method_7(dockControl, false, false);
 		}
 
 		private void timer_1_Tick(object sender, EventArgs e)
 		{
-			bool flag = this.control1_0.ClientRectangle.Contains(this.control1_0.PointToClient(Cursor.Position));
-			bool flag2 = base.ClientRectangle.Contains(PointToClient(Cursor.Position));
-			if (!flag && !flag2 && !this.control1_0.Boolean_0 && !this.control1_0.ContainsFocus)
+			bool flag = _popupContainer.ClientRectangle.Contains(_popupContainer.PointToClient(Cursor.Position));
+			bool flag2 = ClientRectangle.Contains(PointToClient(Cursor.Position));
+			if (!flag && !flag2 && !_popupContainer.Boolean_0 && !_popupContainer.ContainsFocus)
 			{
-				this.method_6(false);
+				method_6(false);
 			}
 		}
 
@@ -442,22 +444,22 @@ namespace TD.SandDock
 
 	    public ControlLayoutSystem LayoutSystem { get; private set; }
 
-	    public Control Control_0 => this.control1_0;
+	    public Control Control_0 => _popupContainer;
 
-	    protected override Size DefaultSize => new Size(this.Int32_0, this.Int32_0);
+	    protected override Size DefaultSize => new Size(Int32_0, Int32_0);
 
 	    private int Int32_0 => Math.Max(DefaultFont.Height, 16) + 6;
 
-	    public int Int32_1
+	    public int PopupSize
 		{
 			get
 			{
-				return this.control1_0.Int32_0;
+				return _popupContainer.PopupSize;
 			}
 			set
 			{
-			    if (this.control1_0.Int32_0 != value)
-			        this.control1_0.Int32_0 = value;
+			    if (_popupContainer.PopupSize != value)
+			        _popupContainer.PopupSize = value;
 			}
 		}
 
@@ -473,13 +475,13 @@ namespace TD.SandDock
 			    _manager = value;
 			    if (_manager == null) return;
 			    _manager.RegisterAutoHideBar(this);
-			    this.method_2();
+			    method_2();
 			}
 		}
 
 		private bool bool_0;
 
-	    private PopupContainer control1_0;
+	    private PopupContainer _popupContainer;
 
 	    private Point point_0;
 

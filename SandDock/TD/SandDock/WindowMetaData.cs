@@ -38,13 +38,13 @@ namespace TD.SandDock
 			LastFloatingWindowGuid = guid;
 		}
 
-		internal bool Boolean_0 => _dockedContentSize != -1;
+		internal bool IsDocked => _dockedContentSize != -1;
 
-	    internal Class18 Class18_0 { get; } = new Class18();
+	    internal DockingState DocumentState { get; } = new DockingState();
 
-	    internal Class18 Class18_1 { get; } = new Class18();
+	    internal DockingState FloatingState { get; } = new DockingState();
 
-	    internal Class19 Class19_0 { get; } = new Class19();
+	    internal DockedDockingState DockedState { get; } = new DockedDockingState();
 
 	    public int DockedContentSize => _dockedContentSize != -1 ? _dockedContentSize : 200;
 

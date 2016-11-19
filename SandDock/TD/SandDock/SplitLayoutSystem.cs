@@ -1,8 +1,11 @@
 using System;
 using System.Collections;
 using System.ComponentModel;
+using System.ComponentModel.Design.Serialization;
 using System.Drawing;
+using System.Globalization;
 using System.Linq;
+using System.Reflection;
 using System.Windows.Forms;
 using TD.SandDock.Rendering;
 
@@ -21,6 +24,36 @@ namespace TD.SandDock
         public int Index;
     }
 
+    internal class Class24 : TypeConverter
+    {
+        public override bool CanConvertTo(ITypeDescriptorContext context, Type destinationType)
+        {
+            return destinationType == typeof(InstanceDescriptor) || base.CanConvertTo(context, destinationType);
+        }
+
+        public override object ConvertTo(ITypeDescriptorContext context, CultureInfo culture, object value, Type destinationType)
+        {
+            if (destinationType == null)
+                throw new ArgumentNullException();
+            if (destinationType != typeof(InstanceDescriptor) || value.GetType().Name != "SplitLayoutSystem")
+                return base.ConvertTo(context, culture, value, destinationType);
+
+            Type type = value.GetType();
+            Type baseType = type.BaseType;
+            MemberInfo constructor = type.GetConstructor(new[] { typeof(SizeF), typeof(Orientation), MakeArrayType(baseType) });
+            PropertyInfo property = type.GetProperty("LayoutSystems", BindingFlags.Instance | BindingFlags.Public);
+            ICollection collection = (ICollection)property.GetValue(value, null);
+            object[] array = (object[])Activator.CreateInstance(MakeArrayType(baseType), collection.Count);
+            collection.CopyTo(array, 0);
+            PropertyInfo property2 = type.GetProperty("WorkingSize", BindingFlags.Instance | BindingFlags.Public);
+            SizeF sizeF = (SizeF)property2.GetValue(value, null);
+            PropertyInfo property3 = type.GetProperty("SplitMode", BindingFlags.Instance | BindingFlags.Public);
+            Orientation orientation = (Orientation)property3.GetValue(value, null);
+            return new InstanceDescriptor(constructor, new object[] { sizeF, orientation, array });
+        }
+
+        private Type MakeArrayType(Type firstType) => firstType.Assembly.GetType(firstType.FullName + "[]");
+    }
     [TypeConverter(typeof(Class24))]
 	public class SplitLayoutSystem : LayoutSystemBase
 	{
@@ -53,20 +86,20 @@ namespace TD.SandDock
 		{
 			base.Layout(renderer, graphics, bounds, floating);
 			int num;
-			LayoutSystemBase[] array = this.method_9(out num);
+			LayoutSystemBase[] array = method_9(out num);
 			if (num != 0)
 			{
 				if (num > 1)
 				{
 					floating = false;
 				}
-				int num2 = (this._splitMode == Orientation.Horizontal) ? (bounds.Height - (num - 1) * 4) : (bounds.Width - (num - 1) * 4);
+				int num2 = (_splitMode == Orientation.Horizontal) ? (bounds.Height - (num - 1) * 4) : (bounds.Width - (num - 1) * 4);
 				float num3 = 0f;
 				for (int i = 0; i < num; i++)
 				{
-					num3 += ((this._splitMode == Orientation.Horizontal) ? array[i].WorkingSize.Height : array[i].WorkingSize.Width);
+					num3 += ((_splitMode == Orientation.Horizontal) ? array[i].WorkingSize.Height : array[i].WorkingSize.Width);
 				}
-				this._splitterRects.Clear();
+				_splitterRects.Clear();
 				if (num2 > 0)
 				{
 					SizeF[] array2 = new SizeF[num];
@@ -74,14 +107,14 @@ namespace TD.SandDock
 					{
 						array2[j] = array[j].WorkingSize;
 					}
-					if ((float)num2 != num3)
+					if (num2 != num3)
 					{
-						float num4 = (float)num2 - num3;
+						float num4 = num2 - num3;
 						for (int k = 0; k < num; k++)
 						{
-							float num5 = (this._splitMode != Orientation.Horizontal) ? array2[k].Width : array2[k].Height;
+							float num5 = (_splitMode != Orientation.Horizontal) ? array2[k].Width : array2[k].Height;
 							num5 += num4 * (num5 / num3);
-							if (this._splitMode != Orientation.Horizontal)
+							if (_splitMode != Orientation.Horizontal)
 							{
 								array2[k].Width = num5;
 							}
@@ -93,10 +126,10 @@ namespace TD.SandDock
 						num3 = 0f;
 						for (int l = 0; l < num; l++)
 						{
-							num3 += ((this._splitMode == Orientation.Horizontal) ? array2[l].Height : array2[l].Width);
+							num3 += ((_splitMode == Orientation.Horizontal) ? array2[l].Height : array2[l].Width);
 						}
-						num4 = (float)num2 - num3;
-						if (this._splitMode != Orientation.Horizontal)
+						num4 = num2 - num3;
+						if (_splitMode != Orientation.Horizontal)
 						{
 							SizeF[] expr_1AE_cp_0 = array2;
 							int expr_1AE_cp_1 = 0;
@@ -109,12 +142,12 @@ namespace TD.SandDock
 							expr_1C6_cp_0[expr_1C6_cp_1].Height = expr_1C6_cp_0[expr_1C6_cp_1].Height + num4;
 						}
 					}
-					int num6 = (this._splitMode != Orientation.Horizontal) ? bounds.X : bounds.Y;
+					int num6 = (_splitMode != Orientation.Horizontal) ? bounds.X : bounds.Y;
 					for (int m = 0; m < num; m++)
 					{
-						int num7 = (this._splitMode != Orientation.Horizontal) ? Convert.ToInt32(array2[m].Width) : Convert.ToInt32(array2[m].Height);
+						int num7 = (_splitMode != Orientation.Horizontal) ? Convert.ToInt32(array2[m].Width) : Convert.ToInt32(array2[m].Height);
 						num7 = Math.Max(num7, 4);
-						if (this._splitMode == Orientation.Horizontal)
+						if (_splitMode == Orientation.Horizontal)
 						{
 							if (m == num - 1)
 							{
@@ -135,7 +168,7 @@ namespace TD.SandDock
 					for (int n = 0; n < num - 1; n++)
 					{
 						bounds = array[n].Bounds;
-						if (this._splitMode != Orientation.Horizontal)
+						if (_splitMode != Orientation.Horizontal)
 						{
 							bounds.Offset(bounds.Width, 0);
 							bounds.Width = 4;
@@ -145,28 +178,27 @@ namespace TD.SandDock
 							bounds.Offset(0, bounds.Height);
 							bounds.Height = 4;
 						}
-						this._splitterRects.Add(bounds);
+						_splitterRects.Add(bounds);
 					}
 				}
-				return;
 			}
 		}
 
 		private void method_10()
 		{
-			_splittingManager.Event_0 -= method_11;
+			_splittingManager.Cancalled -= method_11;
 			_splittingManager.SplittingManagerFinished -= OnSplittingManagerFinished;
 			_splittingManager = null;
 		}
 
 		private void method_11(object sender, EventArgs e)
 		{
-			this.method_10();
+			method_10();
 		}
 
 		private void OnSplittingManagerFinished(LayoutSystemBase aboveLayout, LayoutSystemBase belowLayout, float aboveSize, float belowSize)
 		{
-			this.method_10();
+			method_10();
 		    if (aboveSize <= 0 || belowSize <= 0) return;
 
             var aboveWorkingSize = aboveLayout.WorkingSize;
@@ -183,12 +215,12 @@ namespace TD.SandDock
 		    }
 		    aboveLayout.WorkingSize = aboveWorkingSize;
 		    belowLayout.WorkingSize = belowWorkingSize;
-		    this.method_8();
+		    method_8();
 		}
 
 		internal bool method_13()
 		{
-			IEnumerator enumerator = this.LayoutSystems.GetEnumerator();
+			IEnumerator enumerator = LayoutSystems.GetEnumerator();
 			bool result;
 			try
 			{
@@ -241,7 +273,6 @@ namespace TD.SandDock
 				                DockControl value = (DockControl) enumerator2.Current;
 				                arrayList_1.Add(value);
 				            }
-				            continue;
 				        }
 				        finally
 				        {
@@ -254,20 +285,19 @@ namespace TD.SandDock
 				    }
 				    continue;
 				}
-				this.method_4((SplitLayoutSystem)layoutSystemBase, arrayList_1);
+				method_4((SplitLayoutSystem)layoutSystemBase, arrayList_1);
 			}
 		}
 
 		internal void method_5(Point point_0, out LayoutSystemBase layoutSystemBase_0, out LayoutSystemBase layoutSystemBase_1)
 		{
 			var index = LayoutSystems.Cast<LayoutSystemBase>()
-			    .Where(
-			        layoutSystemBase =>
-			            (!(layoutSystemBase is ControlLayoutSystem) || !((ControlLayoutSystem) layoutSystemBase).Collapsed) &&
-			            ((SplitMode == Orientation.Horizontal && point_0.Y >= layoutSystemBase.Bounds.Bottom &&
-			              point_0.Y <= layoutSystemBase.Bounds.Bottom + 4) ||
-			             (SplitMode == Orientation.Vertical && point_0.X >= layoutSystemBase.Bounds.Right &&
-			              point_0.X <= layoutSystemBase.Bounds.Right + 4)))
+			    .Where(			        layout =>
+			            (!(layout is ControlLayoutSystem) || !((ControlLayoutSystem) layout).Collapsed) &&
+			            ((SplitMode == Orientation.Horizontal && point_0.Y >= layout.Bounds.Bottom &&
+			              point_0.Y <= layout.Bounds.Bottom + 4) ||
+			             (SplitMode == Orientation.Vertical && point_0.X >= layout.Bounds.Right &&
+			              point_0.X <= layout.Bounds.Right + 4)))
 			    .Select(layoutSystemBase => LayoutSystems.IndexOf(layoutSystemBase)).FirstOrDefault();
 		    layoutSystemBase_0 = LayoutSystems[index];
 			layoutSystemBase_1 = layoutSystemBase_0;
@@ -281,7 +311,7 @@ namespace TD.SandDock
 			}
 		}
 
-		internal bool Contains(int x, int y) => this._splitterRects.Cast<Rectangle>().Any(r => r.Contains(x, y));
+		internal bool Contains(int x, int y) => _splitterRects.Cast<Rectangle>().Any(r => r.Contains(x, y));
 
 	    internal void method_7()
 		{
@@ -299,7 +329,7 @@ namespace TD.SandDock
 		{
 			int_3 = 0;
 			var array = new LayoutSystemBase[LayoutSystems.Count];
-			foreach (LayoutSystemBase layoutSystemBase in this.LayoutSystems)
+			foreach (LayoutSystemBase layoutSystemBase in LayoutSystems)
 			{
 				if (!(layoutSystemBase is ControlLayoutSystem))
 				{
@@ -335,10 +365,10 @@ namespace TD.SandDock
 		    if (LayoutSystems.Count == 1 && LayoutSystems[0] is ControlLayoutSystem)
 		        dockControl = ((ControlLayoutSystem) LayoutSystems[0]).SelectedControl;
 
-            DockControl[] dockControl_ = this.DockControls;
-			for (int i = dockControl_.Length - 1; i >= 0; i--)
+            DockControl[] dockControl_ = DockControls;
+			for (var i = dockControl_.Length - 1; i >= 0; i--)
 			{
-				DockControl control = dockControl_[i];
+				var control = dockControl_[i];
 				layoutSystem.Controls.Insert(index, control);
 			}
 			if (dockControl != null)
@@ -350,17 +380,15 @@ namespace TD.SandDock
 		protected internal override void OnMouseDown(MouseEventArgs e)
 		{
 		    base.OnMouseDown(e);
-		    if (this._splitterRects.Cast<Rectangle>().Any(rectangle => rectangle.Contains(e.X, e.Y)))
-		    {
-		        LayoutSystemBase aboveLayout;
-		        LayoutSystemBase belowLayout;
-		        this.method_5(new Point(e.X, e.Y), out aboveLayout, out belowLayout);
-		        this._splittingManager?.Dispose();
-		        DockingHints dockingHints = DockContainer.Manager?.DockingHints ?? DockingHints.TranslucentFill;
-		        _splittingManager = new SplittingManager(DockContainer, this, aboveLayout, belowLayout, new Point(e.X, e.Y), dockingHints);
-		        _splittingManager.Event_0 += this.method_11;
-		        _splittingManager.SplittingManagerFinished += OnSplittingManagerFinished;
-		    }
+		    if (!_splitterRects.Cast<Rectangle>().Any(rectangle => rectangle.Contains(e.X, e.Y))) return;
+		    LayoutSystemBase aboveLayout;
+		    LayoutSystemBase belowLayout;
+		    method_5(new Point(e.X, e.Y), out aboveLayout, out belowLayout);
+		    _splittingManager?.Dispose();
+		    var dockingHints = DockContainer.Manager?.DockingHints ?? DockingHints.TranslucentFill;
+		    _splittingManager = new SplittingManager(DockContainer, this, aboveLayout, belowLayout, new Point(e.X, e.Y), dockingHints);
+		    _splittingManager.Cancalled += method_11;
+		    _splittingManager.SplittingManagerFinished += OnSplittingManagerFinished;
 		}
 
 	    protected internal override void OnMouseMove(MouseEventArgs e)
@@ -406,7 +434,7 @@ namespace TD.SandDock
 		{
 			if (LayoutSystems.Count != 1 || !(LayoutSystems[0] is SplitLayoutSystem))
 			{
-				IEnumerator enumerator = this.LayoutSystems.GetEnumerator();
+				IEnumerator enumerator = LayoutSystems.GetEnumerator();
 				bool result;
 				try
 				{
@@ -416,20 +444,20 @@ namespace TD.SandDock
 						if (layoutSystemBase is SplitLayoutSystem)
 						{
 							SplitLayoutSystem splitLayoutSystem = (SplitLayoutSystem)layoutSystemBase;
-							if (splitLayoutSystem.SplitMode == this.SplitMode)
+							if (splitLayoutSystem.SplitMode == SplitMode)
 							{
 								LayoutSystemBase[] array = new LayoutSystemBase[splitLayoutSystem.LayoutSystems.Count];
 								splitLayoutSystem.LayoutSystems.CopyTo(array, 0);
-								splitLayoutSystem.LayoutSystems.bool_0 = true;
+								splitLayoutSystem.LayoutSystems.updating = true;
 								splitLayoutSystem.LayoutSystems.Clear();
-								int index = this.LayoutSystems.IndexOf(splitLayoutSystem);
-								this.LayoutSystems.bool_0 = true;
-								this.LayoutSystems.Remove(splitLayoutSystem);
+								int index = LayoutSystems.IndexOf(splitLayoutSystem);
+								LayoutSystems.updating = true;
+								LayoutSystems.Remove(splitLayoutSystem);
 								for (int i = array.Length - 1; i >= 0; i--)
 								{
-									this.LayoutSystems.Insert(index, array[i]);
+									LayoutSystems.Insert(index, array[i]);
 								}
-								this.LayoutSystems.bool_0 = false;
+								LayoutSystems.updating = false;
 								result = true;
 								return result;
 							}
@@ -458,12 +486,12 @@ namespace TD.SandDock
 		        SplitLayoutSystem splitLayoutSystem3 = (SplitLayoutSystem) splitLayoutSystem2.LayoutSystems[0];
 		        LayoutSystemBase[] array2 = new LayoutSystemBase[splitLayoutSystem3.LayoutSystems.Count];
 		        splitLayoutSystem3.LayoutSystems.CopyTo(array2, 0);
-		        splitLayoutSystem3.LayoutSystems.bool_0 = true;
+		        splitLayoutSystem3.LayoutSystems.updating = true;
 		        splitLayoutSystem3.LayoutSystems.Clear();
-		        LayoutSystems.bool_0 = true;
+		        LayoutSystems.updating = true;
 		        LayoutSystems.Clear();
 		        LayoutSystems.AddRange(array2);
-		        LayoutSystems.bool_0 = false;
+		        LayoutSystems.updating = false;
 		        return true;
 		    }
 		    return false;
@@ -476,15 +504,15 @@ namespace TD.SandDock
 			{
 				return;
 			}
-			FloatingContainer @class = (FloatingContainer)base.DockContainer;
-			SandDockManager manager = base.DockContainer.Manager;
+			var @class = (FloatingContainer)DockContainer;
+			var manager = DockContainer.Manager;
 			if (dockTarget_0.type == Class7.DockTargetType.Float)
 			{
 				@class.method_19(dockTarget_0.Bounds, true, true);
 				return;
 			}
-			DockControl[] dockControl_ = this.DockControls;
-			DockControl dockControl_2 = @class.SelectedControl;
+			var dockControl_ = DockControls;
+			var dockControl_2 = @class.SelectedControl;
 			@class.LayoutSystem = new SplitLayoutSystem();
 			@class.Dispose();
 			try
@@ -495,11 +523,11 @@ namespace TD.SandDock
 					if (dockTarget_0.DockLocation == ContainerDockLocation.Center && dockContainer != null)
 					{
 						ControlLayoutSystem layoutSystem = LayoutUtilities.FindControlLayoutSystem(dockContainer);
-						this.MoveToLayoutSystem(layoutSystem);
+						MoveToLayoutSystem(layoutSystem);
 					}
 					else
 					{
-						base.method_2(manager, dockTarget_0.DockLocation, dockTarget_0.middle ? ContainerDockEdge.Inside : ContainerDockEdge.Outside);
+						method_2(manager, dockTarget_0.DockLocation, dockTarget_0.middle ? ContainerDockEdge.Inside : ContainerDockEdge.Outside);
 					}
 				}
 				else if (dockTarget_0.type != Class7.DockTargetType.JoinExistingSystem)
@@ -508,14 +536,14 @@ namespace TD.SandDock
 					{
 						if (dockTarget_0.dockContainer is DocumentContainer)
 						{
-							ControlLayoutSystem controlLayoutSystem = dockTarget_0.dockContainer.CreateNewLayoutSystem(base.WorkingSize);
+							ControlLayoutSystem controlLayoutSystem = dockTarget_0.dockContainer.CreateNewLayoutSystem(WorkingSize);
 							controlLayoutSystem.Controls.AddRange(dockControl_);
 							dockTarget_0.layoutSystem.SplitForLayoutSystem(controlLayoutSystem, dockTarget_0.DockSide);
 						}
-						else if (this.LayoutSystems.Count == 1 && this.LayoutSystems[0] is ControlLayoutSystem)
+						else if (LayoutSystems.Count == 1 && LayoutSystems[0] is ControlLayoutSystem)
 						{
-							ControlLayoutSystem layoutSystem2 = (ControlLayoutSystem)this.LayoutSystems[0];
-							this.LayoutSystems.Remove(layoutSystem2);
+							ControlLayoutSystem layoutSystem2 = (ControlLayoutSystem)LayoutSystems[0];
+							LayoutSystems.Remove(layoutSystem2);
 							dockTarget_0.layoutSystem.SplitForLayoutSystem(layoutSystem2, dockTarget_0.DockSide);
 						}
 						else
@@ -526,7 +554,7 @@ namespace TD.SandDock
 				}
 				else
 				{
-					this.MoveToLayoutSystem(dockTarget_0.layoutSystem, dockTarget_0.index);
+					MoveToLayoutSystem(dockTarget_0.layoutSystem, dockTarget_0.index);
 				}
 			}
 			finally
@@ -535,25 +563,24 @@ namespace TD.SandDock
 			}
 		}
 
-		internal override void vmethod_2(DockContainer container)
+		internal override void SetDockContainer(DockContainer container)
 		{
-			base.vmethod_2(container);
+			base.SetDockContainer(container);
 		    foreach (LayoutSystemBase layoutSystemBase in LayoutSystems)
-		        layoutSystemBase.vmethod_2(container);
+		        layoutSystemBase.SetDockContainer(container);
 		}
 
-		internal override bool vmethod_3(ContainerDockLocation containerDockLocation_0) => LayoutSystems.Cast<LayoutSystemBase>().All(layout => layout.vmethod_3(containerDockLocation_0));
+		internal override bool vmethod_3(ContainerDockLocation location) => LayoutSystems.Cast<LayoutSystemBase>().All(layout => layout.vmethod_3(location));
 
 	    internal override void vmethod_4(RendererBase renderer, Graphics g, Font font)
 		{
-		    if (DockContainer == null)
-		        return;
+		    if (DockContainer == null) return;
 		    var container = DockContainer.Manager?.DockSystemContainer;
 		    foreach (Rectangle bounds in _splitterRects)
 		        renderer.DrawSplitter(container, DockContainer, g, bounds, _splitMode);
 		    foreach (LayoutSystemBase layoutSystem in LayoutSystems)
 			{
-				if (!(layoutSystem is ControlLayoutSystem) || !((ControlLayoutSystem)layoutSystem).Collapsed || !base.DockContainer.Boolean_6)
+				if (!(layoutSystem is ControlLayoutSystem) || !((ControlLayoutSystem)layoutSystem).Collapsed || !DockContainer.Boolean_6)
 				{
 					var clip = g.Clip;
 					g.SetClip(layoutSystem.Bounds);
@@ -574,7 +601,7 @@ namespace TD.SandDock
             get
             {
                 var arrayList = new ArrayList();
-                this.method_4(this, arrayList);
+                method_4(this, arrayList);
                 return (DockControl[])arrayList.ToArray(typeof(DockControl));
             }
         }
@@ -592,13 +619,13 @@ namespace TD.SandDock
 			set
 			{
 				_splitMode = value;
-				this.method_8();
+				method_8();
 			}
 		}
 
 	    internal event EventHandler Event_0;
 
-		private ArrayList _splitterRects;
+		private readonly ArrayList _splitterRects;
 
 		private SplittingManager _splittingManager;
 
@@ -622,11 +649,11 @@ namespace TD.SandDock
 
 			public void AddRange(LayoutSystemBase[] layoutSystems)
 			{
-				this.bool_0 = true;
+				updating = true;
 			    foreach (var layoutSystem in layoutSystems)
 			        Add(layoutSystem);
-			    this.bool_0 = false;
-				this.method_0();
+			    updating = false;
+				method_0();
 			}
 
 			public bool Contains(LayoutSystemBase layoutSystem) => List.Contains(layoutSystem);
@@ -637,8 +664,7 @@ namespace TD.SandDock
 
 		    public void Insert(int index, LayoutSystemBase layoutSystem)
 			{
-		        if (layoutSystem.splitLayoutSystem_0 != null)
-		            throw new ArgumentException("Layout system already has a parent. You must first remove it from its parent.");
+		        if (layoutSystem._parent != null) throw new ArgumentException("Layout system already has a parent. You must first remove it from its parent.");
 		        List.Insert(index, layoutSystem);
 			}
 
@@ -650,76 +676,69 @@ namespace TD.SandDock
 			protected override void OnClear()
 			{
 				base.OnClear();
-				foreach (LayoutSystemBase layoutSystemBase in this)
+				foreach (LayoutSystemBase layout in this)
 				{
-					layoutSystemBase.splitLayoutSystem_0 = null;
-					layoutSystemBase.vmethod_2(null);
+					layout._parent = null;
+					layout.SetDockContainer(null);
 				}
 			}
 
 			protected override void OnClearComplete()
 			{
 				base.OnClearComplete();
-				if (!this.bool_0)
-				{
-					this.method_0();
-				}
+			    if (!updating)
+			        method_0();
 			}
 
 			protected override void OnInsertComplete(int index, object value)
 			{
 				base.OnInsertComplete(index, value);
-				LayoutSystemBase layoutSystemBase = (LayoutSystemBase)value;
-				layoutSystemBase.splitLayoutSystem_0 = this._parent;
-				layoutSystemBase.vmethod_2(this._parent.DockContainer);
-				if (!this.bool_0)
-				{
-					this.method_0();
-				}
+				var layout = (LayoutSystemBase)value;
+				layout._parent = _parent;
+				layout.SetDockContainer(_parent.DockContainer);
+			    if (!updating)
+			        method_0();
 			}
 
 			protected override void OnRemoveComplete(int index, object value)
 			{
 				base.OnRemoveComplete(index, value);
-				((LayoutSystemBase)value).splitLayoutSystem_0 = null;
-				((LayoutSystemBase)value).vmethod_2(null);
-				if (!this.bool_0)
-				{
-					if (base.Count > 1 || this._parent.splitLayoutSystem_0 == null)
-					{
-						this.method_0();
-					}
-					else
-					{
-						SplitLayoutSystem splitLayoutSystem = this._parent.splitLayoutSystem_0;
-						if (base.Count == 1)
-						{
-							LayoutSystemBase layoutSystem = this[0];
-							this.bool_0 = true;
-							this.Remove(layoutSystem);
-							this.bool_0 = false;
-							splitLayoutSystem.LayoutSystems.bool_0 = true;
-							int index2 = splitLayoutSystem.LayoutSystems.IndexOf(this._parent);
-							splitLayoutSystem.LayoutSystems.Remove(this._parent);
-							splitLayoutSystem.LayoutSystems.Insert(index2, layoutSystem);
-							splitLayoutSystem.LayoutSystems.bool_0 = false;
-							splitLayoutSystem.method_7();
-							return;
-						}
-						if (base.Count == 0)
-						{
-							splitLayoutSystem.LayoutSystems.Remove(this._parent);
-							return;
-						}
-					}
-				}
+				((LayoutSystemBase)value)._parent = null;
+				((LayoutSystemBase)value).SetDockContainer(null);
+			    if (updating) return;
+			    if (Count > 1 || _parent._parent == null)
+			    {
+			        method_0();
+			    }
+			    else
+			    {
+			        var splitLayoutSystem = _parent._parent;
+			        if (Count == 1)
+			        {
+			            LayoutSystemBase layoutSystem = this[0];
+			            updating = true;
+			            Remove(layoutSystem);
+			            updating = false;
+			            splitLayoutSystem.LayoutSystems.updating = true;
+			            int index2 = splitLayoutSystem.LayoutSystems.IndexOf(_parent);
+			            splitLayoutSystem.LayoutSystems.Remove(_parent);
+			            splitLayoutSystem.LayoutSystems.Insert(index2, layoutSystem);
+			            splitLayoutSystem.LayoutSystems.updating = false;
+			            splitLayoutSystem.method_7();
+			            return;
+			        }
+			        if (Count == 0)
+			        {
+			            splitLayoutSystem.LayoutSystems.Remove(_parent);
+			        }
+			    }
 			}
 
 			public void Remove(LayoutSystemBase layoutSystem) => List.Remove(layoutSystem);
 
 		    public LayoutSystemBase this[int index] => (LayoutSystemBase)List[index];
 
-		    internal bool bool_0;
+		    internal bool updating;
 
 			private readonly SplitLayoutSystem _parent;
 		}

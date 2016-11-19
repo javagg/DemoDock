@@ -4,28 +4,30 @@ using System.Drawing;
 using System.Windows.Forms;
 using TD.SandDock.Design;
 using TD.SandDock.Rendering;
+using TD.Util;
+using BorderStyle = TD.SandDock.Rendering.BorderStyle;
 
 namespace TD.SandDock
 {
-    internal class Class18
+    internal class DockingState
     {
-        internal Class18()
+        internal DockingState()
         {
             int[] array = new int[1];
-            this.Int32_0 = array;
-            this.SizeF_0 = new SizeF(250f, 400f);
+            Int32_0 = array;
+            Size = new SizeF(250f, 400f);
         }
 
-        public Guid Guid_0 { get; set; }
+        public Guid Guid { get; set; }
 
         public int[] Int32_0 { get; set; }
 
         public int Int32_1 { get; set; }
 
-        public SizeF SizeF_0 { get; set; }
+        public SizeF Size { get; set; }
     }
 
-    internal class Class19 : Class18
+    internal class DockedDockingState : DockingState
     {
         public int Int32_2 { get; set; }
 
@@ -68,8 +70,8 @@ namespace TD.SandDock
     {
         protected DockControl()
         {
-            if (image_0 == null)
-                image_0 = Image.FromStream(typeof(DockControl).Assembly.GetManifestResourceStream("TD.SandDock.sanddock.png"));
+            if (_collapsedImage == null)
+                _collapsedImage = Image.FromStream(typeof(DockControl).Assembly.GetManifestResourceStream("TD.SandDock.sanddock.png"));
 
             MetaData = new WindowMetaData();
             _dockingRules = CreateDockingRules();
@@ -123,46 +125,45 @@ namespace TD.SandDock
             }
             if (IsOpen)
             {
-                this.bool_1 = true;
+                bool_1 = true;
                 try
                 {
                     var containerControl = Parent.GetContainerControl();
-                    containerControl.ActiveControl = base.ActiveControl;
-                    if (!base.ContainsFocus)
+                    containerControl.ActiveControl = ActiveControl;
+                    if (!ContainsFocus)
                     {
-                        if (this.PrimaryControl == null)
+                        if (PrimaryControl == null)
                         {
-                            base.SelectNextControl(this, true, true, true, true);
+                            SelectNextControl(this, true, true, true, true);
                         }
                         else
                         {
-                            this.PrimaryControl.Focus();
+                            PrimaryControl.Focus();
                         }
-                        if (!base.ContainsFocus)
+                        if (!ContainsFocus)
                         {
-                            if (base.Controls.Count == 1)
+                            if (Controls.Count == 1)
                             {
-                                base.Controls[0].Focus();
+                                Controls[0].Focus();
                             }
                             else
                             {
-                                base.Focus();
+                                Focus();
                             }
                         }
                     }
                 }
                 finally
                 {
-                    this.bool_1 = false;
+                    bool_1 = false;
                 }
-                this.method_3();
-                return;
+                method_3();
             }
         }
 
         public bool Close()
         {
-            return this.method_14(false);
+            return method_14(false);
         }
 
         protected abstract DockingRules CreateDockingRules();
@@ -181,7 +182,7 @@ namespace TD.SandDock
 
         public void DockInNewContainer(ContainerDockLocation dockLocation, ContainerDockEdge edge)
         {
-            this.method_10();
+            method_10();
             Remove();
             var dockContainer = Manager.CreateNewDockContainer(dockLocation, edge, MetaData.DockedContentSize);
             var layoutSystem = dockContainer.CreateNewLayoutSystem(this, FloatingSize);
@@ -236,17 +237,17 @@ namespace TD.SandDock
         {
             if (LayoutSystem != null)
             {
-                if (this.LayoutSystem.SelectedControl != this)
+                if (LayoutSystem.SelectedControl != this)
                 {
-                    this.LayoutSystem.SelectedControl = this;
-                    if (this.LayoutSystem.SelectedControl != this)
+                    LayoutSystem.SelectedControl = this;
+                    if (LayoutSystem.SelectedControl != this)
                     {
                         return;
                     }
                 }
-                if (this.LayoutSystem.AutoHideBar != null)
+                if (LayoutSystem.AutoHideBar != null)
                 {
-                    this.LayoutSystem.AutoHideBar.method_7(this, true, bool_8);
+                    LayoutSystem.AutoHideBar.method_7(this, true, bool_8);
                     return;
                 }
             }
@@ -256,7 +257,8 @@ namespace TD.SandDock
             }
         }
 
-        internal bool method_13(ContainerDockLocation location)
+        [GuessedName]
+        internal bool GetDockingRulesFrom(ContainerDockLocation location)
         {
             switch (location)
             {
@@ -324,14 +326,14 @@ namespace TD.SandDock
             }
         }
 
-        internal void method_2()
+        internal void InitStyle()
         {
             SetStyle(ControlStyles.ResizeRedraw | ControlStyles.AllPaintingInWmPaint | ControlStyles.OptimizedDoubleBuffer, true);
         }
 
         private void method_3()
         {
-            if (this.bool_1) return;
+            if (bool_1) return;
             if (Manager?.DocumentContainer == null || !Manager.DocumentContainer.Boolean_3)
                 MetaData.SaveFocused(DateTime.Now);
             Manager?.OnDockControlActivated(new DockControlEventArgs(this));
@@ -341,53 +343,51 @@ namespace TD.SandDock
         {
             if (container?.Manager != null && container.Manager != Manager)
                 Manager = container.Manager;
-            this.method_5();
+            method_5();
         }
 
         internal void method_5()
         {
-            var dockSituation = LayoutSystem?.DockContainer != null ? LayoutUtilities.smethod_2(LayoutSystem.DockContainer) : DockSituation.None;
+            var dockSituation = LayoutSystem?.DockContainer != null ? LayoutUtilities.GetDockSituation(LayoutSystem.DockContainer) : DockSituation.None;
             if (dockSituation != DockSituation.None)
                 MetaData.SaveOpenDockSituation(dockSituation);
 
-            Class18 @class = null;
+            DockingState @class = null;
             switch (dockSituation)
             {
                 case DockSituation.Docked:
-                    @class = MetaData.Class19_0;
-                    this.MetaData.SaveFixedDockSituation(DockSituation.Docked);
-                    this.MetaData.SaveFixedDockSide(LayoutUtilities.Convert(LayoutSystem.DockContainer.Dock));
-                    this.MetaData.SaveDockedContentSize(this.LayoutSystem.DockContainer.ContentSize);
-                    if (this.Manager != null)
+                    @class = MetaData.DockedState;
+                    MetaData.SaveFixedDockSituation(DockSituation.Docked);
+                    MetaData.SaveFixedDockSide(LayoutUtilities.Convert(LayoutSystem.DockContainer.Dock));
+                    MetaData.SaveDockedContentSize(LayoutSystem.DockContainer.ContentSize);
+                    if (Manager != null)
                     {
-                        DockContainer[] dockContainers = Manager.GetDockContainers(LayoutSystem.DockContainer.Dock);
-                        this.MetaData.Class19_0.Int32_3 = dockContainers.Length;
-                        this.MetaData.Class19_0.Int32_2 = Array.IndexOf<DockContainer>(dockContainers, LayoutSystem.DockContainer);
+                        var dockContainers = Manager.GetDockContainers(LayoutSystem.DockContainer.Dock);
+                        MetaData.DockedState.Int32_3 = dockContainers.Length;
+                        MetaData.DockedState.Int32_2 = Array.IndexOf(dockContainers, LayoutSystem.DockContainer);
                     }
                     break;
                 case DockSituation.Document:
-                    @class = this.MetaData.Class18_0;
+                    @class = MetaData.DocumentState;
                     MetaData.SaveFixedDockSituation(DockSituation.Document);
                     break;
                 case DockSituation.Floating:
-                    @class = this.MetaData.Class18_1;
+                    @class = MetaData.FloatingState;
                     MetaData.SaveFloatingWindowGuid(((FloatingContainer)LayoutSystem.DockContainer).Guid);
                     break;
             }
             if (@class != null)
-            {
-                this.method_6(@class);
-            }
-            this.method_17(dockSituation);
+                UpdateDockingState(@class);
+            method_17(dockSituation);
         }
 
-        private void method_6(Class18 class18_0)
+        private void UpdateDockingState(DockingState state)
         {
             if (LayoutSystem == null) return;
-            class18_0.Guid_0 = LayoutSystem.Guid;
-            class18_0.Int32_1 = LayoutSystem.Controls.IndexOf(this);
-            class18_0.SizeF_0 = LayoutSystem.WorkingSize;
-            class18_0.Int32_0 = LayoutUtilities.smethod_5(LayoutSystem);
+            state.Guid = LayoutSystem.Guid;
+            state.Int32_1 = LayoutSystem.Controls.IndexOf(this);
+            state.Size = LayoutSystem.WorkingSize;
+            state.Int32_0 = LayoutUtilities.smethod_5(LayoutSystem);
         }
 
         private void EnsureNotDisposed()
@@ -435,7 +435,7 @@ namespace TD.SandDock
             base.OnEnter(e);
             if (LayoutSystem != null)
                 LayoutSystem.Boolean_1 = true;
-            this.method_3();
+            method_3();
         }
 
         protected override void OnFontChanged(EventArgs e)
@@ -465,13 +465,13 @@ namespace TD.SandDock
             var rect = ClientRectangle;
             switch (BorderStyle)
             {
-                case Rendering.BorderStyle.Flat:
-                case Rendering.BorderStyle.RaisedThin:
-                case Rendering.BorderStyle.SunkenThin:
+                case BorderStyle.Flat:
+                case BorderStyle.RaisedThin:
+                case BorderStyle.SunkenThin:
                     rect.Inflate(-1, -1);
                     break;
-                case Rendering.BorderStyle.RaisedThick:
-                case Rendering.BorderStyle.SunkenThick:
+                case BorderStyle.RaisedThick:
+                case BorderStyle.SunkenThick:
                     rect.Inflate(-2, -2);
                     break;
             }
@@ -481,7 +481,7 @@ namespace TD.SandDock
             if (rect != ClientRectangle)
                 e.Graphics.SetClip(rect);
             if (BackgroundImage == null)
-                Class16.smethod_0(e.Graphics, backColor);
+                RenderHelper.ClearBackground(e.Graphics, backColor);
             else
                 base.OnPaintBackground(e);
         }
@@ -496,12 +496,12 @@ namespace TD.SandDock
                         OpenFloating(WindowOpenMethod.OnScreenActivate);
                     return;
                 case DockSituation.Floating:
-                    if (MetaData.LastFixedDockSituation == DockSituation.Docked && this.method_13(MetaData.LastFixedDockSide))
+                    if (MetaData.LastFixedDockSituation == DockSituation.Docked && GetDockingRulesFrom(MetaData.LastFixedDockSide))
                     {
                         OpenDocked(WindowOpenMethod.OnScreenActivate);
                         return;
                     }
-                    if (MetaData.LastFixedDockSituation == DockSituation.Document && this.method_13(ContainerDockLocation.Center))
+                    if (MetaData.LastFixedDockSituation == DockSituation.Document && GetDockingRulesFrom(ContainerDockLocation.Center))
                         OpenDocument(WindowOpenMethod.OnScreenActivate);
                     return;
                 default:
@@ -531,7 +531,7 @@ namespace TD.SandDock
             }
             if (openMethod != WindowOpenMethod.OnScreen)
             {
-                this.method_12(openMethod == WindowOpenMethod.OnScreenActivate);
+                method_12(openMethod == WindowOpenMethod.OnScreenActivate);
             }
         }
 
@@ -544,7 +544,7 @@ namespace TD.SandDock
             if (existingWindow.DockSituation == DockSituation.None)
                 throw new InvalidOperationException("The specified window is not open.");
             Remove();
-            existingWindow.LayoutSystem.SplitForLayoutSystem(new ControlLayoutSystem(MetaData.Class19_0.SizeF_0, new[] { this }, this), side);
+            existingWindow.LayoutSystem.SplitForLayoutSystem(new ControlLayoutSystem(MetaData.DockedState.Size, new[] { this }, this), side);
         }
 
         public void OpenDocked() => OpenDocked(MetaData.LastFixedDockSide);
@@ -560,31 +560,31 @@ namespace TD.SandDock
         public void OpenDocked(WindowOpenMethod openMethod)
         {
             EnsureDockSystemContainerNotNull();
-            this.method_8();
+            method_8();
             if (DockSituation == DockSituation.Docked)
                 return;
             Remove();
-            ControlLayoutSystem controlLayoutSystem = LayoutUtilities.smethod_4(this.Manager, DockSituation.Docked, this.MetaData.Class19_0);
+            ControlLayoutSystem controlLayoutSystem = LayoutUtilities.smethod_4(Manager, DockSituation.Docked, MetaData.DockedState);
             if (controlLayoutSystem != null)
             {
-                controlLayoutSystem.Controls.Insert(Math.Min(this.MetaData.Class19_0.Int32_1, controlLayoutSystem.Controls.Count), this);
+                controlLayoutSystem.Controls.Insert(Math.Min(MetaData.DockedState.Int32_1, controlLayoutSystem.Controls.Count), this);
                 if (openMethod != WindowOpenMethod.OnScreen)
                 {
-                    this.method_12(openMethod == WindowOpenMethod.OnScreenActivate);
+                    method_12(openMethod == WindowOpenMethod.OnScreenActivate);
                 }
                 return;
             }
-            Struct0 @struct = LayoutUtilities.smethod_14(this.Manager, this.MetaData);
-            controlLayoutSystem = @struct.SplitLayout.DockContainer.CreateNewLayoutSystem(this, this.MetaData.Class19_0.SizeF_0);
-            if (this.MetaData.Class19_0.Guid_0 == Guid.Empty)
+            Struct0 @struct = LayoutUtilities.smethod_14(Manager, MetaData);
+            controlLayoutSystem = @struct.SplitLayout.DockContainer.CreateNewLayoutSystem(this, MetaData.DockedState.Size);
+            if (MetaData.DockedState.Guid == Guid.Empty)
             {
-                this.MetaData.Class19_0.Guid_0 = Guid.NewGuid();
+                MetaData.DockedState.Guid = Guid.NewGuid();
             }
-            controlLayoutSystem.Guid = this.MetaData.Class19_0.Guid_0;
+            controlLayoutSystem.Guid = MetaData.DockedState.Guid;
             @struct.SplitLayout.LayoutSystems.Insert(@struct.Index, controlLayoutSystem);
             if (openMethod != WindowOpenMethod.OnScreen)
             {
-                this.method_12(openMethod == WindowOpenMethod.OnScreenActivate);
+                method_12(openMethod == WindowOpenMethod.OnScreenActivate);
             }
         }
 
@@ -601,26 +601,26 @@ namespace TD.SandDock
 
             Remove();
             MetaData.SaveFixedDockSide(dockLocation);
-            MetaData.Class19_0.Guid_0 = Guid.Empty;
-            MetaData.Class19_0.Int32_0 = new int[0];
+            MetaData.DockedState.Guid = Guid.Empty;
+            MetaData.DockedState.Int32_0 = new int[0];
             OpenDocked(openMethod);
         }
 
         public void OpenDocument(WindowOpenMethod openMethod)
         {
             EnsureDockSystemContainerNotNull();
-            this.method_8();
+            method_8();
             if (DockSituation == DockSituation.Document)
                 return;
 
             Remove();
-            ControlLayoutSystem controlLayoutSystem = LayoutUtilities.smethod_4(Manager, DockSituation.Document, this.MetaData.Class18_0);
+            ControlLayoutSystem controlLayoutSystem = LayoutUtilities.smethod_4(Manager, DockSituation.Document, MetaData.DocumentState);
             if (controlLayoutSystem != null)
             {
-                controlLayoutSystem.Controls.Insert(Math.Min(this.MetaData.Class19_0.Int32_1, controlLayoutSystem.Controls.Count), this);
+                controlLayoutSystem.Controls.Insert(Math.Min(MetaData.DockedState.Int32_1, controlLayoutSystem.Controls.Count), this);
                 if (openMethod != WindowOpenMethod.OnScreen)
                 {
-                    this.method_12(openMethod == WindowOpenMethod.OnScreenActivate);
+                    method_12(openMethod == WindowOpenMethod.OnScreenActivate);
                 }
                 return;
             }
@@ -628,7 +628,7 @@ namespace TD.SandDock
             controlLayoutSystem = LayoutUtilities.FindControlLayoutSystem(dockContainer);
             if (controlLayoutSystem == null)
             {
-                controlLayoutSystem = dockContainer.CreateNewLayoutSystem(this, this.MetaData.Class18_0.SizeF_0);
+                controlLayoutSystem = dockContainer.CreateNewLayoutSystem(this, MetaData.DocumentState.Size);
                 dockContainer.LayoutSystem.LayoutSystems.Add(controlLayoutSystem);
             }
             else if (Manager.DocumentOpenPosition != DocumentContainerWindowOpenPosition.First)
@@ -641,7 +641,7 @@ namespace TD.SandDock
             }
             if (openMethod != WindowOpenMethod.OnScreen)
             {
-                this.method_12(openMethod == WindowOpenMethod.OnScreenActivate);
+                method_12(openMethod == WindowOpenMethod.OnScreenActivate);
             }
         }
 
@@ -650,32 +650,32 @@ namespace TD.SandDock
         public void OpenFloating(WindowOpenMethod openMethod)
         {
             EnsureDockSystemContainerNotNull();
-            this.method_8();
+            method_8();
             if (DockSituation == DockSituation.Floating)
                 return;
 
-            Rectangle rectangle_ = this.method_11();
-            this.Remove();
-            ControlLayoutSystem controlLayoutSystem = LayoutUtilities.smethod_4(this.Manager, DockSituation.Floating, this.MetaData.Class18_1);
+            Rectangle rectangle_ = method_11();
+            Remove();
+            ControlLayoutSystem controlLayoutSystem = LayoutUtilities.smethod_4(Manager, DockSituation.Floating, MetaData.FloatingState);
             if (controlLayoutSystem != null)
             {
-                controlLayoutSystem.Controls.Insert(Math.Min(this.MetaData.Class18_1.Int32_1, controlLayoutSystem.Controls.Count), this);
+                controlLayoutSystem.Controls.Insert(Math.Min(MetaData.FloatingState.Int32_1, controlLayoutSystem.Controls.Count), this);
                 if (openMethod != WindowOpenMethod.OnScreen)
                 {
-                    this.method_12(openMethod == WindowOpenMethod.OnScreenActivate);
+                    method_12(openMethod == WindowOpenMethod.OnScreenActivate);
                 }
                 return;
             }
             FloatingContainer @class = Manager.FindFloatingDockContainer(MetaData.LastFloatingWindowGuid);
             if (@class != null)
             {
-                Struct0 @struct = LayoutUtilities.smethod_15(@class, MetaData.Class18_1.Int32_0);
-                controlLayoutSystem = @struct.SplitLayout.DockContainer.CreateNewLayoutSystem(this, this.MetaData.Class18_1.SizeF_0);
-                if (this.MetaData.Class18_1.Guid_0 == Guid.Empty)
+                Struct0 @struct = LayoutUtilities.smethod_15(@class, MetaData.FloatingState.Int32_0);
+                controlLayoutSystem = @struct.SplitLayout.DockContainer.CreateNewLayoutSystem(this, MetaData.FloatingState.Size);
+                if (MetaData.FloatingState.Guid == Guid.Empty)
                 {
-                    this.MetaData.Class18_1.Guid_0 = Guid.NewGuid();
+                    MetaData.FloatingState.Guid = Guid.NewGuid();
                 }
-                controlLayoutSystem.Guid = this.MetaData.Class18_1.Guid_0;
+                controlLayoutSystem.Guid = MetaData.FloatingState.Guid;
                 @struct.SplitLayout.LayoutSystems.Insert(@struct.Index, controlLayoutSystem);
                 return;
             }
@@ -684,12 +684,12 @@ namespace TD.SandDock
                 MetaData.SaveFloatingWindowGuid(Guid.NewGuid());
             }
             @class = new FloatingContainer(Manager, MetaData.LastFloatingWindowGuid);
-            controlLayoutSystem = @class.CreateNewLayoutSystem(this, this.MetaData.Class18_1.SizeF_0);
-            if (this.MetaData.Class18_1.Guid_0 == Guid.Empty)
+            controlLayoutSystem = @class.CreateNewLayoutSystem(this, MetaData.FloatingState.Size);
+            if (MetaData.FloatingState.Guid == Guid.Empty)
             {
-                this.MetaData.Class18_1.Guid_0 = Guid.NewGuid();
+                MetaData.FloatingState.Guid = Guid.NewGuid();
             }
-            controlLayoutSystem.Guid = MetaData.Class18_1.Guid_0;
+            controlLayoutSystem.Guid = MetaData.FloatingState.Guid;
             @class.LayoutSystem.LayoutSystems.Add(controlLayoutSystem);
             @class.method_19(rectangle_, true, openMethod == WindowOpenMethod.OnScreenActivate);
         }
@@ -699,7 +699,7 @@ namespace TD.SandDock
             EnsureDockSystemContainerNotNull();
             Remove();
             MetaData.SaveFloatingWindowGuid(Guid.Empty);
-            MetaData.Class18_1.Guid_0 = Guid.Empty;
+            MetaData.FloatingState.Guid = Guid.Empty;
             FloatingLocation = bounds.Location;
             FloatingSize = bounds.Size;
             OpenFloating(openMethod);
@@ -798,26 +798,26 @@ namespace TD.SandDock
 
         private bool ShouldSerializeTabText() => _tabText.Length != 0 && _tabText != Text;
 
-        internal static void smethod_0(Control control, Graphics g, Rendering.BorderStyle borderStyle)
+        internal static void smethod_0(Control control, Graphics g, BorderStyle borderStyle)
         {
-            if (borderStyle == Rendering.BorderStyle.None)
+            if (borderStyle == BorderStyle.None)
                 return;
             var rectangle = new Rectangle(0, 0, control.Width, control.Height);
-            if (borderStyle != Rendering.BorderStyle.Flat)
+            if (borderStyle != BorderStyle.Flat)
             {
                 Border3DStyle style;
                 switch (borderStyle)
                 {
-                    case Rendering.BorderStyle.Flat:
+                    case BorderStyle.Flat:
                         style = Border3DStyle.Flat;
                         break;
-                    case Rendering.BorderStyle.RaisedThick:
+                    case BorderStyle.RaisedThick:
                         style = Border3DStyle.Raised;
                         break;
-                    case Rendering.BorderStyle.RaisedThin:
+                    case BorderStyle.RaisedThin:
                         style = Border3DStyle.RaisedInner;
                         break;
-                    case Rendering.BorderStyle.SunkenThick:
+                    case BorderStyle.SunkenThick:
                         style = Border3DStyle.Sunken;
                         break;
                     default:
@@ -886,7 +886,7 @@ namespace TD.SandDock
                 _allowCollapse = value;
                 if (Collapsed && !value)
                     Collapsed = false;
-                this.CalculateAllMetricsAndLayout();
+                CalculateAllMetricsAndLayout();
             }
         }
 
@@ -1018,8 +1018,8 @@ namespace TD.SandDock
         [Browsable(false)]
         internal bool IsInContainer => LayoutSystem?.DockContainer != null;
 
-        [Category("Appearance"), DefaultValue(Rendering.BorderStyle.None), Description("The type of border to be drawn around the control.")]
-        public Rendering.BorderStyle BorderStyle
+        [Category("Appearance"), DefaultValue(BorderStyle.None), Description("The type of border to be drawn around the control.")]
+        public BorderStyle BorderStyle
         {
             get
             {
@@ -1074,13 +1074,13 @@ namespace TD.SandDock
                 var rectangle = base.DisplayRectangle;
                 switch (_borderStyle)
                 {
-                    case Rendering.BorderStyle.Flat:
-                    case Rendering.BorderStyle.RaisedThin:
-                    case Rendering.BorderStyle.SunkenThin:
+                    case BorderStyle.Flat:
+                    case BorderStyle.RaisedThin:
+                    case BorderStyle.SunkenThin:
                         rectangle.Inflate(-1, -1);
                         break;
-                    case Rendering.BorderStyle.RaisedThick:
-                    case Rendering.BorderStyle.SunkenThick:
+                    case BorderStyle.RaisedThick:
+                    case BorderStyle.SunkenThick:
                         rectangle.Inflate(-2, -2);
                         break;
                 }
@@ -1177,7 +1177,7 @@ namespace TD.SandDock
             }
         }
 
-        internal Image Image_0 => _tabImage ?? image_0;
+        internal Image CollapsedImage => _tabImage ?? _collapsedImage;
 
         [Browsable(false), Obsolete("Use the DockSituation property instead.")]
         public bool IsDocked => IsInContainer && !(LayoutSystem.DockContainer is DocumentContainer) && !(LayoutSystem.DockContainer is FloatingContainer);
@@ -1257,10 +1257,10 @@ namespace TD.SandDock
             {
                 if (value < 0) throw new ArgumentException("Value must be at least equal to zero.");
                 _popupSize = value;
-                if (!MetaData.Boolean_0)
+                if (!MetaData.IsDocked)
                     MetaData.SaveDockedContentSize(value);
                 if (LayoutSystem?.AutoHideBar != null && LayoutSystem.AutoHideBar.LayoutSystem == LayoutSystem)
-                    LayoutSystem.AutoHideBar.Int32_1 = value;
+                    LayoutSystem.AutoHideBar.PopupSize = value;
             }
         }
 
@@ -1363,13 +1363,13 @@ namespace TD.SandDock
 
         private bool _showOptions = true;
 
-        private Rendering.BorderStyle _borderStyle;
+        private BorderStyle _borderStyle;
 
         private DockingRules _dockingRules;
 
         private Guid _guid = Guid.NewGuid();
 
-        private static Image image_0;
+        private static Image _collapsedImage;
 
         private Image _tabImage;
 
@@ -1383,7 +1383,7 @@ namespace TD.SandDock
 
         //private Rectangle _tabBounds = Rectangle.Empty;
 
-        internal Rectangle rectangle_1 = Rectangle.Empty;
+        internal Rectangle CollapsedBounds = Rectangle.Empty;
 
         private SandDockManager _manager;
 

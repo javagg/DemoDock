@@ -36,7 +36,7 @@ namespace TD.SandDock.Design
             _designerHost = (IDesignerHost)GetService(typeof(IDesignerHost));
             _selectionService = (ISelectionService)GetService(typeof(ISelectionService));
             _control = (DockControl)component;
-            _control.method_2();
+            _control.InitStyle();
             _selectionService.SelectionChanged += OnSelectionChanged;
             _control.ControlAdded += OnControlAddedOrRemoved;
             _control.ControlRemoved += OnControlAddedOrRemoved;
@@ -52,7 +52,7 @@ namespace TD.SandDock.Design
             var selected = _selectionService.GetComponentSelected(Component);
             if (selected == _selected) return;
             _selected = selected;
-            ((DockControl)Component).LayoutSystem.vmethod_9();
+            ((DockControl)Component).LayoutSystem.OnLeave();
         }
 
         protected override void OnPaintAdornments(PaintEventArgs pe)

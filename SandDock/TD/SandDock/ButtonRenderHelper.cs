@@ -1,37 +1,35 @@
-using System;
 using System.Drawing;
 
 namespace TD.SandDock
 {
-    internal class Class15
+    internal class ButtonRenderHelper
     {
-        public static void smethod_0(Graphics g, Rectangle bounds, Pen pen)
+        public static void DrawPositionDockButton(Graphics g, Rectangle bounds, Pen pen)
         {
             var num = bounds.Width / 4;
             for (var i = 1; i <= num; i++)
             {
-                int num2 = (num - i) * 2;
-                int num3 = bounds.Left + bounds.Width / 2 - (num - i);
-                int num4 = bounds.Top + bounds.Height / 2 + (i - 1);
-                g.DrawLine(pen, num3, num4, num3 + num2 + 1, num4);
+                var x = bounds.Left + bounds.Width / 2 - (num - i);
+                var y = bounds.Top + bounds.Height / 2 + (i - 1);
+                g.DrawLine(pen, x, y, x + (num - i) * 2 + 1, y);
             }
         }
 
-        public static void smethod_1(Graphics g, Rectangle bounds, Color color, bool fill)
+        public static void DrawScrollLeftDockButton(Graphics g, Rectangle bounds, Color color, bool fill)
         {
             var x = bounds.Left + bounds.Width / 2;
             var y = bounds.Top + bounds.Height / 2;
-            smethod_3(g, new[] { new Point(x + 2, y - 5), new Point(x - 2, y - 1), new Point(x + 2, y + 3) }, color, fill);
+            DrawScrollDockButton(g, new[] { new Point(x + 2, y - 5), new Point(x - 2, y - 1), new Point(x + 2, y + 3) }, color, fill);
         }
 
-        public static void smethod_2(Graphics g, Rectangle bounds, Color color, bool fill)
+        public static void DrawScrollRightDockButton(Graphics g, Rectangle bounds, Color color, bool fill)
         {
             var x = bounds.Left + bounds.Width / 2;
             var y = bounds.Top + bounds.Height / 2;
-            smethod_3(g, new[] { new Point(x - 2, y - 5), new Point(x + 2, y - 1), new Point(x - 2, y + 3) }, color, fill);
+            DrawScrollDockButton(g, new[] { new Point(x - 2, y - 5), new Point(x + 2, y - 1), new Point(x - 2, y + 3) }, color, fill);
         }
 
-        private static void smethod_3(Graphics g, Point[] points, Color color, bool fill)
+        private static void DrawScrollDockButton(Graphics g, Point[] points, Color color, bool fill)
         {
             if (fill)
                 using (var brush = new SolidBrush(color))
@@ -41,11 +39,11 @@ namespace TD.SandDock
                     g.DrawPolygon(pen, points);
         }
 
-        public static void smethod_4(Graphics g, Rectangle bounds, Pen pen, bool bool_0)
+        public static void DrawPinDockButton(Graphics g, Rectangle bounds, Pen pen, bool toggled)
         {
             var x = bounds.Left + bounds.Width / 2;
             var y = bounds.Top + bounds.Height / 2;
-            if (bool_0)
+            if (toggled)
             {
                 g.DrawLine(pen, x - 5, y, x - 2, y);
                 g.DrawLine(pen, x - 2, y - 3, x - 2, y + 3);
@@ -65,7 +63,7 @@ namespace TD.SandDock
             }
         }
 
-        public static void smethod_5(Graphics g, Rectangle bounds, Pen pen)
+        public static void DrawDocumentStripCloseButton(Graphics g, Rectangle bounds, Pen pen)
         {
             var x = bounds.Left + bounds.Width / 2 - 1;
             var y = bounds.Top + bounds.Height / 2;
@@ -75,7 +73,7 @@ namespace TD.SandDock
             g.DrawLine(pen, x - 2, y + 2, x + 4, y - 4);
         }
 
-        public static void smethod_6(Graphics g, Rectangle bounds, Pen pen)
+        public static void DrawCloseDockButton(Graphics g, Rectangle bounds, Pen pen)
         {
             var x = bounds.Left + bounds.Width / 2 - 1;
             var y = bounds.Top + bounds.Height / 2;

@@ -10,11 +10,11 @@ namespace TD.SandDock
 	{
 		public PopupContainer(AutoHideBar bar)
 		{
-			this.control0_0 = bar;
+			_autoHideBar = bar;
 			SetStyle(ControlStyles.ResizeRedraw | ControlStyles.AllPaintingInWmPaint | ControlStyles.OptimizedDoubleBuffer, true);
 			SetStyle(ControlStyles.Selectable, false);
-		    this._toolTips0 = new ToolTips(this) {Boolean_0 = false};
-		    this._toolTips0.Event_0 += this.method_4;
+		    _toolTips0 = new ToolTips(this) {Boolean_0 = false};
+		    _toolTips0.Event_0 += method_4;
 			BackColor = SystemColors.Control;
 		}
 
@@ -22,21 +22,21 @@ namespace TD.SandDock
 		{
 			if (disposing && !IsDisposed)
 			{
-				if (base.ContainsFocus && this.control0_0.Manager.OwnerForm != null && this.control0_0.Manager.OwnerForm.IsMdiContainer && this.control0_0.Manager.OwnerForm.ActiveMdiChild != null)
+				if (ContainsFocus && _autoHideBar.Manager.OwnerForm != null && _autoHideBar.Manager.OwnerForm.IsMdiContainer && _autoHideBar.Manager.OwnerForm.ActiveMdiChild != null)
 				{
-					this.control0_0.Manager.OwnerForm.ActiveControl = this.control0_0.Manager.OwnerForm.ActiveMdiChild;
+					_autoHideBar.Manager.OwnerForm.ActiveControl = _autoHideBar.Manager.OwnerForm.ActiveMdiChild;
 				}
-				this.control0_0.method_6(true);
-				this.control0_0 = null;
-				this.ControlLayoutSystem_0 = null;
-				if (this._toolTips0 != null)
+				_autoHideBar.method_6(true);
+				_autoHideBar = null;
+				ControlLayoutSystem_0 = null;
+				if (_toolTips0 != null)
 				{
-					this._toolTips0.Dispose();
-					this._toolTips0 = null;
+					_toolTips0.Dispose();
+					_toolTips0 = null;
 				}
-				if (this.class9_0 != null)
+				if (class9_0 != null)
 				{
-					this.method_1();
+					method_1();
 				}
 			}
 			base.Dispose(disposing);
@@ -44,122 +44,117 @@ namespace TD.SandDock
 
 		private void method_0(Point point_0)
 		{
-			this.class9_0 = new ResizingManager(this.control0_0, this, point_0);
-			this.class9_0.Event_0 += this.method_2;
-			this.class9_0.ResizingManagerFinished += this.method_3;
+			class9_0 = new ResizingManager(_autoHideBar, this, point_0);
+			class9_0.Cancalled += method_2;
+			class9_0.ResizingManagerFinished += OnResizingManagerFinished;
 		}
 
 		private void method_1()
 		{
-			this.class9_0.Event_0 -= this.method_2;
-			this.class9_0.ResizingManagerFinished -= this.method_3;
-			this.class9_0 = null;
+			class9_0.Cancalled -= method_2;
+			class9_0.ResizingManagerFinished -= OnResizingManagerFinished;
+			class9_0 = null;
 		}
 
 		private void method_2(object sender, EventArgs e)
 		{
-			this.method_1();
+			method_1();
 		}
 
-		private void method_3(int int_0)
+		private void OnResizingManagerFinished(int size)
 		{
-			this.method_1();
-			this.Int32_0 = int_0;
+			method_1();
+			PopupSize = size;
 		}
 
 		private string method_4(Point point_0)
 		{
-			if (this.rectangle_0.Contains(point_0) && this.controlLayoutSystem_0 != null)
-			{
-				return this.controlLayoutSystem_0.vmethod_5(point_0);
-			}
-			return "";
+		    return rectangle_0.Contains(point_0) && controlLayoutSystem_0 != null
+		        ? controlLayoutSystem_0.vmethod_5(point_0) : "";
 		}
 
 		protected override void OnEnter(EventArgs e)
 		{
 			base.OnEnter(e);
-		    this.controlLayoutSystem_0?.vmethod_9();
+		    controlLayoutSystem_0?.OnLeave();
 		}
 
 		protected override void OnLayout(LayoutEventArgs levent)
 		{
-			if (this.controlLayoutSystem_0 != null)
-			{
-				this.rectangle_0 = base.ClientRectangle;
-				if (!this.Boolean_1)
-				{
-					this.rectangle_1 = Rectangle.Empty;
-				}
-				else
-				{
-					switch (this.control0_0.Dock)
-					{
-					case DockStyle.Top:
-						this.rectangle_1 = new Rectangle(this.rectangle_0.X, this.rectangle_0.Bottom - 4, this.rectangle_0.Width, 4);
-						this.rectangle_0.Height = this.rectangle_0.Height - 4;
-						break;
-					case DockStyle.Bottom:
-						this.rectangle_1 = new Rectangle(this.rectangle_0.X, this.rectangle_0.Y, this.rectangle_0.Width, 4);
-						this.rectangle_0.Y = this.rectangle_0.Y + 4;
-						this.rectangle_0.Height = this.rectangle_0.Height - 4;
-						break;
-					case DockStyle.Left:
-						this.rectangle_1 = new Rectangle(this.rectangle_0.Right - 4, this.rectangle_0.Y, 4, this.rectangle_0.Height);
-						this.rectangle_0.Width = this.rectangle_0.Width - 4;
-						break;
-					case DockStyle.Right:
-						this.rectangle_1 = new Rectangle(this.rectangle_0.X, this.rectangle_0.Y, 4, this.rectangle_0.Height);
-						this.rectangle_0.X = this.rectangle_0.X + 4;
-						this.rectangle_0.Width = this.rectangle_0.Width - 4;
-						break;
-					default:
-						this.rectangle_1 = Rectangle.Empty;
-						break;
-					}
-				}
-				this.controlLayoutSystem_0.LayoutCollapsed(this.control0_0.Manager.Renderer, this.rectangle_0);
-				base.Invalidate();
-			}
+		    if (controlLayoutSystem_0 == null) return;
+
+		    rectangle_0 = ClientRectangle;
+		    if (!Boolean_1)
+		    {
+		        rectangle_1 = Rectangle.Empty;
+		    }
+		    else
+		    {
+		        switch (_autoHideBar.Dock)
+		        {
+		            case DockStyle.Top:
+		                rectangle_1 = new Rectangle(rectangle_0.X, rectangle_0.Bottom - 4, rectangle_0.Width, 4);
+		                rectangle_0.Height = rectangle_0.Height - 4;
+		                break;
+		            case DockStyle.Bottom:
+		                rectangle_1 = new Rectangle(rectangle_0.X, rectangle_0.Y, rectangle_0.Width, 4);
+		                rectangle_0.Y = rectangle_0.Y + 4;
+		                rectangle_0.Height = rectangle_0.Height - 4;
+		                break;
+		            case DockStyle.Left:
+		                rectangle_1 = new Rectangle(rectangle_0.Right - 4, rectangle_0.Y, 4, rectangle_0.Height);
+		                rectangle_0.Width = rectangle_0.Width - 4;
+		                break;
+		            case DockStyle.Right:
+		                rectangle_1 = new Rectangle(rectangle_0.X, rectangle_0.Y, 4, rectangle_0.Height);
+		                rectangle_0.X = rectangle_0.X + 4;
+		                rectangle_0.Width = rectangle_0.Width - 4;
+		                break;
+		            default:
+		                rectangle_1 = Rectangle.Empty;
+		                break;
+		        }
+		    }
+		    controlLayoutSystem_0.LayoutCollapsed(_autoHideBar.Manager.Renderer, rectangle_0);
+		    Invalidate();
 		}
 
 		protected override void OnLeave(EventArgs e)
 		{
 			base.OnLeave(e);
-		    this.controlLayoutSystem_0?.vmethod_9();
+		    controlLayoutSystem_0?.OnLeave();
 		}
 
 		protected override void OnMouseDown(MouseEventArgs e)
 		{
-			base.OnMouseDown(e);
-			if (this.rectangle_1.Contains(e.X, e.Y))
-			{
-				if (e.Button == MouseButtons.Left)
-				{
-					this.method_0(new Point(e.X, e.Y));
-					return;
-				}
-			}
-			if (this.rectangle_0.Contains(e.X, e.Y))
-			{
-				this.controlLayoutSystem_0?.OnMouseDown(e);
-			}
+		    base.OnMouseDown(e);
+		    if (rectangle_1.Contains(e.X, e.Y) && e.Button == MouseButtons.Left)
+		    {
+		        method_0(new Point(e.X, e.Y));
+		    }
+		    else
+		    {
+		        if (rectangle_0.Contains(e.X, e.Y))
+		        {
+		            controlLayoutSystem_0?.OnMouseDown(e);
+		        }
+		    }
 		}
 
 		protected override void OnMouseLeave(EventArgs e)
 		{
 			base.OnMouseLeave(e);
-		    this.controlLayoutSystem_0?.OnMouseLeave();
+		    controlLayoutSystem_0?.OnMouseLeave();
 		}
 
 		protected override void OnMouseMove(MouseEventArgs e)
 		{
 			base.OnMouseMove(e);
-			if (!this.rectangle_1.Contains(e.X, e.Y) && this.class9_0 == null)
+			if (!rectangle_1.Contains(e.X, e.Y) && class9_0 == null)
 			{
 				Cursor.Current = Cursors.Default;
 			}
-			else if (this.control0_0.Dock != DockStyle.Left && this.control0_0.Dock != DockStyle.Right)
+			else if (_autoHideBar.Dock != DockStyle.Left && _autoHideBar.Dock != DockStyle.Right)
 			{
 				Cursor.Current = Cursors.HSplit;
 			}
@@ -167,75 +162,73 @@ namespace TD.SandDock
 			{
 				Cursor.Current = Cursors.VSplit;
 			}
-			if (base.Capture && this.class9_0 != null)
+			if (Capture && class9_0 != null)
 			{
-				this.class9_0.OnMouseMove(new Point(e.X, e.Y));
+				class9_0.OnMouseMove(new Point(e.X, e.Y));
 				return;
 			}
-			if (this.rectangle_0.Contains(e.X, e.Y))
+			if (rectangle_0.Contains(e.X, e.Y))
 			{
-				this.controlLayoutSystem_0?.OnMouseMove(e);
+				controlLayoutSystem_0?.OnMouseMove(e);
 			}
 		}
 
 		protected override void OnMouseUp(MouseEventArgs e)
 		{
 			base.OnMouseUp(e);
-			if (this.class9_0 != null && e.Button == MouseButtons.Left)
+			if (class9_0 != null && e.Button == MouseButtons.Left)
 			{
-				this.class9_0.Commit();
+				class9_0.Commit();
 				return;
 			}
-			if (this.rectangle_0.Contains(e.X, e.Y))
+			if (rectangle_0.Contains(e.X, e.Y))
 			{
-				this.controlLayoutSystem_0?.OnMouseUp(e);
+				controlLayoutSystem_0?.OnMouseUp(e);
 			}
 		}
 
 		protected override void OnPaint(PaintEventArgs e)
 		{
-			this.control0_0.Manager.Renderer.StartRenderSession(HotkeyPrefix.None);
-		    this.controlLayoutSystem_0?.vmethod_4(this.control0_0.Manager.Renderer, e.Graphics, this.Font);
-		    if (this.Boolean_1)
+			_autoHideBar.Manager.Renderer.StartRenderSession(HotkeyPrefix.None);
+		    controlLayoutSystem_0?.vmethod_4(_autoHideBar.Manager.Renderer, e.Graphics, Font);
+		    if (Boolean_1)
 			{
-				this.control0_0.Manager.Renderer.DrawSplitter(null, this, e.Graphics, this.rectangle_1, (this.control0_0.Dock == DockStyle.Top || this.control0_0.Dock == DockStyle.Bottom) ? Orientation.Horizontal : Orientation.Vertical);
+				_autoHideBar.Manager.Renderer.DrawSplitter(null, this, e.Graphics, rectangle_1, (_autoHideBar.Dock == DockStyle.Top || _autoHideBar.Dock == DockStyle.Bottom) ? Orientation.Horizontal : Orientation.Vertical);
 			}
-			this.control0_0.Manager.Renderer.FinishRenderSession();
+			_autoHideBar.Manager.Renderer.FinishRenderSession();
 		}
 
-		public bool Boolean_0 => this.class9_0 != null;
+		public bool Boolean_0 => class9_0 != null;
 
-	    private bool Boolean_1 => this.control0_0.Manager.AllowDockContainerResize;
+	    private bool Boolean_1 => _autoHideBar.Manager.AllowDockContainerResize;
 
 	    public ControlLayoutSystem ControlLayoutSystem_0
 		{
 			get
 			{
-				return this.controlLayoutSystem_0;
+				return controlLayoutSystem_0;
 			}
 			set
 			{
-				this.controlLayoutSystem_0 = value;
+				controlLayoutSystem_0 = value;
 				PerformLayout();
 			}
 		}
 
-		public int Int32_0
+		public int PopupSize
 		{
 			get {
-			    return this.control0_0.Dock != DockStyle.Left && this.control0_0.Dock != DockStyle.Right
-			        ? this.rectangle_0.Height
-			        : this.rectangle_0.Width;
+			    return _autoHideBar.Dock != DockStyle.Left && _autoHideBar.Dock != DockStyle.Right
+			        ? rectangle_0.Height
+			        : rectangle_0.Width;
 			}
 		    set
 			{
-				Rectangle bounds = base.Bounds;
+				var bounds = Bounds;
 				int num = value;
-				if (this.Boolean_1)
-				{
-					num += 4;
-				}
-				switch (this.control0_0.Dock)
+			    if (Boolean_1)
+			        num += 4;
+			    switch (_autoHideBar.Dock)
 				{
 				case DockStyle.Top:
 					bounds.Height = num;
@@ -252,8 +245,8 @@ namespace TD.SandDock
 					bounds.Width = num;
 					break;
 				}
-				base.Bounds = bounds;
-				this.ControlLayoutSystem_0.PopupSize = value;
+				Bounds = bounds;
+				ControlLayoutSystem_0.PopupSize = value;
 			}
 		}
 
@@ -261,7 +254,7 @@ namespace TD.SandDock
 
 		private ResizingManager class9_0;
 
-		private AutoHideBar control0_0;
+		private AutoHideBar _autoHideBar;
 
 		private ControlLayoutSystem controlLayoutSystem_0;
 

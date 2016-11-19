@@ -44,18 +44,11 @@
   <ItemGroup>
     <Compile Include="SmartQuant.Docking.WinForms\DockControl.cs" />
     <Compile Include="TD\SandDock\Native.cs" />
-    <Compile Include="TD\SandDock\Class14.cs" />
-    <Compile Include="TD\SandDock\Class15.cs" />
-    <Compile Include="TD\SandDock\Class20.cs" />
-    <Compile Include="TD\SandDock\Class22.cs" />
-    <Compile Include="TD\SandDock\Class23.cs" />
-    <Compile Include="TD\SandDock\Class24.cs" />
+    <Compile Include="TD\SandDock\ButtonRenderHelper.cs" />
     <Compile Include="TD\SandDock\FloatingContainer.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="TD\SandDock\AutoHideBar.cs">
-      <SubType>Component</SubType>
-    </Compile>
+    <Compile Include="TD\SandDock\AutoHideBar.cs" />
     <Compile Include="TD\SandDock\PopupContainer.cs">
       <SubType>Component</SubType>
     </Compile>
@@ -91,8 +84,7 @@
     <Compile Include="TD\SandDock\Design\DockControlDesigner.cs" />
     <Compile Include="TD\SandDock\Design\DocumentContainerDesigner.cs" />
     <Compile Include="TD\SandDock\Rendering\BoxModel.cs" />
-    <Compile Include="TD\SandDock\Rendering\Class16.cs" />
-    <Compile Include="TD\SandDock\Rendering\Class25.cs" />
+    <Compile Include="TD\SandDock\Rendering\RenderHelper.cs" />
     <Compile Include="TD\SandDock\Rendering\EverettRenderer.cs" />
     <Compile Include="TD\SandDock\Rendering\ITabControlRenderer.cs" />
     <Compile Include="TD\SandDock\Rendering\MilborneRenderer.cs" />

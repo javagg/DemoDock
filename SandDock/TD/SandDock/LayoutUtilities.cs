@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Linq;
 using System.Windows.Forms;
+using TD.Util;
 
 namespace TD.SandDock
 {
@@ -83,36 +84,36 @@ namespace TD.SandDock
 			return num2;
 		}
 
-		internal static Struct0 smethod_14(SandDockManager sandDockManager_0, WindowMetaData windowMetaData_0)
+		internal static Struct0 smethod_14(SandDockManager manager, WindowMetaData metaData)
 		{
-			DockContainer[] dockContainers = sandDockManager_0.GetDockContainers(LayoutUtilities.Convert(windowMetaData_0.LastFixedDockSide));
+			var dockContainers = manager.GetDockContainers(Convert(metaData.LastFixedDockSide));
 			if (dockContainers.Length == 0)
 			{
-				DockContainer dockContainer = sandDockManager_0.CreateNewDockContainer(windowMetaData_0.LastFixedDockSide, ContainerDockEdge.Inside, windowMetaData_0.DockedContentSize);
+				var dockContainer = manager.CreateNewDockContainer(metaData.LastFixedDockSide, ContainerDockEdge.Inside, metaData.DockedContentSize);
 				return new Struct0(dockContainer.LayoutSystem, 0);
 			}
-			if (dockContainers.Length >= windowMetaData_0.Class19_0.Int32_3 && windowMetaData_0.Class19_0.Int32_2 < dockContainers.Length && windowMetaData_0.Class19_0.Int32_2 != -1)
+			if (dockContainers.Length >= metaData.DockedState.Int32_3 && metaData.DockedState.Int32_2 < dockContainers.Length && metaData.DockedState.Int32_2 != -1)
 			{
-				return LayoutUtilities.smethod_15(dockContainers[windowMetaData_0.Class19_0.Int32_2], windowMetaData_0.Class19_0.Int32_0);
+				return LayoutUtilities.smethod_15(dockContainers[metaData.DockedState.Int32_2], metaData.DockedState.Int32_0);
 			}
-			if (windowMetaData_0.Class19_0.Int32_3 >= 2)
+			if (metaData.DockedState.Int32_3 >= 2)
 			{
-				if (windowMetaData_0.Class19_0.Int32_2 == 0)
+				if (metaData.DockedState.Int32_2 == 0)
 				{
-					DockContainer dockContainer2 = sandDockManager_0.CreateNewDockContainer(windowMetaData_0.LastFixedDockSide, ContainerDockEdge.Outside, windowMetaData_0.DockedContentSize);
+					DockContainer dockContainer2 = manager.CreateNewDockContainer(metaData.LastFixedDockSide, ContainerDockEdge.Outside, metaData.DockedContentSize);
 					return new Struct0(dockContainer2.LayoutSystem, 0);
 				}
-				if (windowMetaData_0.Class19_0.Int32_2 == windowMetaData_0.Class19_0.Int32_3 - 1)
+				if (metaData.DockedState.Int32_2 == metaData.DockedState.Int32_3 - 1)
 				{
-					DockContainer dockContainer3 = sandDockManager_0.CreateNewDockContainer(windowMetaData_0.LastFixedDockSide, ContainerDockEdge.Inside, windowMetaData_0.DockedContentSize);
+					DockContainer dockContainer3 = manager.CreateNewDockContainer(metaData.LastFixedDockSide, ContainerDockEdge.Inside, metaData.DockedContentSize);
 					return new Struct0(dockContainer3.LayoutSystem, 0);
 				}
 			}
 			if (dockContainers.Length != 0)
 			{
-				return LayoutUtilities.smethod_15(dockContainers[0], windowMetaData_0.Class19_0.Int32_0);
+				return LayoutUtilities.smethod_15(dockContainers[0], metaData.DockedState.Int32_0);
 			}
-			DockContainer dockContainer4 = sandDockManager_0.CreateNewDockContainer(windowMetaData_0.LastFixedDockSide, ContainerDockEdge.Inside, windowMetaData_0.DockedContentSize);
+			DockContainer dockContainer4 = manager.CreateNewDockContainer(metaData.LastFixedDockSide, ContainerDockEdge.Inside, metaData.DockedContentSize);
 			return new Struct0(dockContainer4.LayoutSystem, 0);
 		}
 
@@ -144,7 +145,8 @@ namespace TD.SandDock
 			return new Struct0(dockContainer_0.LayoutSystem, 0);
 		}
 
-		internal static DockSituation smethod_2(DockContainer container)
+        [GuessedName]
+		internal static DockSituation GetDockSituation(DockContainer container)
 		{
 		    if (container == null)
 		        return DockSituation.None;
@@ -155,26 +157,25 @@ namespace TD.SandDock
 
 		internal static ControlLayoutSystem[] smethod_3(DockContainer container) => container.layoutSystems.OfType<ControlLayoutSystem>().ToArray();
 
-	    internal static ControlLayoutSystem smethod_4(SandDockManager sandDockManager_0, DockSituation dockSituation_0, Class18 class18_0)
+	    internal static ControlLayoutSystem smethod_4(SandDockManager sandDockManager_0, DockSituation dockSituation_0, DockingState dockingState0)
 		{
 			switch (dockSituation_0)
 			{
 			case DockSituation.None:
-				IL_18:
-				throw new InvalidOperationException();
+			        throw new InvalidOperationException();
 			case DockSituation.Docked:
 			{
 				DockContainer[] dockContainers = sandDockManager_0.GetDockContainers();
 				for (int i = 0; i < dockContainers.Length; i++)
 				{
 					DockContainer dockContainer_ = dockContainers[i];
-					if (LayoutUtilities.smethod_2(dockContainer_) == dockSituation_0)
+					if (LayoutUtilities.GetDockSituation(dockContainer_) == dockSituation_0)
 					{
 						ControlLayoutSystem[] array = LayoutUtilities.smethod_3(dockContainer_);
 						for (int j = 0; j < array.Length; j++)
 						{
 							ControlLayoutSystem controlLayoutSystem = array[j];
-							if (controlLayoutSystem.Guid == class18_0.Guid_0)
+							if (controlLayoutSystem.Guid == dockingState0.Guid)
 							{
 								ControlLayoutSystem result = controlLayoutSystem;
 								return result;
@@ -191,7 +192,7 @@ namespace TD.SandDock
 					for (int k = 0; k < array2.Length; k++)
 					{
 						ControlLayoutSystem controlLayoutSystem2 = array2[k];
-						if (controlLayoutSystem2.Guid == class18_0.Guid_0)
+						if (controlLayoutSystem2.Guid == dockingState0.Guid)
 						{
 							ControlLayoutSystem result = controlLayoutSystem2;
 							return result;
@@ -205,11 +206,11 @@ namespace TD.SandDock
 				DockContainer[] dockContainers2 = sandDockManager_0.GetDockContainers();
 				foreach (DockContainer dockContainer_2 in dockContainers2)
 				{
-				    if (smethod_2(dockContainer_2) == dockSituation_0)
+				    if (GetDockSituation(dockContainer_2) == dockSituation_0)
 				    {
 				        foreach (var controlLayoutSystem3 in smethod_3(dockContainer_2))
 				        {
-				            if (controlLayoutSystem3.Guid == class18_0.Guid_0)
+				            if (controlLayoutSystem3.Guid == dockingState0.Guid)
 				            {
 				                ControlLayoutSystem result = controlLayoutSystem3;
 				                return result;
@@ -271,8 +272,7 @@ namespace TD.SandDock
 
 		internal static void smethod_8(Control control_0)
 		{
-		    if (control_0.Parent == null)
-		        return;
+		    if (control_0.Parent == null) return;
 		    if (control_0.ContainsFocus)
 			{
 				control_0.Parent.Focus();
@@ -282,17 +282,17 @@ namespace TD.SandDock
 		        control.Boolean_0 = true;
 		    try
 			{
-				IContainerControl containerControl = control_0.Parent.GetContainerControl();
-				if (containerControl != null)
+				var container = control_0.Parent.GetContainerControl();
+				if (container != null)
 				{
-					DockContainer dockContainer = containerControl as DockContainer;
-					if (dockContainer != null && !dockContainer.Boolean_2 && dockContainer.Manager != null && dockContainer.Manager.OwnerForm != null && dockContainer.Manager.OwnerForm.IsMdiContainer)
+					var dockContainer = container as DockContainer;
+					if (dockContainer != null && !dockContainer.Boolean_2 && dockContainer.Manager?.OwnerForm != null && dockContainer.Manager.OwnerForm.IsMdiContainer)
 					{
-						LayoutUtilities.smethod_9(dockContainer, dockContainer.LayoutSystem);
+						smethod_9(dockContainer, dockContainer.LayoutSystem);
 					}
-					else if (containerControl.ActiveControl == control_0)
+					else if (container.ActiveControl == control_0)
 					{
-						containerControl.ActiveControl = null;
+						container.ActiveControl = null;
 					}
 				}
 				control_0.Parent.Controls.Remove(control_0);

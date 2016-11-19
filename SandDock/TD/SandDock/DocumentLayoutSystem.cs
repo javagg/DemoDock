@@ -17,10 +17,10 @@ namespace TD.SandDock
 	{
 		public DocumentLayoutSystem()
 		{
-			this.class17_4 = new Class17();
-			this.class17_5 = new Class17();
-			this.class17_6 = new Class17();
-			this.class17_7 = new Class17();
+			this.class17_4 = new DockButtonInfo();
+			this.class17_5 = new DockButtonInfo();
+			this.class17_6 = new DockButtonInfo();
+			this.class17_7 = new DockButtonInfo();
 		    this.timer_0 = new Timer {Interval = 20};
 		    this.timer_0.Tick += OnTimerTick;
 		}
@@ -127,29 +127,29 @@ namespace TD.SandDock
 			int num = rectangle_5.Right - 2;
 			if (this.SelectedControl != null && this.SelectedControl.AllowClose && !this.Boolean_2)
 			{
-				this.class17_6.bool_0 = true;
+				this.class17_6.Visible = true;
 				this.class17_6.Bounds = new Rectangle(num - 14, y, 14, 15);
 				num -= 15;
 			}
 			else
 			{
-				this.class17_6.bool_0 = false;
+				this.class17_6.Visible = false;
 			}
-			this.class17_5.bool_0 = false;
-			this.class17_4.bool_0 = false;
-			this.class17_7.bool_0 = false;
+			this.class17_5.Visible = false;
+			this.class17_4.Visible = false;
+			this.class17_7.Visible = false;
 			switch (this.DocumentOverflowMode_0)
 			{
 			case DocumentOverflowMode.Scrollable:
-				this.class17_5.bool_0 = true;
+				this.class17_5.Visible = true;
 				this.class17_5.Bounds = new Rectangle(num - 14, y, 14, 15);
 				num -= 15;
-				this.class17_4.bool_0 = true;
+				this.class17_4.Visible = true;
 				this.class17_4.Bounds = new Rectangle(num - 14, y, 14, 15);
 				num -= 15;
 				return;
 			case DocumentOverflowMode.Menu:
-				this.class17_7.bool_0 = true;
+				this.class17_7.Visible = true;
 				this.class17_7.Bounds = new Rectangle(num - 14, y, 14, 15);
 				num -= 15;
 				return;
@@ -218,7 +218,7 @@ namespace TD.SandDock
 			}
 			if (this.Boolean_2 && this.SelectedControl != null && this.SelectedControl.AllowClose)
 			{
-				this.class17_6.bool_0 = true;
+				this.class17_6.Visible = true;
 				Rectangle rectangle_7 = this.SelectedControl.TabBounds;
 				this.class17_6.Bounds = new Rectangle(rectangle_7.Right - 17, rectangle_7.Top + 2, 14, rectangle_7.Height - 3);
 			}
@@ -259,9 +259,9 @@ namespace TD.SandDock
 		private void method_25()
 		{
 			this.timer_0.Enabled = false;
-			base.Class17_0 = null;
+			base.ClickedDockButton = null;
 			this.bool_2 = false;
-			this.vmethod_9();
+			this.OnLeave();
 		}
 
 		private void method_26()
@@ -303,12 +303,12 @@ namespace TD.SandDock
 
 		private void OnTimerTick(object sender, EventArgs e)
 		{
-			if (base.Class17_0 == this.class17_4)
+			if (base.ClickedDockButton == this.class17_4)
 			{
 				this.method_27(-15);
 				return;
 			}
-			if (base.Class17_0 != this.class17_5)
+			if (base.ClickedDockButton != this.class17_5)
 			{
 				this.method_25();
 				return;
@@ -329,42 +329,42 @@ namespace TD.SandDock
 			}
 		}
 
-		internal override void vmethod_4(RendererBase renderer, Graphics graphics, Font font)
+		internal override void vmethod_4(RendererBase renderer, Graphics g, Font font)
 		{
-			renderer.DrawDocumentStripBackground(graphics, this.rectangle_2);
-		    renderer.DrawDocumentClientBackground(graphics, this.rectangle_3, SelectedControl == null ? SystemColors.Control : this.SelectedControl.BackColor);
-		    Region clip = graphics.Clip;
+			renderer.DrawDocumentStripBackground(g, this.rectangle_2);
+		    renderer.DrawDocumentClientBackground(g, this.rectangle_3, SelectedControl == null ? SystemColors.Control : this.SelectedControl.BackColor);
+		    Region clip = g.Clip;
 			Rectangle rectangle_ = this.rectangle_2;
 			rectangle_.X += this.LeftPadding;
 			rectangle_.Width -= this.LeftPadding;
 			rectangle_.Width -= this.RightPadding;
-			graphics.SetClip(rectangle_);
+			g.SetClip(rectangle_);
 			for (int i = base.Controls.Count - 1; i >= 0; i--)
 			{
 				DockControl dockControl = base.Controls[i];
-				this.method_20(renderer, graphics, dockControl.Font, dockControl);
+				this.method_20(renderer, g, dockControl.Font, dockControl);
 			}
 			if (this.SelectedControl != null)
 			{
-				this.method_20(renderer, graphics, this.SelectedControl.Font, this.SelectedControl);
+				this.method_20(renderer, g, this.SelectedControl.Font, this.SelectedControl);
 			}
 			if (this.Boolean_2)
 			{
-				base.method_10(graphics, renderer, this.class17_6, SandDockButtonType.Close, true);
+				base.method_10(g, renderer, this.class17_6, SandDockButtonType.Close, true);
 			}
-			graphics.Clip = clip;
+			g.Clip = clip;
 			if (!this.Boolean_2)
 			{
-				base.method_10(graphics, renderer, this.class17_6, SandDockButtonType.Close, true);
+				base.method_10(g, renderer, this.class17_6, SandDockButtonType.Close, true);
 			}
-			base.method_10(graphics, renderer, this.class17_5, SandDockButtonType.ScrollRight, this.class17_5.bool_1);
-			base.method_10(graphics, renderer, this.class17_4, SandDockButtonType.ScrollLeft, this.class17_4.bool_1);
-			base.method_10(graphics, renderer, this.class17_7, SandDockButtonType.ActiveFiles, true);
+			base.method_10(g, renderer, this.class17_5, SandDockButtonType.ScrollRight, this.class17_5.bool_1);
+			base.method_10(g, renderer, this.class17_4, SandDockButtonType.ScrollLeft, this.class17_4.bool_1);
+			base.method_10(g, renderer, this.class17_7, SandDockButtonType.ActiveFiles, true);
 		}
 
 		internal override string vmethod_5(Point point)
 		{
-			Class17 @class = this.vmethod_6(point.X, point.Y);
+			DockButtonInfo @class = this.GetDockButtonAt(point.X, point.Y);
 			if (@class == this.class17_4)
 			{
 				return SandDockLanguage.ScrollLeftText;
@@ -384,28 +384,28 @@ namespace TD.SandDock
 			return base.vmethod_5(point);
 		}
 
-		internal override Class17 vmethod_6(int x, int y)
+		internal override DockButtonInfo GetDockButtonAt(int x, int y)
 		{
-			if (this.class17_4.bool_0 && this.class17_4.bool_1 && this.class17_4.Bounds.Contains(x, y))
+			if (this.class17_4.Visible && this.class17_4.bool_1 && this.class17_4.Bounds.Contains(x, y))
 			{
 				return this.class17_4;
 			}
-			if (this.class17_5.bool_0 && this.class17_5.bool_1 && this.class17_5.Bounds.Contains(x, y))
+			if (this.class17_5.Visible && this.class17_5.bool_1 && this.class17_5.Bounds.Contains(x, y))
 			{
 				return this.class17_5;
 			}
-			if (this.class17_7.bool_0 && this.class17_7.bool_1 && this.class17_7.Bounds.Contains(x, y))
+			if (this.class17_7.Visible && this.class17_7.bool_1 && this.class17_7.Bounds.Contains(x, y))
 			{
 				return this.class17_7;
 			}
-			if (this.class17_6.bool_0 && this.class17_6.bool_1 && this.class17_6.Bounds.Contains(x, y))
+			if (this.class17_6.Visible && this.class17_6.bool_1 && this.class17_6.Bounds.Contains(x, y))
 			{
 				return this.class17_6;
 			}
 			return null;
 		}
 
-		internal override void vmethod_7(Class17 class17_8)
+		internal override void vmethod_7(DockButtonInfo class17_8)
 		{
 			if (class17_8 == this.class17_4 || class17_8 == this.class17_5)
 			{
@@ -413,7 +413,7 @@ namespace TD.SandDock
 			}
 		}
 
-		internal override void vmethod_8(Class17 class17_8)
+		internal override void vmethod_8(DockButtonInfo class17_8)
 		{
 			if (class17_8 == this.class17_6)
 			{
@@ -433,7 +433,7 @@ namespace TD.SandDock
 			this.method_25();
 		}
 
-		internal override void vmethod_9()
+		internal override void OnLeave()
 		{
 		    DockContainer?.Invalidate(this.rectangle_2);
 		}
@@ -491,15 +491,15 @@ namespace TD.SandDock
 		{
 			get
 			{
-				if (this.class17_4.bool_0)
+				if (this.class17_4.Visible)
 				{
 					return base.Bounds.Right - this.class17_4.Bounds.Left;
 				}
-				if (this.class17_7.bool_0)
+				if (this.class17_7.Visible)
 				{
 					return base.Bounds.Right - this.class17_7.Bounds.Left;
 				}
-				if (!this.class17_6.bool_0)
+				if (!this.class17_6.Visible)
 				{
 					return 0;
 				}
@@ -528,13 +528,13 @@ namespace TD.SandDock
 			}
 		}
 
-		private Class17 class17_4;
+		private DockButtonInfo class17_4;
 
-		private Class17 class17_5;
+		private DockButtonInfo class17_5;
 
-		private Class17 class17_6;
+		private DockButtonInfo class17_6;
 
-		private Class17 class17_7;
+		private DockButtonInfo class17_7;
 
 		private DockControl dockControl_1;
 

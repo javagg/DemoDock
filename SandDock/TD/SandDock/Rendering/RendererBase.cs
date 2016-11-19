@@ -1,10 +1,13 @@
-using Microsoft.Win32;
 using System;
+using System.Collections;
 using System.ComponentModel;
+using System.ComponentModel.Design.Serialization;
 using System.Drawing;
 using System.Drawing.Text;
-using System.Runtime.CompilerServices;
+using System.Globalization;
+using System.Reflection;
 using System.Windows.Forms;
+using Microsoft.Win32;
 
 namespace TD.SandDock.Rendering
 {
@@ -24,23 +27,81 @@ namespace TD.SandDock.Rendering
         SunkenThin
     }
 
-    [TypeConverter(typeof(Class25))]
+    internal class RendererBaseConverter : TypeConverter
+    {
+        public override bool CanConvertFrom(ITypeDescriptorContext context, Type sourceType)
+        {
+            return sourceType == typeof(string) || base.CanConvertFrom(context, sourceType);
+        }
+
+        public override bool CanConvertTo(ITypeDescriptorContext context, Type destinationType)
+        {
+            return destinationType == typeof(string) || destinationType == typeof(InstanceDescriptor) || base.CanConvertTo(context, destinationType);
+        }
+
+        public override object ConvertFrom(ITypeDescriptorContext context, CultureInfo culture, object value)
+        {
+            if (!(value is string)) return base.ConvertFrom(context, culture, value);
+
+            switch (value as string)
+            {
+                case "Everett":
+                    return new EverettRenderer();
+                case "Office 2003":
+                    return new Office2003Renderer();
+                case "Whidbey":
+                    return new WhidbeyRenderer();
+                case "Milborne":
+                    return new MilborneRenderer();
+                case "Office 2007":
+                    return new Office2007Renderer();
+            }
+            return null;
+        }
+
+        public override object ConvertTo(ITypeDescriptorContext context, CultureInfo culture, object value, Type destinationType)
+        {
+            if (destinationType == typeof(string))
+                return value is string ? value : value.ToString();
+            if (destinationType != typeof(InstanceDescriptor))
+                return base.ConvertTo(context, culture, value, destinationType);
+            var constructor = value.GetType().GetConstructor(Type.EmptyTypes);
+            return new InstanceDescriptor(constructor, null, true);
+        }
+
+        public override StandardValuesCollection GetStandardValues(ITypeDescriptorContext context)
+        {
+            var list = new ArrayList();
+            if (context.Instance is DockContainer)
+            {
+                list.Add("(default)");
+            }
+            list.Add("Everett");
+            list.Add("Office 2003");
+            list.Add("Whidbey");
+            list.Add("Office 2007");
+            return new StandardValuesCollection(list);
+        }
+
+        public override bool GetStandardValuesExclusive(ITypeDescriptorContext context) => true;
+
+        public override bool GetStandardValuesSupported(ITypeDescriptorContext context) => true;
+    }
+
+    [TypeConverter(typeof(RendererBaseConverter))]
     public abstract class RendererBase : ITabControlRenderer, IDisposable
     {
         public RendererBase()
         {
-            SystemEvents.UserPreferenceChanged += method_0;
+            SystemEvents.UserPreferenceChanged += OnUserPreferenceChanged;
             GetColorsFromSystem();
         }
 
-        protected internal virtual Rectangle AdjustDockControlClientBounds(ControlLayoutSystem layoutSystem, DockControl control, Rectangle clientBounds)
-        {
-            return clientBounds;
-        }
+        protected internal virtual Rectangle AdjustDockControlClientBounds(ControlLayoutSystem layoutSystem, DockControl control, Rectangle clientBounds) => clientBounds;
 
         public void Dispose()
         {
-            SystemEvents.UserPreferenceChanged -= method_0;
+            SystemEvents.UserPreferenceChanged -= OnUserPreferenceChanged;
         }
 
         protected internal abstract void DrawAutoHideBarBackground(Control container, Control control, Graphics graphics, Rectangle bounds);
@@ -107,31 +168,20 @@ namespace TD.SandDock.Rendering
 
         protected internal static Color InterpolateColors(Color color1, Color color2, float percentage)
         {
-            int r = (int)color1.R;
-            int g = (int)color1.G;
-            int b = (int)color1.B;
-            int a = (int)color1.A;
-            int r2 = (int)color2.R;
-            int g2 = (int)color2.G;
-            int b2 = (int)color2.B;
-            int a2 = (int)color2.A;
-            byte red = Convert.ToByte(color1.R + (color2.R - color1.R) * percentage);
-            byte green = Convert.ToByte((float)g + (float)(g2 - g) * percentage);
-            byte blue = Convert.ToByte((float)b + (float)(b2 - b) * percentage);
-            byte alpha = Convert.ToByte((float)a + (float)(a2 - a) * percentage);
-            return Color.FromArgb((int)alpha, Convert.ToByte(color1.R + (color2.R - color1.R) * percentage), (int)green, (int)blue);
+            var red = Convert.ToByte(color1.R + (color2.R - color1.R) * percentage);
+            var green = Convert.ToByte(color1.G + (color2.G - color1.G) * percentage);
+            var blue = Convert.ToByte(color1.B + (color2.B - color1.B) * percentage);
+            var alpha = Convert.ToByte(color1.A + (color2.A - color1.A) * percentage);
+            return Color.FromArgb(alpha, red, green, blue);
         }
 
         protected internal abstract Size MeasureDocumentStripTab(Graphics graphics, Image image, string text, Font font, DrawItemState state);
 
-        public virtual Size MeasureTabControlTab(Graphics graphics, Image image, string text, Font font, DrawItemState state)
-        {
-            return MeasureDocumentStripTab(graphics, image, text, font, state);
-        }
+        public virtual Size MeasureTabControlTab(Graphics graphics, Image image, string text, Font font, DrawItemState state) => MeasureDocumentStripTab(graphics, image, text, font, state);
 
         protected internal abstract Size MeasureTabStripTab(Graphics graphics, Image image, string text, Font font, DrawItemState state);
 
-        private void method_0(object sender, UserPreferenceChangedEventArgs e)
+        private void OnUserPreferenceChanged(object sender, UserPreferenceChangedEventArgs e)
         {
             if (e.Category == UserPreferenceCategory.Color && !_customColors)
             {

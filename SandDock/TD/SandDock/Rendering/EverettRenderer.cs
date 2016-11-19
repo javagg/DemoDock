@@ -5,69 +5,56 @@ using System.Windows.Forms;
 
 namespace TD.SandDock.Rendering
 {
-	public class EverettRenderer : RendererBase
+    public class EverettRenderer : RendererBase
 	{
 	    protected internal override Rectangle AdjustDockControlClientBounds(ControlLayoutSystem layoutSystem, DockControl control, Rectangle clientBounds)
 		{
-			if (layoutSystem is DocumentLayoutSystem)
-			{
-				clientBounds.Inflate(-2, -2);
-				return clientBounds;
-			}
-			return base.AdjustDockControlClientBounds(layoutSystem, control, clientBounds);
+		    if (!(layoutSystem is DocumentLayoutSystem)) return base.AdjustDockControlClientBounds(layoutSystem, control, clientBounds);
+		    clientBounds.Inflate(-2, -2);
+		    return clientBounds;
 		}
 
 		protected internal override void DrawAutoHideBarBackground(Control container, Control autoHideBar, Graphics graphics, Rectangle bounds)
 		{
-			using (this.solidBrush_0 = new SolidBrush(this.TabStripBackgroundColor))
-			{
-				graphics.FillRectangle(this.solidBrush_0, bounds);
-			}
+		    using (_backBrush = new SolidBrush(TabStripBackgroundColor))
+		        graphics.FillRectangle(_backBrush, bounds);
 		}
 
 		protected internal override void DrawCollapsedTab(Graphics graphics, Rectangle bounds, DockSide dockSide, Image image, string text, Font font, Color backColor, Color foreColor, DrawItemState state, bool vertical)
 		{
-			using (SolidBrush solidBrush = new SolidBrush(backColor))
+		    using (var brush = new SolidBrush(backColor))
+		        graphics.FillRectangle(brush, bounds);
+		    if (dockSide != DockSide.Top)
 			{
-				graphics.FillRectangle(solidBrush, bounds);
-			}
-			if (dockSide != DockSide.Top)
-			{
-				graphics.DrawLine(this.pen_2, bounds.Left, bounds.Top, bounds.Right, bounds.Top);
+				graphics.DrawLine(pen_2, bounds.Left, bounds.Top, bounds.Right, bounds.Top);
 			}
 			if (dockSide != DockSide.Right)
 			{
-				graphics.DrawLine(this.pen_2, bounds.Right, bounds.Top, bounds.Right, bounds.Bottom);
+				graphics.DrawLine(pen_2, bounds.Right, bounds.Top, bounds.Right, bounds.Bottom);
 			}
 			if (dockSide != DockSide.Bottom)
 			{
-				graphics.DrawLine(this.pen_2, bounds.Left, bounds.Bottom, bounds.Right, bounds.Bottom);
+				graphics.DrawLine(pen_2, bounds.Left, bounds.Bottom, bounds.Right, bounds.Bottom);
 			}
 			if (dockSide != DockSide.Left)
 			{
-				graphics.DrawLine(this.pen_2, bounds.Left, bounds.Top, bounds.Left, bounds.Bottom);
+				graphics.DrawLine(pen_2, bounds.Left, bounds.Top, bounds.Left, bounds.Bottom);
 			}
 			bounds.Inflate(-2, -2);
-			if (vertical)
-			{
-				bounds.Offset(0, 1);
-			}
-			else
-			{
-				bounds.Offset(1, 0);
-			}
-			graphics.DrawImage(image, new Rectangle(bounds.Left, bounds.Top, image.Width, image.Height));
-			if (text.Length != 0)
-			{
-				if (vertical)
-				{
-					bounds.Offset(0, 23);
-					graphics.DrawString(text, font, this.solidBrush_1, bounds, EverettRenderer.StringFormat_1);
-					return;
-				}
-				bounds.Offset(23, 0);
-				graphics.DrawString(text, font, this.solidBrush_1, bounds, EverettRenderer.StringFormat_0);
-			}
+		    if (vertical)
+		        bounds.Offset(0, 1);
+		    else
+		        bounds.Offset(1, 0);
+		    graphics.DrawImage(image, new Rectangle(bounds.Left, bounds.Top, image.Width, image.Height));
+		    if (text.Length == 0) return;
+            if (vertical)
+		    {
+		        bounds.Offset(0, 23);
+		        graphics.DrawString(text, font, solidBrush_1, bounds, VerticalTextFormat);
+		        return;
+		    }
+		    bounds.Offset(23, 0);
+		    graphics.DrawString(text, font, solidBrush_1, bounds, HorizontalTextFormat);
 		}
 
 		protected internal override void DrawControlClientBackground(Graphics graphics, Rectangle bounds, Color backColor)
@@ -76,26 +63,24 @@ namespace TD.SandDock.Rendering
 
 		protected internal override void DrawDockContainerBackground(Graphics graphics, DockContainer container, Rectangle bounds)
 		{
-			Class16.smethod_0(graphics, container.BackColor);
+			RenderHelper.ClearBackground(graphics, container.BackColor);
 		}
 
 		protected internal override void DrawDocumentClientBackground(Graphics graphics, Rectangle bounds, Color backColor)
 		{
-			using (SolidBrush solidBrush = new SolidBrush(backColor))
-			{
-				graphics.FillRectangle(solidBrush, bounds);
-			}
+		    using (var brush = new SolidBrush(backColor))
+		        graphics.FillRectangle(brush, bounds);
 		}
 
 		protected internal override void DrawDocumentStripBackground(Graphics graphics, Rectangle bounds)
 		{
-			graphics.FillRectangle(this.solidBrush_0, bounds);
-			graphics.DrawLine(this.pen_1, bounds.X, bounds.Bottom - 1, bounds.Right, bounds.Bottom - 1);
+			graphics.FillRectangle(_backBrush, bounds);
+			graphics.DrawLine(pen_1, bounds.X, bounds.Bottom - 1, bounds.Right, bounds.Bottom - 1);
 		}
 
 		protected internal override void DrawDocumentStripButton(Graphics graphics, Rectangle bounds, SandDockButtonType buttonType, DrawItemState state)
 		{
-			this.vmethod_0(graphics, bounds, state);
+			vmethod_0(graphics, bounds, state);
 			if ((state & DrawItemState.Selected) == DrawItemState.Selected)
 			{
 				bounds.Offset(1, 1);
@@ -103,27 +88,26 @@ namespace TD.SandDock.Rendering
 			switch (buttonType)
 			{
 			case SandDockButtonType.Close:
-				using (Pen pen = new Pen(this.color_6))
+				using (var pen = new Pen(color_6))
 				{
-					Class15.smethod_5(graphics, bounds, pen);
+					ButtonRenderHelper.DrawDocumentStripCloseButton(graphics, bounds, pen);
 					return;
 				}
-				break;
-			case SandDockButtonType.Pin:
+			    case SandDockButtonType.Pin:
 			case SandDockButtonType.WindowPosition:
 				return;
 			case SandDockButtonType.ScrollLeft:
 				break;
 			case SandDockButtonType.ScrollRight:
-				Class15.smethod_2(graphics, bounds, this.color_6, (state & DrawItemState.Disabled) != DrawItemState.Disabled);
+				ButtonRenderHelper.DrawScrollRightDockButton(graphics, bounds, color_6, (state & DrawItemState.Disabled) != DrawItemState.Disabled);
 				return;
 			case SandDockButtonType.ActiveFiles:
-				Class15.smethod_0(graphics, bounds, SystemPens.ControlText);
+				ButtonRenderHelper.DrawPositionDockButton(graphics, bounds, SystemPens.ControlText);
 				return;
 			default:
 				return;
 			}
-			Class15.smethod_1(graphics, bounds, this.color_6, (state & DrawItemState.Disabled) != DrawItemState.Disabled);
+			ButtonRenderHelper.DrawScrollLeftDockButton(graphics, bounds, color_6, (state & DrawItemState.Disabled) != DrawItemState.Disabled);
 		}
 
 		protected internal override void DrawDocumentStripTab(Graphics graphics, Rectangle bounds, Rectangle contentBounds, Image image, string text, Font font, Color backColor, Color foreColor, DrawItemState state, bool drawSeparator)
@@ -134,9 +118,9 @@ namespace TD.SandDock.Rendering
 				{
 					graphics.FillRectangle(solidBrush, bounds);
 				}
-				graphics.DrawLine(this.pen_1, bounds.Left, bounds.Top, bounds.Left, bounds.Bottom - 1);
-				graphics.DrawLine(this.pen_1, bounds.Left, bounds.Top, bounds.Right - 1, bounds.Top);
-				graphics.DrawLine(this.pen_0, bounds.Right - 1, bounds.Top + 1, bounds.Right - 1, bounds.Bottom - 1);
+				graphics.DrawLine(pen_1, bounds.Left, bounds.Top, bounds.Left, bounds.Bottom - 1);
+				graphics.DrawLine(pen_1, bounds.Left, bounds.Top, bounds.Right - 1, bounds.Top);
+				graphics.DrawLine(pen_0, bounds.Right - 1, bounds.Top + 1, bounds.Right - 1, bounds.Bottom - 1);
 			}
 			else if (drawSeparator)
 			{
@@ -158,13 +142,13 @@ namespace TD.SandDock.Rendering
 				}
 				if ((state & DrawItemState.Selected) != DrawItemState.Selected)
 				{
-					graphics.DrawString(text, font2, this.solidBrush_1, bounds, this.stringFormat_2);
+					graphics.DrawString(text, font2, solidBrush_1, bounds, stringFormat_2);
 				}
 				else
 				{
 					using (SolidBrush solidBrush2 = new SolidBrush(foreColor))
 					{
-						graphics.DrawString(text, font2, solidBrush2, bounds, this.stringFormat_2);
+						graphics.DrawString(text, font2, solidBrush2, bounds, stringFormat_2);
 					}
 				}
 				if ((state & DrawItemState.Focus) == DrawItemState.Focus)
@@ -180,21 +164,19 @@ namespace TD.SandDock.Rendering
 
 		protected internal override void DrawTabStripBackground(Control container, Control control, Graphics graphics, Rectangle bounds, int selectedTabOffset)
 		{
-			graphics.FillRectangle(this.solidBrush_0, bounds);
-			graphics.DrawLine(this.pen_0, bounds.X, bounds.Y, bounds.Right, bounds.Y);
+			graphics.FillRectangle(_backBrush, bounds);
+			graphics.DrawLine(pen_0, bounds.X, bounds.Y, bounds.Right, bounds.Y);
 		}
 
 		protected internal override void DrawTabStripTab(Graphics graphics, Rectangle bounds, Image image, string text, Font font, Color backColor, Color foreColor, DrawItemState state, bool drawSeparator)
 		{
 			if ((state & DrawItemState.Selected) == DrawItemState.Selected)
 			{
-				using (SolidBrush solidBrush = new SolidBrush(backColor))
-				{
-					graphics.FillRectangle(solidBrush, bounds);
-				}
-				graphics.DrawLine(this.pen_1, bounds.Left, bounds.Top, bounds.Left, bounds.Bottom - 1);
-				graphics.DrawLine(this.pen_0, bounds.Left, bounds.Bottom - 1, bounds.Right, bounds.Bottom - 1);
-				graphics.DrawLine(this.pen_0, bounds.Right, bounds.Top, bounds.Right, bounds.Bottom - 1);
+			    using (var brush = new SolidBrush(backColor))
+			        graphics.FillRectangle(brush, bounds);
+			    graphics.DrawLine(pen_1, bounds.Left, bounds.Top, bounds.Left, bounds.Bottom - 1);
+				graphics.DrawLine(pen_0, bounds.Left, bounds.Bottom - 1, bounds.Right, bounds.Bottom - 1);
+				graphics.DrawLine(pen_0, bounds.Right, bounds.Top, bounds.Right, bounds.Bottom - 1);
 			}
 			else if (drawSeparator)
 			{
@@ -206,39 +188,35 @@ namespace TD.SandDock.Rendering
 			}
 			bounds.X += 23;
 			bounds.Width -= 25;
-			if (bounds.Width > 8)
-			{
-				if ((state & DrawItemState.Selected) == DrawItemState.Selected)
-				{
-					using (SolidBrush solidBrush2 = new SolidBrush(foreColor))
-					{
-						graphics.DrawString(text, font, solidBrush2, bounds, EverettRenderer.StringFormat_0);
-						return;
-					}
-				}
-				graphics.DrawString(text, font, this.solidBrush_1, bounds, EverettRenderer.StringFormat_0);
-			}
+		    if (bounds.Width <= 8) return;
+
+		    if ((state & DrawItemState.Selected) != DrawItemState.Selected)
+		        graphics.DrawString(text, font, solidBrush_1, bounds, HorizontalTextFormat);
+		    else
+		        using (var brush = new SolidBrush(foreColor))
+		            graphics.DrawString(text, font, brush, bounds, HorizontalTextFormat);
+		    
 		}
 
 		protected internal override void DrawTitleBarBackground(Graphics graphics, Rectangle bounds, bool focused)
 		{
-			if (focused)
-			{
-				graphics.FillRectangle(SystemBrushes.ActiveCaption, bounds);
-				return;
-			}
-			graphics.FillRectangle(SystemBrushes.Control, bounds);
-			graphics.DrawLine(SystemPens.ControlDark, bounds.X + 1, bounds.Y, bounds.Right - 2, bounds.Y);
-			graphics.DrawLine(SystemPens.ControlDark, bounds.X + 1, bounds.Bottom - 1, bounds.Right - 2, bounds.Bottom - 1);
-			graphics.DrawLine(SystemPens.ControlDark, bounds.X, bounds.Y + 1, bounds.X, bounds.Bottom - 2);
-			graphics.DrawLine(SystemPens.ControlDark, bounds.Right - 1, bounds.Y + 1, bounds.Right - 1, bounds.Bottom - 2);
+		    if (focused)
+		        graphics.FillRectangle(SystemBrushes.ActiveCaption, bounds);
+		    else
+		    {
+		        graphics.FillRectangle(SystemBrushes.Control, bounds);
+		        graphics.DrawLine(SystemPens.ControlDark, bounds.X + 1, bounds.Y, bounds.Right - 2, bounds.Y);
+		        graphics.DrawLine(SystemPens.ControlDark, bounds.X + 1, bounds.Bottom - 1, bounds.Right - 2, bounds.Bottom - 1);
+		        graphics.DrawLine(SystemPens.ControlDark, bounds.X, bounds.Y + 1, bounds.X, bounds.Bottom - 2);
+		        graphics.DrawLine(SystemPens.ControlDark, bounds.Right - 1, bounds.Y + 1, bounds.Right - 1, bounds.Bottom - 2);
+		    }
 		}
 
 		protected internal override void DrawTitleBarButton(Graphics graphics, Rectangle bounds, SandDockButtonType buttonType, DrawItemState state, bool focused, bool toggled)
 		{
 			bounds.Width--;
 			bounds.Height--;
-			this.vmethod_0(graphics, bounds, state);
+			vmethod_0(graphics, bounds, state);
 			if ((state & DrawItemState.Selected) == DrawItemState.Selected)
 			{
 				bounds.Offset(1, 1);
@@ -246,16 +224,16 @@ namespace TD.SandDock.Rendering
 			switch (buttonType)
 			{
 			case SandDockButtonType.Close:
-				Class15.smethod_6(graphics, bounds, focused ? SystemPens.ActiveCaptionText : SystemPens.ControlText);
+				ButtonRenderHelper.DrawCloseDockButton(graphics, bounds, focused ? SystemPens.ActiveCaptionText : SystemPens.ControlText);
 				return;
 			case SandDockButtonType.Pin:
-				Class15.smethod_4(graphics, bounds, focused ? SystemPens.ActiveCaptionText : SystemPens.ControlText, toggled);
+				ButtonRenderHelper.DrawPinDockButton(graphics, bounds, focused ? SystemPens.ActiveCaptionText : SystemPens.ControlText, toggled);
 				return;
 			case SandDockButtonType.ScrollLeft:
 			case SandDockButtonType.ScrollRight:
 				break;
 			case SandDockButtonType.WindowPosition:
-				Class15.smethod_0(graphics, bounds, focused ? SystemPens.ActiveCaptionText : SystemPens.ControlText);
+				ButtonRenderHelper.DrawPositionDockButton(graphics, bounds, focused ? SystemPens.ActiveCaptionText : SystemPens.ControlText);
 				break;
 			default:
 				return;
@@ -264,24 +242,24 @@ namespace TD.SandDock.Rendering
 
 		protected internal override void DrawTitleBarText(Graphics graphics, Rectangle bounds, bool focused, string text, Font font)
 		{
-			Brush brush = focused ? SystemBrushes.ActiveCaptionText : SystemBrushes.ControlText;
+			var brush = focused ? SystemBrushes.ActiveCaptionText : SystemBrushes.ControlText;
 			bounds.Inflate(-3, 0);
-			graphics.DrawString(text, font, brush, bounds, EverettRenderer.StringFormat_0);
+			graphics.DrawString(text, font, brush, bounds, HorizontalTextFormat);
 		}
 
 		public override void FinishRenderSession()
 		{
-			this.solidBrush_0.Dispose();
-			this.pen_0.Dispose();
-			this.pen_1.Dispose();
-			this.solidBrush_1.Dispose();
-			this.pen_2.Dispose();
-			this.stringFormat_2.Dispose();
+			_backBrush.Dispose();
+			pen_0.Dispose();
+			pen_1.Dispose();
+			solidBrush_1.Dispose();
+			pen_2.Dispose();
+			stringFormat_2.Dispose();
 		}
 
 		protected override void GetColorsFromSystem()
 		{
-			this.TabStripBackgroundColor = this.method_1(SystemColors.Control);
+			TabStripBackgroundColor = method_1(SystemColors.Control);
 		}
 
 		protected internal override Size MeasureDocumentStripTab(Graphics graphics, Image image, string text, Font font, DrawItemState state)
@@ -291,122 +269,109 @@ namespace TD.SandDock.Rendering
 			{
 				using (Font font2 = new Font(font, FontStyle.Bold))
 				{
-					num = (int)Math.Ceiling((double)graphics.MeasureString(text, font2, 999, this.stringFormat_2).Width);
+					num = (int)Math.Ceiling(graphics.MeasureString(text, font2, 999, stringFormat_2).Width);
 					goto IL_65;
 				}
 			}
-			num = (int)Math.Ceiling((double)graphics.MeasureString(text, font, 999, this.stringFormat_2).Width);
+			num = (int)Math.Ceiling(graphics.MeasureString(text, font, 999, stringFormat_2).Width);
 			IL_65:
-			num += 2 + this.Int32_0 * 2 + 2;
+			num += 2 + Int32_0 * 2 + 2;
 			if (image != null)
 			{
 				num += 20;
 			}
-			num += this.DocumentTabExtra;
+			num += DocumentTabExtra;
 			return new Size(num, 0);
 		}
 
 		protected internal override Size MeasureTabStripTab(Graphics graphics, Image image, string text, Font font, DrawItemState state)
 		{
-			int num = (int)Math.Ceiling((double)graphics.MeasureString(text, font, 2147483647, this.stringFormat_2).Width);
+			int num = (int)Math.Ceiling(graphics.MeasureString(text, font, 2147483647, stringFormat_2).Width);
 			num += 30;
 			return new Size(num, 18);
 		}
 
-		private Color method_1(Color color_8)
+		private Color method_1(Color color)
 		{
-			byte b = color_8.R;
-			byte b2 = color_8.G;
-			byte b3 = color_8.B;
+			byte b = color.R;
+			byte b2 = color.G;
+			byte b3 = color.B;
 			byte b4 = Math.Max(Math.Max(b, b2), b3);
 			if (b4 != 0)
 			{
 				byte b5 = (byte)((b4 <= 220) ? 35 : (255 - b4));
-				b += (byte)((double)((float)b5 * ((float)b / (float)b4)) + 0.5);
-				b2 += (byte)((double)((float)b5 * ((float)b2 / (float)b4)) + 0.5);
-				b3 += (byte)((double)((float)b5 * ((float)b3 / (float)b4)) + 0.5);
-				return Color.FromArgb((int)b, (int)b2, (int)b3);
+				b += (byte)(b5 * (b / (float)b4) + 0.5);
+				b2 += (byte)(b5 * (b2 / (float)b4) + 0.5);
+				b3 += (byte)(b5 * (b3 / (float)b4) + 0.5);
+				return Color.FromArgb(b, b2, b3);
 			}
 			return Color.FromArgb(35, 35, 35);
 		}
 
 		public override void StartRenderSession(HotkeyPrefix hotKeys)
 		{
-			this.solidBrush_0 = new SolidBrush(this.TabStripBackgroundColor);
-			this.pen_0 = new Pen(this.color_2);
-			this.pen_1 = new Pen(this.color_3);
-			this.solidBrush_1 = new SolidBrush(this.color_4);
-			this.pen_2 = new Pen(this.color_5);
-			this.stringFormat_2 = new StringFormat(StringFormat.GenericDefault);
-			this.stringFormat_2.FormatFlags = StringFormatFlags.NoWrap;
-			this.stringFormat_2.Alignment = StringAlignment.Center;
-			this.stringFormat_2.LineAlignment = StringAlignment.Center;
-			this.stringFormat_2.HotkeyPrefix = hotKeys;
+			_backBrush = new SolidBrush(TabStripBackgroundColor);
+			pen_0 = new Pen(_shadowColor);
+			pen_1 = new Pen(_highlightColor);
+			solidBrush_1 = new SolidBrush(BackgroundTabForeColor);
+			pen_2 = new Pen(_collapsedTabOutlineColor);
+		    stringFormat_2 = new StringFormat(StringFormat.GenericDefault)
+		    {
+		        FormatFlags = StringFormatFlags.NoWrap,
+		        Alignment = StringAlignment.Center,
+		        LineAlignment = StringAlignment.Center,
+		        HotkeyPrefix = hotKeys
+		    };
 		}
 
-		public override string ToString()
-		{
-			return "Everett";
-		}
+		public override string ToString() => "Everett";
 
-		internal virtual void vmethod_0(Graphics graphics_0, Rectangle rectangle_0, DrawItemState drawItemState_0)
+	    internal virtual void vmethod_0(Graphics g, Rectangle bounds, DrawItemState state)
 		{
-			if ((drawItemState_0 & DrawItemState.HotLight) == DrawItemState.HotLight)
-			{
-				Pen pen;
-				Pen pen2;
-				if ((drawItemState_0 & DrawItemState.Selected) != DrawItemState.Selected)
-				{
-					pen = this.pen_0;
-					pen2 = this.pen_1;
-				}
-				else
-				{
-					pen2 = this.pen_0;
-					pen = this.pen_1;
-				}
-				graphics_0.DrawLine(pen2, rectangle_0.Left, rectangle_0.Top, rectangle_0.Right - 1, rectangle_0.Top);
-				graphics_0.DrawLine(pen2, rectangle_0.Left, rectangle_0.Top, rectangle_0.Left, rectangle_0.Bottom - 1);
-				graphics_0.DrawLine(pen, rectangle_0.Right - 1, rectangle_0.Bottom - 1, rectangle_0.Right - 1, rectangle_0.Top);
-				graphics_0.DrawLine(pen, rectangle_0.Right - 1, rectangle_0.Bottom - 1, rectangle_0.Left, rectangle_0.Bottom - 1);
-			}
+		    if ((state & DrawItemState.HotLight) != DrawItemState.HotLight) return;
+		    Pen pen;
+		    Pen pen2;
+		    if ((state & DrawItemState.Selected) != DrawItemState.Selected)
+		    {
+		        pen = pen_0;
+		        pen2 = pen_1;
+		    }
+		    else
+		    {
+		        pen2 = pen_0;
+		        pen = pen_1;
+		    }
+		    g.DrawLine(pen2, bounds.Left, bounds.Top, bounds.Right - 1, bounds.Top);
+		    g.DrawLine(pen2, bounds.Left, bounds.Top, bounds.Left, bounds.Bottom - 1);
+		    g.DrawLine(pen, bounds.Right - 1, bounds.Bottom - 1, bounds.Right - 1, bounds.Top);
+		    g.DrawLine(pen, bounds.Right - 1, bounds.Bottom - 1, bounds.Left, bounds.Bottom - 1);
 		}
 
 		public Color ActiveTitleBarColor
 		{
 			get
 			{
-				return this.color_1;
+				return _activeTitleBarColor;
 			}
 			set
 			{
-				this.color_1 = value;
-				base.CustomColors = true;
+				_activeTitleBarColor = value;
+				CustomColors = true;
 			}
 		}
 
-		public Color BackgroundTabForeColor
-		{
-			get
-			{
-				return this.color_4;
-			}
-			set
-			{
-				this.color_4 = value;
-			}
-		}
+		public Color BackgroundTabForeColor { get; set; } = SystemColors.ControlDarkDark;
 
-		public Color CollapsedTabOutlineColor
+	    public Color CollapsedTabOutlineColor
 		{
 			get
 			{
-				return this.color_5;
+				return _collapsedTabOutlineColor;
 			}
 			set
 			{
-				this.color_5 = value;
-				base.CustomColors = true;
+				_collapsedTabOutlineColor = value;
+				CustomColors = true;
 			}
 		}
 
@@ -420,12 +385,12 @@ namespace TD.SandDock.Rendering
 		{
 			get
 			{
-				return this.color_3;
+				return _highlightColor;
 			}
 			set
 			{
-				this.color_3 = value;
-				base.CustomColors = true;
+				_highlightColor = value;
+				CustomColors = true;
 			}
 		}
 
@@ -433,84 +398,74 @@ namespace TD.SandDock.Rendering
 		{
 			get
 			{
-				return this.color_0;
+				return _inactiveTitleBarColor;
 			}
 			set
 			{
-				this.color_0 = value;
-				base.CustomColors = true;
+				_inactiveTitleBarColor = value;
+				CustomColors = true;
 			}
 		}
 
-		internal virtual int Int32_0
-		{
-			get
-			{
-				return 5;
-			}
-		}
+		internal virtual int Int32_0 { get; } = 5;
 
-		public Color ShadowColor
+	    public Color ShadowColor
 		{
 			get
 			{
-				return this.color_2;
+				return _shadowColor;
 			}
 			set
 			{
-				this.color_2 = value;
-				base.CustomColors = true;
+				_shadowColor = value;
+				CustomColors = true;
 			}
 		}
 
-		internal static StringFormat StringFormat_0
+		internal static StringFormat HorizontalTextFormat
 		{
 			get
 			{
-				if (EverettRenderer.stringFormat_0 == null)
-				{
-				    EverettRenderer.stringFormat_0 = new StringFormat(StringFormat.GenericDefault)
-				    {
-				        Alignment = StringAlignment.Near,
-				        LineAlignment = StringAlignment.Center,
-				        Trimming = StringTrimming.EllipsisCharacter
-				    };
-				    EverettRenderer.stringFormat_0.FormatFlags |= StringFormatFlags.NoWrap;
-				}
-				return EverettRenderer.stringFormat_0;
+			    if (_horizontalTextFormat != null) return _horizontalTextFormat;
+			    _horizontalTextFormat = new StringFormat(StringFormat.GenericDefault)
+			    {
+			        Alignment = StringAlignment.Near,
+			        LineAlignment = StringAlignment.Center,
+			        Trimming = StringTrimming.EllipsisCharacter
+			    };
+			    _horizontalTextFormat.FormatFlags |= StringFormatFlags.NoWrap;
+			    return _horizontalTextFormat;
 			}
 		}
 
-		internal static StringFormat StringFormat_1
+		internal static StringFormat VerticalTextFormat
 		{
 			get
 			{
-				if (EverettRenderer.stringFormat_1 == null)
-				{
-				    EverettRenderer.stringFormat_1 = new StringFormat(StringFormat.GenericDefault)
-				    {
-				        Alignment = StringAlignment.Near,
-				        LineAlignment = StringAlignment.Center,
-				        Trimming = StringTrimming.EllipsisCharacter
-				    };
-				    EverettRenderer.stringFormat_1.FormatFlags |= StringFormatFlags.NoWrap;
-					EverettRenderer.stringFormat_1.FormatFlags |= StringFormatFlags.DirectionVertical;
-				}
-				return EverettRenderer.stringFormat_1;
+			    if (_verticalTextFormat != null) return _verticalTextFormat;
+			    _verticalTextFormat = new StringFormat(StringFormat.GenericDefault)
+			    {
+			        Alignment = StringAlignment.Near,
+			        LineAlignment = StringAlignment.Center,
+			        Trimming = StringTrimming.EllipsisCharacter
+			    };
+			    _verticalTextFormat.FormatFlags |= StringFormatFlags.NoWrap;
+			    _verticalTextFormat.FormatFlags |= StringFormatFlags.DirectionVertical;
+			    return _verticalTextFormat;
 			}
 		}
 
 		public override Size TabControlPadding => new Size(3, 3);
 
-	    protected internal override BoxModel TabMetrics => this.boxModel_1 ?? (this.boxModel_1 = new BoxModel(0, 0, 0, 0, 0, 0, 0, 0, 1, 0));
+	    protected internal override BoxModel TabMetrics => boxModel_1 ?? (boxModel_1 = new BoxModel(0, 0, 0, 0, 0, 0, 0, 0, 1, 0));
 
 	    public Color TabStripBackgroundColor { get; private set; }
 
-	    protected internal override BoxModel TabStripMetrics => this.boxModel_0 ?? (this.boxModel_0 = new BoxModel(0, Control.DefaultFont.Height + 9, 4, 0, 5, 1, 0, 2, 0, 0));
+	    protected internal override BoxModel TabStripMetrics => boxModel_0 ?? (boxModel_0 = new BoxModel(0, Control.DefaultFont.Height + 9, 4, 0, 5, 1, 0, 2, 0, 0));
 
 	    protected internal override TabTextDisplayMode TabTextDisplay => TabTextDisplayMode.SelectedTab;
 
-	    protected internal override BoxModel TitleBarMetrics => this.boxModel_2 ?? (this.boxModel_2 = new BoxModel(0, SystemInformation.ToolWindowCaptionHeight + 2, 0, 0, 0, 0, 0, 0, 0, 2));
+	    protected internal override BoxModel TitleBarMetrics => boxModel_2 ?? (boxModel_2 = new BoxModel(0, SystemInformation.ToolWindowCaptionHeight + 2, 0, 0, 0, 0, 0, 0, 0, 2));
 
 	    private BoxModel boxModel_0;
 
@@ -518,17 +473,15 @@ namespace TD.SandDock.Rendering
 
 		private BoxModel boxModel_2;
 
-		private Color color_0 = SystemColors.InactiveCaption;
+		private Color _inactiveTitleBarColor = SystemColors.InactiveCaption;
 
-		private Color color_1 = SystemColors.ActiveCaption;
+		private Color _activeTitleBarColor = SystemColors.ActiveCaption;
 
-		private Color color_2 = SystemColors.ControlText;
+		private Color _shadowColor = SystemColors.ControlText;
 
-		private Color color_3 = SystemColors.ControlLightLight;
+		private Color _highlightColor = SystemColors.ControlLightLight;
 
-		private Color color_4 = SystemColors.ControlDarkDark;
-
-		private Color color_5 = SystemColors.ControlDark;
+	    private Color _collapsedTabOutlineColor = SystemColors.ControlDark;
 
 		private Color color_6 = SystemColors.ControlDarkDark;
 
@@ -538,13 +491,13 @@ namespace TD.SandDock.Rendering
 
 		private Pen pen_2;
 
-		private SolidBrush solidBrush_0;
+		private SolidBrush _backBrush;
 
 		private SolidBrush solidBrush_1;
 
-		private static StringFormat stringFormat_0;
+		private static StringFormat _horizontalTextFormat;
 
-		private static StringFormat stringFormat_1;
+		private static StringFormat _verticalTextFormat;
 
 		private StringFormat stringFormat_2;
 	}

@@ -175,5 +175,10 @@ namespace TD.SandDock
 			public int Color;
 			public IntPtr Hatch;
 		}
-	}
+
+        public static bool IsMono()
+        {
+            return Type.GetType("Mono.Runtime") != null;
+        }
+    }
 }
