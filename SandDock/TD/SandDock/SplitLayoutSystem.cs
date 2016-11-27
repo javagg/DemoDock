@@ -8,6 +8,7 @@ using System.Linq;
 using System.Reflection;
 using System.Windows.Forms;
 using TD.SandDock.Rendering;
+using TD.Util;
 
 namespace TD.SandDock
 {
@@ -238,7 +239,7 @@ namespace TD.SandDock
 					else
 					{
 						ControlLayoutSystem controlLayoutSystem = (ControlLayoutSystem)layoutSystemBase;
-						if (!controlLayoutSystem.Collapsed || (IsInContainer && !DockContainer.Boolean_6))
+						if (!controlLayoutSystem.Collapsed || (IsInContainer && !DockContainer.CanShowCollapsed))
 						{
 							result = true;
 							return result;
@@ -316,7 +317,7 @@ namespace TD.SandDock
 	    internal void method_7()
 		{
 	        DockContainer?.vmethod_2();
-            Event_0?.Invoke(this, EventArgs.Empty);
+            LayoutSystemsChanged?.Invoke(this, EventArgs.Empty);
 		}
 
 		internal void method_8()
@@ -345,7 +346,7 @@ namespace TD.SandDock
 				else
 				{
 					ControlLayoutSystem controlLayoutSystem = (ControlLayoutSystem)layoutSystemBase;
-					if (!controlLayoutSystem.Collapsed || (IsInContainer && !DockContainer.Boolean_6))
+					if (!controlLayoutSystem.Collapsed || (IsInContainer && !DockContainer.CanShowCollapsed))
 					{
 						array[int_3++] = layoutSystemBase;
 					}
@@ -365,7 +366,7 @@ namespace TD.SandDock
 		    if (LayoutSystems.Count == 1 && LayoutSystems[0] is ControlLayoutSystem)
 		        dockControl = ((ControlLayoutSystem) LayoutSystems[0]).SelectedControl;
 
-            DockControl[] dockControl_ = DockControls;
+            DockControl[] dockControl_ = AllControls;
 			for (var i = dockControl_.Length - 1; i >= 0; i--)
 			{
 				var control = dockControl_[i];
@@ -511,7 +512,7 @@ namespace TD.SandDock
 				@class.method_19(dockTarget_0.Bounds, true, true);
 				return;
 			}
-			var dockControl_ = DockControls;
+			var dockControl_ = AllControls;
 			var dockControl_2 = @class.SelectedControl;
 			@class.LayoutSystem = new SplitLayoutSystem();
 			@class.Dispose();
@@ -580,7 +581,7 @@ namespace TD.SandDock
 		        renderer.DrawSplitter(container, DockContainer, g, bounds, _splitMode);
 		    foreach (LayoutSystemBase layoutSystem in LayoutSystems)
 			{
-				if (!(layoutSystem is ControlLayoutSystem) || !((ControlLayoutSystem)layoutSystem).Collapsed || !DockContainer.Boolean_6)
+				if (!(layoutSystem is ControlLayoutSystem) || !((ControlLayoutSystem)layoutSystem).Collapsed || !DockContainer.CanShowCollapsed)
 				{
 					var clip = g.Clip;
 					g.SetClip(layoutSystem.Bounds);
@@ -590,13 +591,14 @@ namespace TD.SandDock
 			}
 		}
 
-		internal override bool PersistState => LayoutSystems.Cast<LayoutSystemBase>().Any(layoutSystemBase => layoutSystemBase.PersistState);
+		internal override bool ContainsPersistableDockControls => LayoutSystems.Cast<LayoutSystemBase>().Any(layoutSystemBase => layoutSystemBase.ContainsPersistableDockControls);
 
+        [Naming(NamingType.FromOldVersion)]
 	    internal override bool AllowFloat => LayoutSystems.Cast<LayoutSystemBase>().All(layoutSystemBase => layoutSystemBase.AllowFloat);
 
 		internal override bool AllowTab => LayoutSystems.Cast<LayoutSystemBase>().All(layoutSystemBase => layoutSystemBase.AllowTab);
 
-        internal override DockControl[] DockControls
+        internal override DockControl[] AllControls
         {
             get
             {
@@ -623,7 +625,8 @@ namespace TD.SandDock
 			}
 		}
 
-	    internal event EventHandler Event_0;
+        [Naming(NamingType.FromOldVersion)]
+        internal event EventHandler LayoutSystemsChanged;
 
 		private readonly ArrayList _splitterRects;
 

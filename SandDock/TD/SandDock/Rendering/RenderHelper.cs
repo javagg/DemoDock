@@ -206,12 +206,12 @@ namespace TD.SandDock.Rendering
 		    if (vertical)
 		    {
 		        bounds.Offset(0, num);
-		        g.DrawString(text, font, brush_1, bounds, EverettRenderer.VerticalTextFormat);
+		        g.DrawString(text, font, brush_1, bounds, EverettRenderer.StandardVerticalStringFormat);
 		    }
 		    else
 		    {
 		        bounds.Offset(num, 0);
-		        g.DrawString(text, font, brush_1, bounds, EverettRenderer.HorizontalTextFormat);
+		        g.DrawString(text, font, brush_1, bounds, EverettRenderer.StandardStringFormat);
 		    }
 		}
 	}

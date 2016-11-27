@@ -62,7 +62,7 @@ namespace TD.SandDock.Design
 			method_9();
 		}
 
-        [GuessedName]
+        [Naming]
 		private DockControl GetDockControlAt(Point point)
 		{
 		    var layout = _dockContainer.GetLayoutSystemAt(point);
@@ -324,7 +324,7 @@ namespace TD.SandDock.Design
 
 		protected override void OnSetCursor()
 		{
-			Point point = _dockContainer.PointToClient(Cursor.Position);
+			var point = _dockContainer.PointToClient(Cursor.Position);
 			LayoutSystemBase layoutSystemAt = _dockContainer.GetLayoutSystemAt(point);
 			SplitLayoutSystem splitLayoutSystem = layoutSystemAt as SplitLayoutSystem;
 			if (splitLayoutSystem != null && splitLayoutSystem.Contains(point.X, point.Y))
@@ -343,7 +343,7 @@ namespace TD.SandDock.Design
 					Cursor.Current = Cursors.Default;
 					return;
 				}
-				if (!_dockContainer.Boolean_1)
+				if (!_dockContainer.Vertical)
 				{
 					Cursor.Current = Cursors.HSplit;
 					return;

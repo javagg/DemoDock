@@ -445,7 +445,7 @@ namespace TD.SandDock
             DockContainer[] orderedDockedDockContainerList = this.GetOrderedDockedDockContainerList();
             foreach (var dockContainer in orderedDockedDockContainerList)
             {
-                if (dockContainer.LayoutSystem.PersistState)
+                if (dockContainer.LayoutSystem.ContainsPersistableDockControls)
                 {
                     SaveContainerLayout(dockContainer, xmlTextWriter);
                 }
@@ -453,13 +453,13 @@ namespace TD.SandDock
             FloatingContainer[] floatingDockContainerList = GetFloatingDockContainerList();
             foreach (DockContainer dockContainer2 in floatingDockContainerList)
             {
-                if (dockContainer2.LayoutSystem.PersistState)
+                if (dockContainer2.LayoutSystem.ContainsPersistableDockControls)
                 {
                     SaveContainerLayout(dockContainer2, xmlTextWriter);
                 }
             }
             DocumentContainer documentContainer = this.FindDockedContainer(DockStyle.Fill) as DocumentContainer;
-            if (documentContainer != null && this.SerializeTabbedDocuments && documentContainer.LayoutSystem.PersistState)
+            if (documentContainer != null && this.SerializeTabbedDocuments && documentContainer.LayoutSystem.ContainsPersistableDockControls)
             {
                 this.SaveContainerLayout(documentContainer, xmlTextWriter);
             }
@@ -980,7 +980,7 @@ namespace TD.SandDock
                 writer.WriteAttributeString("SplitMode", ((int)splitLayoutSystem.SplitMode).ToString());
                 foreach (LayoutSystemBase layoutSystemBase in splitLayoutSystem.LayoutSystems)
                 {
-                    if (layoutSystemBase.PersistState)
+                    if (layoutSystemBase.ContainsPersistableDockControls)
                     {
                         this.SaveLayoutSystem(layoutSystemBase, writer);
                     }

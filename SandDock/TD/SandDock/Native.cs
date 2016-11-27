@@ -26,9 +26,6 @@ namespace TD.SandDock
 	    [DllImport("gdi32.dll", ExactSpelling = true)]
 	    public static extern IntPtr SelectObject(IntPtr hDC, IntPtr hObject);
 
-	    [DllImport("user32.dll", ExactSpelling = true, SetLastError = true)]
-	    public static extern bool UpdateLayeredWindow(IntPtr hwnd, IntPtr hdcDst, ref Point pptDst, ref Size psize, IntPtr hdcSrc, ref Point pprSrc, int crKey, ref BLENDFUNCTION pblend, int dwFlags);
-
 	    public const byte byte_0 = 0;
 
 	    public const byte byte_1 = 1;
@@ -81,10 +78,13 @@ namespace TD.SandDock
         public static extern bool ShowWindow(IntPtr hWnd, int nCmdShow);
 
         [DllImport("user32.dll")]
-        public static extern bool SetWindowPos(IntPtr hWnd, IntPtr hWndInsertAfter, int x, int y, int cx, int cy, int flags);
+        public static extern bool SetWindowPos(IntPtr hWnd, int hWndInsertAfter, int x, int y, int cx, int cy, int flags);
 
         [DllImport("user32.dll", CharSet = CharSet.Auto, ExactSpelling = true, SetLastError = true)]
         public static extern bool SetLayeredWindowAttributes(IntPtr hwnd, int crKey, byte bAlpha, int dwFlags);
+
+        [DllImport("user32.dll", ExactSpelling = true, SetLastError = true)]
+        public static extern bool UpdateLayeredWindow(IntPtr hwnd, IntPtr hdcDst, ref Point pptDst, ref Size psize, IntPtr hdcSrc, ref Point pprSrc, int crKey, ref BLENDFUNCTION pblend, int dwFlags);
 
         [DllImport("user32.dll", CharSet = CharSet.Auto)]
         public static extern int GetSysColor(int nIndex);
@@ -156,7 +156,7 @@ namespace TD.SandDock
 		    ReleaseDC(new HandleRef(control, handle), new HandleRef(null, dc));
 		}
 
-        [GuessedName]
+        [Naming]
 		private static IntPtr CreateBrush()
 		{
 			var array = new short[8];

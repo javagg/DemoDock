@@ -330,7 +330,7 @@ namespace TD.SandDock.Rendering
 			return RenderHelper.MeasureTabStripTab(graphics, image, ImageSize, text, font, TextFormat);
 		}
 
-        [GuessedName]
+        [Naming]
 		private void ClearMetrics()
 		{
 			_tabMetrics = null;
@@ -357,7 +357,7 @@ namespace TD.SandDock.Rendering
 			};
 		}
 
-        [GuessedName]
+        [Naming]
 		private void ApplyBlueColorScheme()
 		{
 			Background = ColorTranslator.FromHtml("#BFDBFF");
@@ -576,7 +576,7 @@ namespace TD.SandDock.Rendering
 			});
 		}
 
-        [GuessedName]
+        [Naming]
         private void ApplyBlackColorScheme()
 		{
 			Background = ColorTranslator.FromHtml("#535353");
@@ -795,7 +795,7 @@ namespace TD.SandDock.Rendering
 			});
 		}
 
-        [GuessedName]
+        [Naming]
         private void ApplySilverColorScheme()
 		{
 			Background = ColorTranslator.FromHtml("#D0D4DD");

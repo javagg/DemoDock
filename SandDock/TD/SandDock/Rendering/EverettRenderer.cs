@@ -2,6 +2,7 @@ using System;
 using System.Drawing;
 using System.Drawing.Text;
 using System.Windows.Forms;
+using TD.Util;
 
 namespace TD.SandDock.Rendering
 {
@@ -50,11 +51,11 @@ namespace TD.SandDock.Rendering
             if (vertical)
 		    {
 		        bounds.Offset(0, 23);
-		        graphics.DrawString(text, font, solidBrush_1, bounds, VerticalTextFormat);
+		        graphics.DrawString(text, font, solidBrush_1, bounds, StandardVerticalStringFormat);
 		        return;
 		    }
 		    bounds.Offset(23, 0);
-		    graphics.DrawString(text, font, solidBrush_1, bounds, HorizontalTextFormat);
+		    graphics.DrawString(text, font, solidBrush_1, bounds, StandardStringFormat);
 		}
 
 		protected internal override void DrawControlClientBackground(Graphics graphics, Rectangle bounds, Color backColor)
@@ -191,10 +192,10 @@ namespace TD.SandDock.Rendering
 		    if (bounds.Width <= 8) return;
 
 		    if ((state & DrawItemState.Selected) != DrawItemState.Selected)
-		        graphics.DrawString(text, font, solidBrush_1, bounds, HorizontalTextFormat);
+		        graphics.DrawString(text, font, solidBrush_1, bounds, StandardStringFormat);
 		    else
 		        using (var brush = new SolidBrush(foreColor))
-		            graphics.DrawString(text, font, brush, bounds, HorizontalTextFormat);
+		            graphics.DrawString(text, font, brush, bounds, StandardStringFormat);
 		    
 		}
 
@@ -244,7 +245,7 @@ namespace TD.SandDock.Rendering
 		{
 			var brush = focused ? SystemBrushes.ActiveCaptionText : SystemBrushes.ControlText;
 			bounds.Inflate(-3, 0);
-			graphics.DrawString(text, font, brush, bounds, HorizontalTextFormat);
+			graphics.DrawString(text, font, brush, bounds, StandardStringFormat);
 		}
 
 		public override void FinishRenderSession()
@@ -275,7 +276,7 @@ namespace TD.SandDock.Rendering
 			}
 			num = (int)Math.Ceiling(graphics.MeasureString(text, font, 999, stringFormat_2).Width);
 			IL_65:
-			num += 2 + Int32_0 * 2 + 2;
+			num += 2 + DocumentTabPadding * 2 + 2;
 			if (image != null)
 			{
 				num += 20;
@@ -406,8 +407,8 @@ namespace TD.SandDock.Rendering
 				CustomColors = true;
 			}
 		}
-
-		internal virtual int Int32_0 { get; } = 5;
+        [Naming(NamingType.FromOldVersion)]
+        internal virtual int DocumentTabPadding { get; } = 5;
 
 	    public Color ShadowColor
 		{
@@ -421,8 +422,8 @@ namespace TD.SandDock.Rendering
 				CustomColors = true;
 			}
 		}
-
-		internal static StringFormat HorizontalTextFormat
+        [Naming(NamingType.FromOldVersion)]
+		internal static StringFormat StandardStringFormat
 		{
 			get
 			{
@@ -437,8 +438,8 @@ namespace TD.SandDock.Rendering
 			    return _horizontalTextFormat;
 			}
 		}
-
-		internal static StringFormat VerticalTextFormat
+        [Naming(NamingType.FromOldVersion)]
+        internal static StringFormat StandardVerticalStringFormat
 		{
 			get
 			{

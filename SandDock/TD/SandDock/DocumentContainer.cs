@@ -3,6 +3,8 @@ using System.ComponentModel;
 using System.Drawing;
 using System.Windows.Forms;
 using TD.SandDock.Design;
+using TD.Util;
+using BorderStyle = TD.SandDock.Rendering.BorderStyle;
 
 namespace TD.SandDock
 {
@@ -14,6 +16,14 @@ namespace TD.SandDock
 
     public static class WMConstants
     {
+        public const int COLOR_GRADIENTACTIVECAPTION = 27;
+        public const int SM_REMOTESESSION = 0x1000;
+
+        public const int WS_SYSMENU = 0x00080000; //524288 
+        public const int WS_OVERLAPPED = 0;
+
+        public const int HWND_TOPMOST = -1;
+        public const int HWND_TOP = 0;
         public const int SWP_SHOWWINDOW = 64;
         
         public const int SWP_NOACTIVATE = 16;
@@ -22,24 +32,25 @@ namespace TD.SandDock
 
         public const int SWP_NOZORDER = 4;
 
+        public const int ULW_ALPHA = 2;
+        public const int LWA_ALPHA = 2;
+
         public const int WM_KEYFIRST = 256;
         public const int WM_KEYLAST = 264;
         public const int WM_KEYUP = 257;
         public const int WM_SYSKEYDOWN = 260;
         public const int WM_SYSKEYUP = 261;
         public const int WM_PAINT = 15;
-        private const int int_5 = 9;
-        private const int int_6 = 17;
+        public const int VK_TAB = 9;
+        public const int VK_SHIFT = 16;
+        public const int VK_CONTROL = 17;
         private const int MK_MBUTTON = 16;
         public const int WM_MOUSEACTIVATE = 33;
         public const int WM_NCLBUTTONDOWN= 161;
 
         public const int WM_NCLBUTTONDBLCLK = 163;
         public const int WM_NCRBUTTONDOWN = 164;
-
-        public const int VK_SHIFT = 0x10;
-        
-        public const int VK_CONTROL = 0x11;
+      
 
         public const int VK_MENU = 0x12;
 
@@ -57,13 +68,13 @@ namespace TD.SandDock
 
 		private DockControl method_17()
 		{
-			if (this.int_8 > this.dockControl_0.Length)
+			if (int_8 > _documents.Length)
 			{
-				this.int_8 = this.dockControl_0.Length;
+				int_8 = _documents.Length;
 			}
-			int num = this.dockControl_0.Length - 1 - this.int_8;
-			this.dockControl_0[num].method_12(true);
-			return this.dockControl_0[num];
+			int num = _documents.Length - 1 - int_8;
+			_documents[num].method_12(true);
+			return _documents[num];
 		}
 
 		protected override void OnPaint(PaintEventArgs e)
@@ -74,65 +85,62 @@ namespace TD.SandDock
 
 		protected override bool ProcessCmdKey(ref Message msg, Keys keyData)
 		{
-			if ((keyData != (Keys.LButton | Keys.Back | Keys.Control) && keyData != (Keys.LButton | Keys.Back | Keys.Shift | Keys.Control)) || !this.Boolean_4)
+			if ((keyData != (Keys.LButton | Keys.Back | Keys.Control) && keyData != (Keys.LButton | Keys.Back | Keys.Shift | Keys.Control)) || !AllowKeyboardNavigation)
 			{
 				return base.ProcessCmdKey(ref msg, keyData);
 			}
-			DockControl[] dockControls = this.Manager.GetDockControls(DockSituation.Document);
-			if (dockControls.Length < 2)
+			var documents = Manager.GetDockControls(DockSituation.Document);
+		    if (documents.Length < 2) return true;
+		    var array = new DateTime[documents.Length];
+			for (var i = 0; i < documents.Length; i++)
 			{
-				return true;
+				array[i] = documents[i].MetaData.LastFocused;
 			}
-			DateTime[] array = new DateTime[dockControls.Length];
-			for (int i = 0; i < dockControls.Length; i++)
-			{
-				array[i] = dockControls[i].MetaData.LastFocused;
-			}
-			Array.Sort<DateTime, DockControl>(array, dockControls);
-			this.dockControl_0 = dockControls;
+			Array.Sort(array, documents);
+			_documents = documents;
 			if ((keyData & Keys.Shift) == Keys.Shift)
 			{
-				this.int_8 = this.dockControl_0.Length - 1;
+				int_8 = _documents.Length - 1;
 			}
 			else
 			{
-				this.int_8 = 1;
+				int_8 = 1;
 			}
-			this.method_17();
+			method_17();
 			Application.AddMessageFilter(this);
 			return true;
 		}
 
 		bool IMessageFilter.PreFilterMessage(ref Message m)
 		{
-			if (m.Msg == WMConstants.WM_KEYFIRST && m.WParam.ToInt32() == 9)
+			if (m.Msg == WMConstants.WM_KEYFIRST && m.WParam.ToInt32() == WMConstants.VK_TAB)
 			{
 				if ((ModifierKeys & Keys.Shift) != Keys.Shift)
 				{
-					this.int_8++;
+					int_8++;
 				}
 				else
 				{
-					this.int_8--;
+					int_8--;
 				}
-				if (this.int_8 > this.dockControl_0.Length - 1)
+				if (int_8 > _documents.Length - 1)
 				{
-					this.int_8 = 0;
+					int_8 = 0;
 				}
-				if (this.int_8 < 0)
+				if (int_8 < 0)
 				{
-					this.int_8 = this.dockControl_0.Length - 1;
+					int_8 = _documents.Length - 1;
 				}
-				this.method_17();
+				method_17();
 				return true;
 			}
-			if (m.Msg == WMConstants.WM_KEYFIRST && m.WParam.ToInt32() == 16)
+			if (m.Msg == WMConstants.WM_KEYFIRST && m.WParam.ToInt32() == WMConstants.VK_SHIFT)
 			{
 				return true;
 			}
 			if (m.Msg == WMConstants.WM_KEYUP)
 			{
-				if (m.WParam.ToInt32() == 17)
+				if (m.WParam.ToInt32() == WMConstants.VK_CONTROL)
 				{
 					goto IL_DB;
 				}
@@ -142,9 +150,9 @@ namespace TD.SandDock
 				return false;
 			}
 			IL_DB:
-			DockControl dockControl = this.method_17();
-			this.int_8 = -1;
-			this.dockControl_0 = null;
+			DockControl dockControl = method_17();
+			int_8 = -1;
+			_documents = null;
 			dockControl.method_12(true);
 			Application.RemoveMessageFilter(this);
 			return true;
@@ -165,9 +173,11 @@ namespace TD.SandDock
 			}
 		}
 
-		internal bool Boolean_3 => this.dockControl_0 != null;
+        [Naming]
+        internal bool HasDocuments => _documents != null;
 
-        private bool Boolean_4 => Manager?.AllowKeyboardNavigation ?? true;
+        [Naming(NamingType.FromOldVersion)]
+        private bool AllowKeyboardNavigation => Manager?.AllowKeyboardNavigation ?? true;
 
         internal bool IntegralClose
 		{
@@ -182,10 +192,10 @@ namespace TD.SandDock
 			}
 		}
 
-		internal override bool Boolean_6 => false;
+		internal override bool CanShowCollapsed => false;
 
-        [Category("Appearance"), DefaultValue(Rendering.BorderStyle.Flat), Description("The type of border to be drawn around the control.")]
-		internal Rendering.BorderStyle BorderStyle
+        [Category("Appearance"), DefaultValue(BorderStyle.Flat), Description("The type of border to be drawn around the control.")]
+		internal BorderStyle BorderStyle
 		{
 			get
 			{
@@ -207,13 +217,13 @@ namespace TD.SandDock
 				var rect = base.DisplayRectangle;
 				switch (BorderStyle)
 				{
-				case Rendering.BorderStyle.Flat:
-				case Rendering.BorderStyle.RaisedThin:
-				case Rendering.BorderStyle.SunkenThin:
+				case BorderStyle.Flat:
+				case BorderStyle.RaisedThin:
+				case BorderStyle.SunkenThin:
 					rect.Inflate(-1, -1);
 					break;
-				case Rendering.BorderStyle.RaisedThick:
-				case Rendering.BorderStyle.SunkenThick:
+				case BorderStyle.RaisedThick:
+				case BorderStyle.SunkenThick:
 					rect.Inflate(-2, -2);
 					break;
 				}
@@ -230,32 +240,32 @@ namespace TD.SandDock
 			}
 			set
 			{
-			    if (value != DockStyle.Fill)
-			        throw new ArgumentException("Only the Fill dock style is valid for this type of container.");
+			    if (value != DockStyle.Fill) throw new ArgumentException("Only the Fill dock style is valid for this type of container.");
 			    base.Dock = value;
 			}
 		}
 
+        [Naming(NamingType.FromOldVersion)]
 		internal DocumentOverflowMode DocumentOverflow
 		{
 			get
 			{
-				return _documentOverflowMode;
+				return _documentOverflow;
 			}
 			set
 			{
-				_documentOverflowMode = value;
+				_documentOverflow = value;
 				CalculateAllMetricsAndLayout();
 			}
 		}
 
 		private bool _integralClose;
 
-		private Rendering.BorderStyle _borderStyle = Rendering.BorderStyle.Flat;
+		private BorderStyle _borderStyle = BorderStyle.Flat;
 
-		private DockControl[] dockControl_0;
+		private DockControl[] _documents;
 
-		private DocumentOverflowMode _documentOverflowMode = DocumentOverflowMode.Scrollable;
+		private DocumentOverflowMode _documentOverflow = DocumentOverflowMode.Scrollable;
 
 		private int int_8 = -1;
 	}

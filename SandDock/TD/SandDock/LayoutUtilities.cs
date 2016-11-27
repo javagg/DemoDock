@@ -30,7 +30,7 @@ namespace TD.SandDock
 		        throw new ArgumentNullException();
 
 		    var dockContainer = layoutSystem.DockContainer;
-		    if (layoutSystem.AutoHideBar != null && layoutSystem.AutoHideBar.LayoutSystem == layoutSystem)
+		    if (layoutSystem.AutoHideBar != null && layoutSystem.AutoHideBar.ShowingLayoutSystem == layoutSystem)
 		        layoutSystem.AutoHideBar.method_6(true);
 
             if (layoutSystem.Parent == null) return;
@@ -67,7 +67,7 @@ namespace TD.SandDock
 		internal static int smethod_12(DockContainer dockContainer_0)
 		{
 			int num = dockContainer_0.AllowResize ? 4 : 0;
-			return num + smethod_13(dockContainer_0.LayoutSystem, dockContainer_0.Boolean_1 ? Orientation.Vertical : Orientation.Horizontal) * 5;
+			return num + smethod_13(dockContainer_0.LayoutSystem, dockContainer_0.Vertical ? Orientation.Vertical : Orientation.Horizontal) * 5;
 		}
 
 		private static int smethod_13(SplitLayoutSystem splitLayoutSystem_0, Orientation splitMode)
@@ -145,7 +145,7 @@ namespace TD.SandDock
 			return new Struct0(dockContainer_0.LayoutSystem, 0);
 		}
 
-        [GuessedName]
+        [Naming]
 		internal static DockSituation GetDockSituation(DockContainer container)
 		{
 		    if (container == null)
@@ -279,7 +279,7 @@ namespace TD.SandDock
 			}
 		    var control = control_0 as DockControl;
 		    if (control != null)
-		        control.Boolean_0 = true;
+		        control.IgnoreFontEvents = true;
 		    try
 			{
 				var container = control_0.Parent.GetContainerControl();
@@ -301,7 +301,7 @@ namespace TD.SandDock
 			{
 				if (control_0 is DockControl)
 				{
-					((DockControl)control_0).Boolean_0 = false;
+					((DockControl)control_0).IgnoreFontEvents = false;
 				}
 			}
 		}
@@ -345,8 +345,8 @@ namespace TD.SandDock
 				}
 			}
 		}
-
-		internal static bool Boolean_0 => _cnt > 0;
+        [Naming(NamingType.FromOldVersion)]
+		internal static bool LayoutInProgress => _cnt > 0;
 
 	    private static int _cnt;
 	}

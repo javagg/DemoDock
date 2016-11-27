@@ -3,6 +3,7 @@ using System.ComponentModel;
 using System.Drawing;
 using System.Linq;
 using System.Windows.Forms;
+using TD.Util;
 
 namespace TD.SandDock
 {
@@ -59,7 +60,7 @@ namespace TD.SandDock
         {
             base.OnMove(e);
             if (_parent == null) return;
-            foreach (var control in _parent.LayoutSystem.DockControls)
+            foreach (var control in _parent.LayoutSystem.AllControls)
                 control.FloatingLocation = Location;
         }
 
@@ -67,7 +68,7 @@ namespace TD.SandDock
         {
             base.OnResize(e);
             if (_parent == null) return;
-            foreach (var control in _parent.LayoutSystem.DockControls)
+            foreach (var control in _parent.LayoutSystem.AllControls)
                 control.FloatingSize = Size;
         }
 
@@ -113,16 +114,16 @@ namespace TD.SandDock
             if (manager == null)
                 throw new ArgumentNullException(nameof(manager));
 
-            UnderlyingForm = new FloatingForm(this);
-            UnderlyingForm.Activated += OnActivated;
-            UnderlyingForm.Deactivate += OnDeactivate;
-            UnderlyingForm.Closing += OnClosing;
-            UnderlyingForm.DoubleClick += OnDoubleClick;
-            LayoutSystem.Event_0 += this.method_22;
+            FloatingForm = new FloatingForm(this);
+            FloatingForm.Activated += OnActivated;
+            FloatingForm.Deactivate += OnDeactivate;
+            FloatingForm.Closing += OnClosing;
+            FloatingForm.DoubleClick += OnDoubleClick;
+            LayoutSystem.LayoutSystemsChanged += this.method_22;
             this.method_22(LayoutSystem, EventArgs.Empty);
             Manager = manager;
             Guid = guid;
-            UnderlyingForm.Controls.Add(this);
+            FloatingForm.Controls.Add(this);
             Dock = DockStyle.Fill;
         }
 
@@ -130,13 +131,13 @@ namespace TD.SandDock
         {
             if (disposing && !IsDisposed)
             {
-                this.LayoutSystem.Event_0 -= this.method_22;
-                UnderlyingForm.Activated -= OnActivated;
-                UnderlyingForm.Deactivate -= OnDeactivate;
-                UnderlyingForm.Closing -= OnClosing;
-                UnderlyingForm.DoubleClick -= OnDoubleClick;
+                this.LayoutSystem.LayoutSystemsChanged -= this.method_22;
+                FloatingForm.Activated -= OnActivated;
+                FloatingForm.Deactivate -= OnDeactivate;
+                FloatingForm.Closing -= OnClosing;
+                FloatingForm.DoubleClick -= OnDoubleClick;
                 LayoutUtilities.smethod_8(this);
-                UnderlyingForm.Dispose();
+                FloatingForm.Dispose();
             }
             base.Dispose(disposing);
         }
@@ -144,7 +145,7 @@ namespace TD.SandDock
         private void OnClosing(object sender, CancelEventArgs e)
         {
             if (!this.bool_2) return;
-            var controls = LayoutSystem.DockControls;
+            var controls = LayoutSystem.AllControls;
             if (controls.All(control => control.AllowClose))
             {
                 if (controls.Any(c => !c.Close()))
@@ -160,7 +161,7 @@ namespace TD.SandDock
 
         private void OnDoubleClick(object sender, EventArgs e)
         {
-            var controls = LayoutSystem.DockControls;
+            var controls = LayoutSystem.AllControls;
             var selected = SelectedControl;
             if (controls[0].MetaData.LastFixedDockSituation == DockSituation.Docked && !LayoutSystem.vmethod_3(selected.MetaData.LastFixedDockSide))
                 return;
@@ -180,12 +181,12 @@ namespace TD.SandDock
 
         public void ShowForm()
         {
-            UnderlyingForm.Show();
+            FloatingForm.Show();
         }
 
         public void HideForm()
         {
-            UnderlyingForm.Hide();
+            FloatingForm.Hide();
         }
 
         public void method_19(Rectangle bounds, bool visible, bool activated)
@@ -194,16 +195,19 @@ namespace TD.SandDock
             flags |= visible ? WMConstants.SWP_SHOWWINDOW : WMConstants.SWP_HIDEWINDOW;
             if (!activated)
                 flags |= WMConstants.SWP_NOACTIVATE;
-            Native.SetWindowPos(UnderlyingForm.Handle, IntPtr.Zero, bounds.X, bounds.Y, bounds.Width, bounds.Height, flags);
-            UnderlyingForm.Visible = visible;
+
+            Native.SetWindowPos(FloatingForm.Handle, WMConstants.HWND_TOP, bounds.X, bounds.Y, bounds.Width, bounds.Height, flags);
+            FloatingForm.Location = bounds.Location;
+            FloatingForm.Size = bounds.Size;
+            FloatingForm.Visible = visible;
             if (visible)
-                foreach (Control control in UnderlyingForm.Controls)
+                foreach (Control control in FloatingForm.Controls)
                     control.Visible = true;
         }
 
-        private void OnSelectionChanged(DockControl oldSelection, DockControl newSelection)
+        private void OnSelectedControlChanged(DockControl oldSelection, DockControl newSelection)
         {
-            UnderlyingForm.Text = newSelection == null ? "" : newSelection.Text;
+            FloatingForm.Text = newSelection == null ? "" : newSelection.Text;
         }
 
         public void method_21()
@@ -215,27 +219,28 @@ namespace TD.SandDock
         {
             if (this.controlLayoutSystem_0 != null)
             {
-                this.controlLayoutSystem_0.SelectionChanged -= OnSelectionChanged;
+                this.controlLayoutSystem_0.SelectedControlChanged -= OnSelectedControlChanged;
             }
             if (HasSingleControlLayoutSystem)
             {
                 this.controlLayoutSystem_0 = (ControlLayoutSystem) LayoutSystem.LayoutSystems[0];
-                this.controlLayoutSystem_0.SelectionChanged += OnSelectionChanged;
-                OnSelectionChanged(null, controlLayoutSystem_0.SelectedControl);
+                this.controlLayoutSystem_0.SelectedControlChanged += OnSelectedControlChanged;
+                OnSelectedControlChanged(null, controlLayoutSystem_0.SelectedControl);
             }
             else
             {
-                UnderlyingForm.Text = "";
+                FloatingForm.Text = "";
                 this.controlLayoutSystem_0 = null;
             }
         }
 
         internal void Activate()
         {
-            UnderlyingForm.Activate();
+            FloatingForm.Activate();
         }
 
-        internal override bool Boolean_6 => false;
+        [Naming(NamingType.FromOldVersion)]
+        internal override bool CanShowCollapsed => false;
 
         public DockControl SelectedControl
         {
@@ -248,7 +253,8 @@ namespace TD.SandDock
             }
         }
 
-        public Form UnderlyingForm { get; }
+        [Naming(NamingType.FromOldVersion)]
+        public Form FloatingForm { get; }
 
         public Guid Guid { get; }
 
@@ -262,9 +268,9 @@ namespace TD.SandDock
             }
             set
             {
-                LayoutSystem.Event_0 -= method_22;
+                LayoutSystem.LayoutSystemsChanged -= method_22;
                 base.LayoutSystem = value;
-                LayoutSystem.Event_0 += method_22;
+                LayoutSystem.LayoutSystemsChanged += method_22;
                 this.method_22(LayoutSystem, EventArgs.Empty);
             }
         }
@@ -277,10 +283,10 @@ namespace TD.SandDock
             }
             set
             {
-                Manager?.OwnerForm?.RemoveOwnedForm(UnderlyingForm);
+                Manager?.OwnerForm?.RemoveOwnedForm(FloatingForm);
                 base.Manager = value;
                 if (Manager?.OwnerForm == null) return;
-                Manager.OwnerForm.AddOwnedForm(UnderlyingForm);
+                Manager.OwnerForm.AddOwnedForm(FloatingForm);
                 Font = new Font(Manager.OwnerForm.Font, Manager.OwnerForm.Font.Style);
             }
         }
@@ -289,25 +295,25 @@ namespace TD.SandDock
         {
             get
             {
-                return UnderlyingForm.Location;
+                return FloatingForm.Location;
             }
             set
             {
-                UnderlyingForm.Location = value;
+                FloatingForm.Location = value;
             }
         }
 
-        public Rectangle FloatingBounds => UnderlyingForm.Bounds;
+        public Rectangle FloatingBounds => FloatingForm.Bounds;
 
         public Size FloatingSize
         {
             get
             {
-                return UnderlyingForm.Size;
+                return FloatingForm.Size;
             }
             set
             {
-                UnderlyingForm.Size = value;
+                FloatingForm.Size = value;
             }
         }
 

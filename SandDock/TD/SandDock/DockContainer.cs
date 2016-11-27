@@ -181,9 +181,9 @@ namespace TD.SandDock
 
             using (var graphics = CreateGraphics())
             {
-                Renderer.StartRenderSession(HotkeyPrefix.None);
-                layoutSystem.Layout(Renderer, graphics, bounds, layoutSystem == _splitLayout && IsFloating);
-                Renderer.FinishRenderSession();
+                WorkingRenderer.StartRenderSession(HotkeyPrefix.None);
+                layoutSystem.Layout(WorkingRenderer, graphics, bounds, layoutSystem == _splitLayout && IsFloating);
+                WorkingRenderer.FinishRenderSession();
             }
         }
 
@@ -290,18 +290,18 @@ namespace TD.SandDock
 
         internal void method_9()
         {
-            if (Boolean_6)
+            if (CanShowCollapsed)
             {
                 var allCollapsed = layoutSystems.OfType<ControlLayoutSystem>().All(controlLayoutSystem => controlLayoutSystem.Collapsed);
                 int num = 0;
                 if (!allCollapsed)
                     num += ContentSize + (AllowResize ? 4 : 0);
-                if (Boolean_1 && Width != num)
+                if (Vertical && Width != num)
                 {
                     Width = num;
                     return;
                 }
-                if (!Boolean_1 && Height != num)
+                if (!Vertical && Height != num)
                 {
                     Height = num;
                     return;
@@ -408,7 +408,7 @@ namespace TD.SandDock
                     Cursor.Current = Cursors.Default;
                     return;
                 }
-                if (Boolean_1)
+                if (Vertical)
                 {
                     Cursor.Current = Cursors.VSplit;
                     return;
@@ -446,11 +446,11 @@ namespace TD.SandDock
             if (bool_0)
                 return;
             var container = Manager?.DockSystemContainer;
-            Renderer.StartRenderSession(HotkeyPrefix.None);
-            LayoutSystem.vmethod_4(Renderer, e.Graphics, Font);
+            WorkingRenderer.StartRenderSession(HotkeyPrefix.None);
+            LayoutSystem.vmethod_4(WorkingRenderer, e.Graphics, Font);
             if (AllowResize)
-                Renderer.DrawSplitter(container, this, e.Graphics, rectangle_0,Dock == DockStyle.Top || Dock == DockStyle.Bottom? Orientation.Horizontal: Orientation.Vertical);
-            Renderer.FinishRenderSession();
+                WorkingRenderer.DrawSplitter(container, this, e.Graphics, rectangle_0,Dock == DockStyle.Top || Dock == DockStyle.Bottom? Orientation.Horizontal: Orientation.Vertical);
+            WorkingRenderer.FinishRenderSession();
             using (var brush = new SolidBrush(Color.FromArgb(50, Color.White)))
             using (var font = new Font(Font.FontFamily.Name, 14f, FontStyle.Bold))
                 e.Graphics.DrawString("evaluation", font, brush, rectangle_1.Left + 4, rectangle_1.Top - 4,StringFormat.GenericTypographic);
@@ -458,7 +458,7 @@ namespace TD.SandDock
 
         protected override void OnPaintBackground(PaintEventArgs pevent)
         {
-            Renderer.DrawDockContainerBackground(pevent.Graphics, this, DisplayRectangle);
+            WorkingRenderer.DrawDockContainerBackground(pevent.Graphics, this, DisplayRectangle);
         }
 
         protected override void OnParentChanged(EventArgs e)
@@ -529,14 +529,17 @@ namespace TD.SandDock
             }
         }
 
-        internal bool IsInDesign => DesignMode;
+        [Naming(NamingType.FromOldVersion)]
+        internal bool FriendDesignMode => DesignMode;
 
-        internal bool Boolean_1 => Dock == DockStyle.Left || Dock == DockStyle.Right;
+        [Naming(NamingType.FromOldVersion)]
+        internal bool Vertical => Dock == DockStyle.Left || Dock == DockStyle.Right;
 
         internal bool Boolean_2 => int_1 > 0;
 
+        [Naming(NamingType.FromOldVersion)]
         [Browsable(false)]
-        internal virtual bool Boolean_6 => Dock != DockStyle.Fill && Dock != DockStyle.None;
+        internal virtual bool CanShowCollapsed => Dock != DockStyle.Fill && Dock != DockStyle.None;
 
         public int ContentSize
         {
@@ -592,7 +595,8 @@ namespace TD.SandDock
         [Browsable(false)]
         public bool HasSingleControlLayoutSystem => LayoutSystem.LayoutSystems.Count == 1 && LayoutSystem.LayoutSystems[0] is ControlLayoutSystem;
 
-        internal int Int32_0 => Boolean_1 ? rectangle_1.Width : rectangle_1.Height;
+        [Naming(NamingType.FromOldVersion)]
+        internal int CurrentSize => Vertical ? rectangle_1.Width : rectangle_1.Height;
 
         [Browsable(false)]
         public virtual bool IsFloating => false;
@@ -615,7 +619,7 @@ namespace TD.SandDock
                     _splitLayout?.SetDockContainer(null);
                     if (!bool_1)
                     {
-                        _contentSize = Convert.ToInt32(Boolean_1 ? value.WorkingSize.Width : value.WorkingSize.Height);
+                        _contentSize = Convert.ToInt32(Vertical ? value.WorkingSize.Width : value.WorkingSize.Height);
                         bool_1 = true;
                     }
                     _splitLayout = value;
@@ -650,7 +654,8 @@ namespace TD.SandDock
 
         internal Rectangle Rectangle_0 => rectangle_0;
 
-        internal virtual RendererBase Renderer => Manager?.Renderer ?? (_renderer ?? (_renderer = new WhidbeyRenderer()));
+        [Naming(NamingType.FromOldVersion)]
+        internal virtual RendererBase WorkingRenderer => Manager?.Renderer ?? (_renderer ?? (_renderer = new WhidbeyRenderer()));
 
         [Browsable(false)]
         public override string Text

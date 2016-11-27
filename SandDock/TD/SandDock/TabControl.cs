@@ -6,6 +6,7 @@ using System.Drawing.Text;
 using System.Linq;
 using System.Windows.Forms;
 using TD.SandDock.Rendering;
+using TD.Util;
 using BorderStyle = TD.SandDock.Rendering.BorderStyle;
 
 namespace TD.SandDock
@@ -66,7 +67,7 @@ namespace TD.SandDock
 			if (class17_3.Visible)
 			{
 				DrawItemState drawItemState = DrawItemState.Default;
-				if (Class17_0 == class17_3)
+				if (HighlightedButton == class17_3)
 				{
 					drawItemState |= DrawItemState.HotLight;
 					if (bool_1)
@@ -456,7 +457,7 @@ namespace TD.SandDock
 		private void method_8()
 		{
 			_timer.Enabled = false;
-			Class17_0 = null;
+			HighlightedButton = null;
 			bool_1 = false;
 			Invalidate(TabStripBounds);
 		}
@@ -553,11 +554,11 @@ namespace TD.SandDock
 		{
 			if (e.Button == MouseButtons.Left)
 			{
-				if (Class17_0 != null)
+				if (HighlightedButton != null)
 				{
 					bool_1 = true;
 					Invalidate(TabStripBounds);
-					method_12(Class17_0);
+					method_12(HighlightedButton);
 					return;
 				}
 				var tabPageAt = GetTabPageAt(new Point(e.X, e.Y));
@@ -577,7 +578,7 @@ namespace TD.SandDock
 
 		protected override void OnMouseLeave(EventArgs e)
 		{
-			Class17_0 = null;
+			HighlightedButton = null;
 			bool_1 = false;
 			base.OnMouseLeave(e);
 		}
@@ -587,15 +588,15 @@ namespace TD.SandDock
 			base.OnMouseMove(e);
 			if (TabLayout == TabLayout.SingleLineScrollable)
 			{
-				Class17_0 = method_11(e.X, e.Y);
+				HighlightedButton = method_11(e.X, e.Y);
 			}
 		}
 
 		protected override void OnMouseUp(MouseEventArgs e)
 		{
-			if ((e.Button & MouseButtons.Left) == MouseButtons.Left && Class17_0 != null)
+			if ((e.Button & MouseButtons.Left) == MouseButtons.Left && HighlightedButton != null)
 			{
-				method_13(Class17_0);
+				method_13(HighlightedButton);
 				bool_1 = false;
 				Invalidate(TabStripBounds);
 			}
@@ -723,12 +724,12 @@ namespace TD.SandDock
 
 		private void OnTimerTick(object sender, EventArgs e)
 		{
-			if (Class17_0 == class17_0)
+			if (HighlightedButton == class17_0)
 			{
 				method_10(-15);
 				return;
 			}
-			if (Class17_0 == class17_1)
+			if (HighlightedButton == class17_1)
 			{
 				method_10(15);
 				return;
@@ -763,7 +764,8 @@ namespace TD.SandDock
 			}
 		}
 
-		internal DockButtonInfo Class17_0
+        [Naming(NamingType.FromOldVersion)]
+		internal DockButtonInfo HighlightedButton
 		{
 			get
 			{

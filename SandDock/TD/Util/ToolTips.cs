@@ -6,9 +6,16 @@ using TD.SandDock;
 
 namespace TD.Util
 {
-    [AttributeUsage(AttributeTargets.All, Inherited = false, AllowMultiple = true)]
-    sealed class GuessedNameAttribute : Attribute
+    internal enum NamingType
     {
+        WildGuessed,
+        FromOldVersion,
+        Deduced
+    }
+    [AttributeUsage(AttributeTargets.All, Inherited = false, AllowMultiple = true)]
+    internal sealed class NamingAttribute : Attribute
+    {
+        public NamingAttribute(NamingType type= NamingType.WildGuessed) { }
     }
 
 	internal class ToolTips : IDisposable
@@ -88,8 +95,12 @@ namespace TD.Util
 				}
 				point.X++;
 			}
-			Native.SetWindowPos(_toolTip.Handle, new IntPtr(-1), point.X, point.Y, size.Width, size.Height, 80);
-			var normal = VisualStyleElement.ToolTip.Standard.Normal;
+			Native.SetWindowPos(_toolTip.Handle, WMConstants.HWND_TOPMOST, point.X, point.Y, size.Width, size.Height, WMConstants.SWP_SHOWWINDOW + WMConstants.SWP_NOACTIVATE);
+            _toolTip.Location = point;
+            _toolTip.Size = size;
+            _toolTip.Visible = true;
+
+            var normal = VisualStyleElement.ToolTip.Standard.Normal;
 			if (Application.RenderWithVisualStyles && VisualStyleRenderer.IsElementDefined(normal))
 			{
 				var renderer = new VisualStyleRenderer(normal);

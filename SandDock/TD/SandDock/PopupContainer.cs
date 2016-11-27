@@ -28,7 +28,7 @@ namespace TD.SandDock
 				}
 				_autoHideBar.method_6(true);
 				_autoHideBar = null;
-				ControlLayoutSystem_0 = null;
+				LayoutSystem = null;
 				if (_toolTips0 != null)
 				{
 					_toolTips0.Dispose();
@@ -69,22 +69,22 @@ namespace TD.SandDock
 
 		private string method_4(Point point_0)
 		{
-		    return rectangle_0.Contains(point_0) && controlLayoutSystem_0 != null
-		        ? controlLayoutSystem_0.vmethod_5(point_0) : "";
+		    return _popupBounds.Contains(point_0) && _layoutSystem != null
+		        ? _layoutSystem.vmethod_5(point_0) : "";
 		}
 
 		protected override void OnEnter(EventArgs e)
 		{
 			base.OnEnter(e);
-		    controlLayoutSystem_0?.OnLeave();
+		    _layoutSystem?.OnLeave();
 		}
 
 		protected override void OnLayout(LayoutEventArgs levent)
 		{
-		    if (controlLayoutSystem_0 == null) return;
+		    if (_layoutSystem == null) return;
 
-		    rectangle_0 = ClientRectangle;
-		    if (!Boolean_1)
+		    _popupBounds = ClientRectangle;
+		    if (!Resizable)
 		    {
 		        rectangle_1 = Rectangle.Empty;
 		    }
@@ -93,36 +93,36 @@ namespace TD.SandDock
 		        switch (_autoHideBar.Dock)
 		        {
 		            case DockStyle.Top:
-		                rectangle_1 = new Rectangle(rectangle_0.X, rectangle_0.Bottom - 4, rectangle_0.Width, 4);
-		                rectangle_0.Height = rectangle_0.Height - 4;
+		                rectangle_1 = new Rectangle(_popupBounds.X, _popupBounds.Bottom - 4, _popupBounds.Width, 4);
+		                _popupBounds.Height = _popupBounds.Height - 4;
 		                break;
 		            case DockStyle.Bottom:
-		                rectangle_1 = new Rectangle(rectangle_0.X, rectangle_0.Y, rectangle_0.Width, 4);
-		                rectangle_0.Y = rectangle_0.Y + 4;
-		                rectangle_0.Height = rectangle_0.Height - 4;
+		                rectangle_1 = new Rectangle(_popupBounds.X, _popupBounds.Y, _popupBounds.Width, 4);
+		                _popupBounds.Y = _popupBounds.Y + 4;
+		                _popupBounds.Height = _popupBounds.Height - 4;
 		                break;
 		            case DockStyle.Left:
-		                rectangle_1 = new Rectangle(rectangle_0.Right - 4, rectangle_0.Y, 4, rectangle_0.Height);
-		                rectangle_0.Width = rectangle_0.Width - 4;
+		                rectangle_1 = new Rectangle(_popupBounds.Right - 4, _popupBounds.Y, 4, _popupBounds.Height);
+		                _popupBounds.Width = _popupBounds.Width - 4;
 		                break;
 		            case DockStyle.Right:
-		                rectangle_1 = new Rectangle(rectangle_0.X, rectangle_0.Y, 4, rectangle_0.Height);
-		                rectangle_0.X = rectangle_0.X + 4;
-		                rectangle_0.Width = rectangle_0.Width - 4;
+		                rectangle_1 = new Rectangle(_popupBounds.X, _popupBounds.Y, 4, _popupBounds.Height);
+		                _popupBounds.X = _popupBounds.X + 4;
+		                _popupBounds.Width = _popupBounds.Width - 4;
 		                break;
 		            default:
 		                rectangle_1 = Rectangle.Empty;
 		                break;
 		        }
 		    }
-		    controlLayoutSystem_0.LayoutCollapsed(_autoHideBar.Manager.Renderer, rectangle_0);
+		    _layoutSystem.LayoutCollapsed(_autoHideBar.Manager.Renderer, _popupBounds);
 		    Invalidate();
 		}
 
 		protected override void OnLeave(EventArgs e)
 		{
 			base.OnLeave(e);
-		    controlLayoutSystem_0?.OnLeave();
+		    _layoutSystem?.OnLeave();
 		}
 
 		protected override void OnMouseDown(MouseEventArgs e)
@@ -134,9 +134,9 @@ namespace TD.SandDock
 		    }
 		    else
 		    {
-		        if (rectangle_0.Contains(e.X, e.Y))
+		        if (_popupBounds.Contains(e.X, e.Y))
 		        {
-		            controlLayoutSystem_0?.OnMouseDown(e);
+		            _layoutSystem?.OnMouseDown(e);
 		        }
 		    }
 		}
@@ -144,7 +144,7 @@ namespace TD.SandDock
 		protected override void OnMouseLeave(EventArgs e)
 		{
 			base.OnMouseLeave(e);
-		    controlLayoutSystem_0?.OnMouseLeave();
+		    _layoutSystem?.OnMouseLeave();
 		}
 
 		protected override void OnMouseMove(MouseEventArgs e)
@@ -167,9 +167,9 @@ namespace TD.SandDock
 				class9_0.OnMouseMove(new Point(e.X, e.Y));
 				return;
 			}
-			if (rectangle_0.Contains(e.X, e.Y))
+			if (_popupBounds.Contains(e.X, e.Y))
 			{
-				controlLayoutSystem_0?.OnMouseMove(e);
+				_layoutSystem?.OnMouseMove(e);
 			}
 		}
 
@@ -181,36 +181,38 @@ namespace TD.SandDock
 				class9_0.Commit();
 				return;
 			}
-			if (rectangle_0.Contains(e.X, e.Y))
+			if (_popupBounds.Contains(e.X, e.Y))
 			{
-				controlLayoutSystem_0?.OnMouseUp(e);
+				_layoutSystem?.OnMouseUp(e);
 			}
 		}
 
 		protected override void OnPaint(PaintEventArgs e)
 		{
 			_autoHideBar.Manager.Renderer.StartRenderSession(HotkeyPrefix.None);
-		    controlLayoutSystem_0?.vmethod_4(_autoHideBar.Manager.Renderer, e.Graphics, Font);
-		    if (Boolean_1)
+		    _layoutSystem?.vmethod_4(_autoHideBar.Manager.Renderer, e.Graphics, Font);
+		    if (Resizable)
 			{
 				_autoHideBar.Manager.Renderer.DrawSplitter(null, this, e.Graphics, rectangle_1, (_autoHideBar.Dock == DockStyle.Top || _autoHideBar.Dock == DockStyle.Bottom) ? Orientation.Horizontal : Orientation.Vertical);
 			}
 			_autoHideBar.Manager.Renderer.FinishRenderSession();
 		}
 
-		public bool Boolean_0 => class9_0 != null;
+        [Naming(NamingType.FromOldVersion)]
+        public bool IsSplitting => class9_0 != null;
 
-	    private bool Boolean_1 => _autoHideBar.Manager.AllowDockContainerResize;
-
-	    public ControlLayoutSystem ControlLayoutSystem_0
+        [Naming(NamingType.FromOldVersion)]
+	    private bool Resizable => _autoHideBar.Manager.AllowDockContainerResize;
+        [Naming(NamingType.FromOldVersion)]
+        public ControlLayoutSystem LayoutSystem
 		{
 			get
 			{
-				return controlLayoutSystem_0;
+				return _layoutSystem;
 			}
 			set
 			{
-				controlLayoutSystem_0 = value;
+				_layoutSystem = value;
 				PerformLayout();
 			}
 		}
@@ -219,14 +221,14 @@ namespace TD.SandDock
 		{
 			get {
 			    return _autoHideBar.Dock != DockStyle.Left && _autoHideBar.Dock != DockStyle.Right
-			        ? rectangle_0.Height
-			        : rectangle_0.Width;
+			        ? _popupBounds.Height
+			        : _popupBounds.Width;
 			}
 		    set
 			{
 				var bounds = Bounds;
 				int num = value;
-			    if (Boolean_1)
+			    if (Resizable)
 			        num += 4;
 			    switch (_autoHideBar.Dock)
 				{
@@ -246,7 +248,7 @@ namespace TD.SandDock
 					break;
 				}
 				Bounds = bounds;
-				ControlLayoutSystem_0.PopupSize = value;
+				LayoutSystem.PopupSize = value;
 			}
 		}
 
@@ -256,9 +258,9 @@ namespace TD.SandDock
 
 		private AutoHideBar _autoHideBar;
 
-		private ControlLayoutSystem controlLayoutSystem_0;
+		private ControlLayoutSystem _layoutSystem;
 
-		private Rectangle rectangle_0;
+		private Rectangle _popupBounds;
 
 		private Rectangle rectangle_1;
 	}

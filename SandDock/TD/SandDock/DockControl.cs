@@ -121,7 +121,7 @@ namespace TD.SandDock
             }
             if (DockSituation == DockSituation.Floating)
             {
-                Class5_0.Activate();
+                FloatingDockContainer.Activate();
             }
             if (IsOpen)
             {
@@ -257,7 +257,7 @@ namespace TD.SandDock
             }
         }
 
-        [GuessedName]
+        [Naming]
         internal bool GetDockingRulesFrom(ContainerDockLocation location)
         {
             switch (location)
@@ -334,7 +334,7 @@ namespace TD.SandDock
         private void method_3()
         {
             if (bool_1) return;
-            if (Manager?.DocumentContainer == null || !Manager.DocumentContainer.Boolean_3)
+            if (Manager?.DocumentContainer == null || !Manager.DocumentContainer.HasDocuments)
                 MetaData.SaveFocused(DateTime.Now);
             Manager?.OnDockControlActivated(new DockControlEventArgs(this));
         }
@@ -434,14 +434,14 @@ namespace TD.SandDock
         {
             base.OnEnter(e);
             if (LayoutSystem != null)
-                LayoutSystem.Boolean_1 = true;
+                LayoutSystem.ContainsFocus = true;
             method_3();
         }
 
         protected override void OnFontChanged(EventArgs e)
         {
             base.OnFontChanged(e);
-            if (!Boolean_0)
+            if (!IgnoreFontEvents)
                 CalculateAllMetricsAndLayout();
         }
 
@@ -449,7 +449,7 @@ namespace TD.SandDock
         {
             base.OnLeave(e);
             if (LayoutSystem != null)
-                LayoutSystem.Boolean_1 = false;
+                LayoutSystem.ContainsFocus = false;
         }
 
         protected virtual void OnLoad(EventArgs e) => Load?.Invoke(this, e);
@@ -1013,8 +1013,9 @@ namespace TD.SandDock
             }
         }
 
-        internal bool Boolean_0 { get; set; }
-
+        [Naming(NamingType.FromOldVersion)]
+        internal bool IgnoreFontEvents { get; set; }
+        [Naming(NamingType.FromOldVersion)]
         [Browsable(false)]
         internal bool IsInContainer => LayoutSystem?.DockContainer != null;
 
@@ -1033,7 +1034,8 @@ namespace TD.SandDock
             }
         }
 
-        private FloatingContainer Class5_0 => LayoutSystem.DockContainer as FloatingContainer;
+        [Naming(NamingType.FromOldVersion)]
+        private FloatingContainer FloatingDockContainer => LayoutSystem.DockContainer as FloatingContainer;
 
         [Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden), Obsolete("Use the AllowClose property instead.", true)]
         public bool Closable
@@ -1128,8 +1130,8 @@ namespace TD.SandDock
             set
             {
                 _floatingLocation = value;
-                if (DockSituation == DockSituation.Floating && Class5_0.FloatingLocation != _floatingLocation)
-                    Class5_0.FloatingLocation = _floatingLocation;
+                if (DockSituation == DockSituation.Floating && FloatingDockContainer.FloatingLocation != _floatingLocation)
+                    FloatingDockContainer.FloatingLocation = _floatingLocation;
             }
         }
 
@@ -1144,8 +1146,8 @@ namespace TD.SandDock
             {
                 if (value.Width <= 0 || value.Height <= 0) throw new ArgumentOutOfRangeException(nameof(value));
                 _floatingSize = value;
-                if (DockSituation == DockSituation.Floating && Class5_0.FloatingSize != _floatingSize)
-                    Class5_0.FloatingSize = _floatingSize;
+                if (DockSituation == DockSituation.Floating && FloatingDockContainer.FloatingSize != _floatingSize)
+                    FloatingDockContainer.FloatingSize = _floatingSize;
             }
         }
 
@@ -1259,7 +1261,7 @@ namespace TD.SandDock
                 _popupSize = value;
                 if (!MetaData.IsDocked)
                     MetaData.SaveDockedContentSize(value);
-                if (LayoutSystem?.AutoHideBar != null && LayoutSystem.AutoHideBar.LayoutSystem == LayoutSystem)
+                if (LayoutSystem?.AutoHideBar != null && LayoutSystem.AutoHideBar.ShowingLayoutSystem == LayoutSystem)
                     LayoutSystem.AutoHideBar.PopupSize = value;
             }
         }
@@ -1322,8 +1324,8 @@ namespace TD.SandDock
             {
                 base.Text = value;
                 CalculateAllMetricsAndLayout();
-                if (DockSituation == DockSituation.Floating && Class5_0.HasSingleControlLayoutSystem && LayoutSystem.SelectedControl == this)
-                    Class5_0.method_21();
+                if (DockSituation == DockSituation.Floating && FloatingDockContainer.HasSingleControlLayoutSystem && LayoutSystem.SelectedControl == this)
+                    FloatingDockContainer.method_21();
             }
         }
 
