@@ -60,7 +60,7 @@ namespace TD.SandDock
 
 		public override DockControl GetControlAt(Point position)
 		{
-			if (rectangle_2.Contains(position) && (position.X < rectangle_2.X + LeftPadding || position.X > rectangle_2.Right - RightPadding))
+			if (TabstripBounds.Contains(position) && (position.X < TabstripBounds.X + LeftPadding || position.X > TabstripBounds.Right - RightPadding))
 			{
 				return null;
 			}
@@ -70,8 +70,8 @@ namespace TD.SandDock
 		protected internal override void Layout(RendererBase renderer, Graphics graphics, Rectangle bounds, bool floating)
 		{
 			base.Layout(renderer, graphics, bounds, floating);
-			method_21(renderer, graphics, rectangle_2);
-			method_22(renderer, graphics, rectangle_2);
+			method_21(renderer, graphics, TabstripBounds);
+			method_22(renderer, graphics, TabstripBounds);
 		}
 
 		private void method_20(RendererBase renderer, Graphics graphics, Font font_0, DockControl dockControl_2)
@@ -122,10 +122,10 @@ namespace TD.SandDock
 			}
 		}
 
-		private void method_21(RendererBase rendere, Graphics graphics, Rectangle rectangle_5)
+		private void method_21(RendererBase rendere, Graphics graphics, Rectangle tabstripBounds)
 		{
-			int y = rectangle_5.Top + rectangle_5.Height / 2 - 7;
-			int num = rectangle_5.Right - 2;
+			int y = tabstripBounds.Top + tabstripBounds.Height / 2 - 7;
+			int num = tabstripBounds.Right - 2;
 			if (SelectedControl != null && SelectedControl.AllowClose && !IntegralClose)
 			{
 				_closeButton.Visible = true;
@@ -159,25 +159,20 @@ namespace TD.SandDock
 			}
 		}
 
-		private void method_22(RendererBase renderer, Graphics graphics, Rectangle rectangle_5)
+		private void method_22(RendererBase renderer, Graphics graphics, Rectangle tabstripBounds)
 		{
 			int num = 3;
 			foreach (DockControl dockControl in Controls)
 			{
 				dockControl.bool_3 = false;
-				DrawItemState drawItemState = DrawItemState.Default;
+				var state = DrawItemState.Default;
 				if (SelectedControl == dockControl)
 				{
-					drawItemState |= DrawItemState.Selected;
-					if (DockContainer.Manager != null)
-					{
-						if (DockContainer.Manager.ActiveTabbedDocument == dockControl)
-						{
-							drawItemState |= DrawItemState.Focus;
-						}
-					}
+				    state |= DrawItemState.Selected;
+				    if (DockContainer.Manager != null && DockContainer.Manager.ActiveTabbedDocument == dockControl)
+				        state |= DrawItemState.Focus;
 				}
-				int num2 = renderer.MeasureDocumentStripTab(graphics, dockControl.TabImage, dockControl.TabText, dockControl.Font, drawItemState).Width;
+				int num2 = renderer.MeasureDocumentStripTab(graphics, dockControl.TabImage, dockControl.TabText, dockControl.Font, state).Width;
 				if (IntegralClose && dockControl.AllowClose)
 				{
 					num2 += 17;
@@ -191,7 +186,7 @@ namespace TD.SandDock
 					num2 = dockControl.MaximumTabWidth;
 					dockControl.bool_3 = true;
 				}
-				dockControl.TabBounds = new Rectangle(num, rectangle_5.Bottom - renderer.DocumentTabSize, num2, renderer.DocumentTabSize);
+				dockControl.TabBounds = new Rectangle(num, tabstripBounds.Bottom - renderer.DocumentTabSize, num2, renderer.DocumentTabSize);
 				num += num2 - renderer.DocumentTabExtra + 1;
 			}
 			if (Controls.Count != 0)
@@ -199,7 +194,7 @@ namespace TD.SandDock
 				num += renderer.DocumentTabExtra;
 			}
 			num += 3;
-			int num3 = rectangle_5.Width - LeftPadding - RightPadding;
+			int num3 = tabstripBounds.Width - LeftPadding - RightPadding;
 			int_8 = num - num3;
 			if (int_8 < 0)
 			{
@@ -213,15 +208,15 @@ namespace TD.SandDock
 			_rightScrollButton.bool_1 = (int_7 < int_8);
 			foreach (DockControl dockControl2 in Controls)
 			{
-				Rectangle rectangle_6 = dockControl2.TabBounds;
-				rectangle_6.Offset(rectangle_5.Left + LeftPadding - int_7, 0);
-				dockControl2.TabBounds = rectangle_6;
+				var rectangle = dockControl2.TabBounds;
+				rectangle.Offset(tabstripBounds.Left + LeftPadding - int_7, 0);
+				dockControl2.TabBounds = rectangle;
 			}
 			if (IntegralClose && SelectedControl != null && SelectedControl.AllowClose)
 			{
 				_closeButton.Visible = true;
-				Rectangle rectangle_7 = SelectedControl.TabBounds;
-				_closeButton.Bounds = new Rectangle(rectangle_7.Right - 17, rectangle_7.Top + 2, 14, rectangle_7.Height - 3);
+				var rectangle = SelectedControl.TabBounds;
+				_closeButton.Bounds = new Rectangle(rectangle.Right - 17, rectangle.Top + 2, 14, rectangle.Height - 3);
 			}
 		}
 
@@ -233,22 +228,22 @@ namespace TD.SandDock
 			}
 		}
 
-		private void method_24(DockControl dockControl_2)
+		private void method_24(DockControl control)
 		{
 			if (int_8 > 0)
 			{
-				Rectangle rectangle_ = dockControl_2.TabBounds;
-				int num = rectangle_2.Right - RightPadding;
-				int num2 = rectangle_2.Left + LeftPadding;
+				var rectangle = control.TabBounds;
+				int num = TabstripBounds.Right - RightPadding;
+				int num2 = TabstripBounds.Left + LeftPadding;
 				int num3 = num - num2;
 				int num4 = 0;
-				if (rectangle_.Right > num)
+				if (rectangle.Right > num)
 				{
-					num4 = rectangle_.Right - num3 + 30;
+					num4 = rectangle.Right - num3 + 30;
 				}
-				if (rectangle_.Left < num2)
+				if (rectangle.Left < num2)
 				{
-					num4 = rectangle_.Left - num2 - 30;
+					num4 = rectangle.Left - num2 - 30;
 				}
 				if (num4 != 0)
 				{
@@ -261,7 +256,7 @@ namespace TD.SandDock
 		{
 			timer_0.Enabled = false;
 			HighlightedButton = null;
-			bool_2 = false;
+			CanSelected = false;
 			OnLeave();
 		}
 
@@ -271,9 +266,9 @@ namespace TD.SandDock
 			OnTimerTick(timer_0, EventArgs.Empty);
 		}
 
-		private void method_27(int int_9)
+		private void method_27(int offset)
 		{
-			int_7 += int_9;
+			int_7 += offset;
 			if (int_7 > int_8)
 			{
 				int_7 = int_8;
@@ -317,25 +312,20 @@ namespace TD.SandDock
 			method_27(15);
 		}
 
-		internal override void OnDockingManagerFinished(Class7.DockTarget dockTarget_0)
+		internal override void OnCommitted(Class7.DockTarget target)
 		{
-			base.OnDockingManagerFinished(dockTarget_0);
-			if (dockTarget_0 == null || dockTarget_0.type == Class7.DockTargetType.None)
-			{
-				if (SelectedControl != null && IsInContainer)
-				{
-					Point position = SelectedControl.PointToClient(Cursor.Position);
-					DockContainer.ShowControlContextMenu(new ShowControlContextMenuEventArgs(SelectedControl, position, ContextMenuContext.Other));
-				}
-			}
+		    base.OnCommitted(target);
+		    if ((target != null && target.type != Class7.DockTargetType.None) || SelectedControl == null || !IsInContainer) return;
+		    var position = SelectedControl.PointToClient(Cursor.Position);
+		    DockContainer.ShowControlContextMenu(new ShowControlContextMenuEventArgs(SelectedControl, position,ContextMenuContext.Other));
 		}
 
 		internal override void vmethod_4(RendererBase renderer, Graphics g, Font font)
 		{
-			renderer.DrawDocumentStripBackground(g, rectangle_2);
-		    renderer.DrawDocumentClientBackground(g, rectangle_3, SelectedControl == null ? SystemColors.Control : SelectedControl.BackColor);
+			renderer.DrawDocumentStripBackground(g, TabstripBounds);
+		    renderer.DrawDocumentClientBackground(g, ClientBounds, SelectedControl == null ? SystemColors.Control : SelectedControl.BackColor);
 		    Region clip = g.Clip;
-			Rectangle rectangle_ = rectangle_2;
+			Rectangle rectangle_ = TabstripBounds;
 			rectangle_.X += LeftPadding;
 			rectangle_.Width -= LeftPadding;
 			rectangle_.Width -= RightPadding;
@@ -363,9 +353,9 @@ namespace TD.SandDock
 			method_10(g, renderer, _menuButton, SandDockButtonType.ActiveFiles, true);
 		}
 
-		internal override string vmethod_5(Point point)
+		internal override string GetDockButtonTextAt(Point point)
 		{
-			DockButtonInfo @class = GetDockButtonAt(point.X, point.Y);
+			var @class = GetDockButtonAt(point.X, point.Y);
 			if (@class == _leftScrollButton)
 			{
 				return SandDockLanguage.ScrollLeftText;
@@ -382,7 +372,7 @@ namespace TD.SandDock
 			{
 				return SandDockLanguage.ActiveFilesText;
 			}
-			return base.vmethod_5(point);
+			return base.GetDockButtonTextAt(point);
 		}
 
 		internal override DockButtonInfo GetDockButtonAt(int x, int y)
@@ -425,7 +415,7 @@ namespace TD.SandDock
 			{
 				if (class17_8 == _menuButton && DockContainer?.Manager != null)
 				{
-					DockControl[] array = new DockControl[Controls.Count];
+					var array = new DockControl[Controls.Count];
 					Controls.CopyTo(array, 0);
 					DockContainer.Manager.OnShowActiveFilesList(new ActiveFilesListEventArgs(array, DockContainer, new Point(_menuButton.Bounds.X, _menuButton.Bounds.Bottom)));
 				}
@@ -436,7 +426,7 @@ namespace TD.SandDock
 
 		internal override void OnLeave()
 		{
-		    DockContainer?.Invalidate(rectangle_2);
+		    DockContainer?.Invalidate(TabstripBounds);
 		}
 
         [Naming(NamingType.FromOldVersion)]
@@ -520,13 +510,13 @@ namespace TD.SandDock
 			}
 		}
 
-		private DockButtonInfo _leftScrollButton;
+		private readonly DockButtonInfo _leftScrollButton;
 
-		private DockButtonInfo _rightScrollButton;
+		private readonly DockButtonInfo _rightScrollButton;
 
-		private DockButtonInfo _closeButton;
+		private readonly DockButtonInfo _closeButton;
 
-		private DockButtonInfo _menuButton;
+		private readonly DockButtonInfo _menuButton;
 
 		private DockControl dockControl_1;
 

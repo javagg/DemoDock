@@ -20,7 +20,7 @@ namespace TD.SandDock
             AllowFloat = allowFloat;
 		}
 
-		internal void method_0(DockingRules[] rules)
+		internal void SetDockingRules(DockingRules[] rules)
 		{
 		    foreach (var rule in rules)
 		    {

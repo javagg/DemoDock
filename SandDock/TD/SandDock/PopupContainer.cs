@@ -13,8 +13,8 @@ namespace TD.SandDock
 			_autoHideBar = bar;
 			SetStyle(ControlStyles.ResizeRedraw | ControlStyles.AllPaintingInWmPaint | ControlStyles.OptimizedDoubleBuffer, true);
 			SetStyle(ControlStyles.Selectable, false);
-		    _toolTips0 = new ToolTips(this) {Boolean_0 = false};
-		    _toolTips0.Event_0 += method_4;
+		    _toolTips0 = new Tooltip(this) {DropShadow = false};
+		    _toolTips0.GetTooltipText += OnGetTooltipText;
 			BackColor = SystemColors.Control;
 		}
 
@@ -46,13 +46,13 @@ namespace TD.SandDock
 		{
 			class9_0 = new ResizingManager(_autoHideBar, this, point_0);
 			class9_0.Cancalled += method_2;
-			class9_0.ResizingManagerFinished += OnResizingManagerFinished;
+			class9_0.Committed += OnCommitted;
 		}
 
 		private void method_1()
 		{
 			class9_0.Cancalled -= method_2;
-			class9_0.ResizingManagerFinished -= OnResizingManagerFinished;
+			class9_0.Committed -= OnCommitted;
 			class9_0 = null;
 		}
 
@@ -61,16 +61,16 @@ namespace TD.SandDock
 			method_1();
 		}
 
-		private void OnResizingManagerFinished(int size)
+		private void OnCommitted(int size)
 		{
 			method_1();
 			PopupSize = size;
 		}
 
-		private string method_4(Point point_0)
+		private string OnGetTooltipText(Point point_0)
 		{
 		    return _popupBounds.Contains(point_0) && _layoutSystem != null
-		        ? _layoutSystem.vmethod_5(point_0) : "";
+		        ? _layoutSystem.GetDockButtonTextAt(point_0) : "";
 		}
 
 		protected override void OnEnter(EventArgs e)
@@ -252,7 +252,7 @@ namespace TD.SandDock
 			}
 		}
 
-		private ToolTips _toolTips0;
+		private Tooltip _toolTips0;
 
 		private ResizingManager class9_0;
 

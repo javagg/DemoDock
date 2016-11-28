@@ -64,6 +64,7 @@ namespace TD.SandDock
 		        _popupContainer.PerformLayout();
 		}
 
+        [Naming]
 		internal void PropagateNewRenderer()
 		{
 			method_2();
@@ -151,7 +152,8 @@ namespace TD.SandDock
 		    Invalidate();
 		}
 
-		private DockControl method_3(Point p)
+        [Naming]
+		private DockControl GetControlAt(Point p)
 		{
 		    return LayoutSystems.Cast<ControlLayoutSystem>()
 		        .SelectMany(layoutSystem => layoutSystem.Controls.Cast<DockControl>(),(controlLayoutSystem, dockControl) => new {controlLayoutSystem, dockControl})
@@ -320,7 +322,7 @@ namespace TD.SandDock
 		protected override void OnDragOver(DragEventArgs drgevent)
 		{
 			base.OnDragOver(drgevent);
-			var dockControl = method_3(PointToClient(new Point(drgevent.X, drgevent.Y)));
+			var dockControl = GetControlAt(PointToClient(new Point(drgevent.X, drgevent.Y)));
 		    if (dockControl != null)
 		        method_7(dockControl, true, true);
 		}
@@ -337,7 +339,7 @@ namespace TD.SandDock
 			base.OnMouseDown(e);
 		    if (bool_0)
 		        return;
-		    var dockControl = method_3(new Point(e.X, e.Y));
+		    var dockControl = GetControlAt(new Point(e.X, e.Y));
 		    if (dockControl != null)
 		        method_7(dockControl, false, true);
 		}
@@ -388,7 +390,7 @@ namespace TD.SandDock
 				    if (Manager.Renderer.TabTextDisplay == TabTextDisplayMode.SelectedTab && dockControl != controlLayoutSystem.SelectedControl)
 				        text = "";
 
-				    Manager.Renderer.DrawCollapsedTab(e.Graphics, dockControl.CollapsedBounds, dockSide, dockControl.CollapsedImage, text, Font, dockControl.BackColor, dockControl.ForeColor, state, Vertical);
+				    Manager.Renderer.DrawCollapsedTab(e.Graphics, dockControl.CollapsedBounds, dockSide, dockControl.WorkingTabImage, text, Font, dockControl.BackColor, dockControl.ForeColor, state, Vertical);
 				}
 			}
 			Manager.Renderer.FinishRenderSession();
@@ -413,7 +415,7 @@ namespace TD.SandDock
 		{
 			timer_0.Enabled = false;
 		    if (bool_0) return;
-		    var dockControl = method_3(PointToClient(Cursor.Position));
+		    var dockControl = GetControlAt(PointToClient(Cursor.Position));
 		    if (dockControl != null)
 		        method_7(dockControl, false, false);
 		}

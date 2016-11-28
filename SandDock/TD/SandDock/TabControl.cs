@@ -606,7 +606,7 @@ namespace TD.SandDock
 		protected override void OnPaint(PaintEventArgs e)
 		{
 			Renderer.StartRenderSession(ShowKeyboardCues ? HotkeyPrefix.Show : HotkeyPrefix.Hide);
-			DockControl.smethod_0(this, e.Graphics, _borderStyle);
+			DockControl.DrawBorder(this, e.Graphics, _borderStyle);
 			_renderer.DrawTabControlTabStripBackground(e.Graphics, TabStripBounds, BackColor);
 			Region clip = null;
 			if (TabLayout == TabLayout.SingleLineScrollable)

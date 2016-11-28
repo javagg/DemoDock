@@ -19,6 +19,9 @@ namespace TD.SandDock
         public const int COLOR_GRADIENTACTIVECAPTION = 27;
         public const int SM_REMOTESESSION = 0x1000;
 
+        public const int WS_EX_NOACTIVATE = 0x08000000;
+        public const int WS_EX_TOOLWINDOW = 0x00000080;
+        public const int WS_EX_TOPMOST = 0x00000008;
         public const int WS_SYSMENU = 0x00080000; //524288 
         public const int WS_OVERLAPPED = 0;
 
@@ -53,7 +56,7 @@ namespace TD.SandDock
       
 
         public const int VK_MENU = 0x12;
-
+        public const int HTCAPTION = 2;
         public const int MK_RBUTTON = 2;
     }
 
@@ -72,15 +75,15 @@ namespace TD.SandDock
 			{
 				int_8 = _documents.Length;
 			}
-			int num = _documents.Length - 1 - int_8;
-			_documents[num].method_12(true);
-			return _documents[num];
+			var i = _documents.Length - 1 - int_8;
+			_documents[i].method_12(true);
+			return _documents[i];
 		}
 
 		protected override void OnPaint(PaintEventArgs e)
 		{
 			base.OnPaint(e);
-			DockControl.smethod_0(this, e.Graphics, _borderStyle);
+			DockControl.DrawBorder(this, e.Graphics, _borderStyle);
 		}
 
 		protected override bool ProcessCmdKey(ref Message msg, Keys keyData)
@@ -158,7 +161,7 @@ namespace TD.SandDock
 			return true;
 		}
 
-		internal override ControlLayoutSystem vmethod_1() => new DocumentLayoutSystem();
+		internal override ControlLayoutSystem CreateNewControlLayoutSystem() => new DocumentLayoutSystem();
 
         [DefaultValue(typeof(Color), "AppWorkspace")]
 		public sealed override Color BackColor

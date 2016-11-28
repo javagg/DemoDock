@@ -66,15 +66,14 @@ namespace TD.SandDock
             SetStyle(ControlStyles.ResizeRedraw | ControlStyles.AllPaintingInWmPaint | ControlStyles.OptimizedDoubleBuffer, true);
             SetStyle(ControlStyles.Selectable, false);
             layoutSystems = new ArrayList();
-            _toolTips0 = new ToolTips(this) { Boolean_0 = false };
-            _toolTips0.Event_0 += method_16;
+            _toolTips0 = new Tooltip(this) { DropShadow = false };
+            _toolTips0.GetTooltipText += OnGetTooltipText;
             BackColor = SystemColors.Control;
         }
 
         public void CalculateAllMetricsAndLayout()
         {
-            if (!IsHandleCreated)
-                return;
+            if (!IsHandleCreated) return;
 
             if (Capture && !IsFloating)
                 Capture = false;
@@ -121,10 +120,9 @@ namespace TD.SandDock
 
         public ControlLayoutSystem CreateNewLayoutSystem(DockControl[] controls, SizeF size)
         {
-            if (controls == null)
-                throw new ArgumentNullException(nameof(controls));
+            if (controls == null) throw new ArgumentNullException(nameof(controls));
 
-            var layout = vmethod_1();
+            var layout = CreateNewControlLayoutSystem();
             layout.WorkingSize = size;
             if (controls.Length != 0)
                 layout.Controls.AddRange(controls);
@@ -141,7 +139,7 @@ namespace TD.SandDock
                     _renderer = null;
                 }
                 Manager = null;
-                _toolTips0.Event_0 -= method_16;
+                _toolTips0.GetTooltipText -= OnGetTooltipText;
                 _toolTips0.Dispose();
             }
             base.Dispose(disposing);
@@ -176,20 +174,19 @@ namespace TD.SandDock
 
         internal void method_10(LayoutSystemBase layoutSystem, Rectangle bounds)
         {
-            if (!IsHandleCreated)
-                return;
+            if (!IsHandleCreated) return;
 
-            using (var graphics = CreateGraphics())
+            using (var g = CreateGraphics())
             {
                 WorkingRenderer.StartRenderSession(HotkeyPrefix.None);
-                layoutSystem.Layout(WorkingRenderer, graphics, bounds, layoutSystem == _splitLayout && IsFloating);
+                layoutSystem.Layout(WorkingRenderer, g, bounds, layoutSystem == _splitLayout && IsFloating);
                 WorkingRenderer.FinishRenderSession();
             }
         }
 
         internal void OnActivated(object sender, EventArgs e)
         {
-            foreach (var controlLayoutSystem in layoutSystems.OfType<ControlLayoutSystem>().Where(controlLayoutSystem => controlLayoutSystem.method_8()))
+            foreach (var controlLayoutSystem in layoutSystems.OfType<ControlLayoutSystem>().Where(controlLayoutSystem => controlLayoutSystem.OnActivated()))
             {
             }
         }
@@ -198,14 +195,14 @@ namespace TD.SandDock
         {
             foreach (var layoutSystemBase in layoutSystems.OfType<ControlLayoutSystem>())
             {
-                layoutSystemBase.method_9();
+                layoutSystemBase.OnDeactivate();
             }
         }
 
         private void method_13()
         {
             class11_0.Cancalled -= method_14;
-            class11_0.ResizingManagerFinished -= method_15;
+            class11_0.Committed -= method_15;
             class11_0 = null;
         }
 
@@ -220,10 +217,10 @@ namespace TD.SandDock
             ContentSize = size;
         }
 
-        private string method_16(Point point)
+        private string OnGetTooltipText(Point point)
         {
             var layoutSystem = GetLayoutSystemAt(point) as ControlLayoutSystem;
-            return layoutSystem == null ? "" : layoutSystem.vmethod_5(point);
+            return layoutSystem == null ? "" : layoutSystem.GetDockButtonTextAt(point);
         }
 
         internal void method_2()
@@ -365,7 +362,7 @@ namespace TD.SandDock
                 class11_0?.Dispose();
                 class11_0 = new Class11(Manager, this, new Point(e.X, e.Y));
                 class11_0.Cancalled += method_14;
-                class11_0.ResizingManagerFinished += method_15;
+                class11_0.Committed += method_15;
             }
         }
 
@@ -480,7 +477,7 @@ namespace TD.SandDock
         {
         }
 
-        internal virtual ControlLayoutSystem vmethod_1() => new ControlLayoutSystem();
+        internal virtual ControlLayoutSystem CreateNewControlLayoutSystem() => new ControlLayoutSystem();
 
         internal virtual void vmethod_2()
         {
@@ -680,7 +677,7 @@ namespace TD.SandDock
 
         private bool bool_1;
 
-        private ToolTips _toolTips0;
+        private Tooltip _toolTips0;
 
         private Class11 class11_0;
 

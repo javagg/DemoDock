@@ -5,6 +5,7 @@ using System.Drawing.Text;
 using System.IO;
 using System.Text;
 using System.Windows.Forms;
+using TD.Util;
 
 namespace TD.SandDock.Rendering
 {
@@ -14,7 +15,8 @@ namespace TD.SandDock.Rendering
         {
         }
 
-        public static bool HasLunaMsStyles
+        [Naming(NamingType.FromOldVersion)]
+        public static bool OriginalTheme
         {
             get
             {
@@ -24,6 +26,7 @@ namespace TD.SandDock.Rendering
             }
         }
 
+        [Naming(NamingType.FromOldVersion)]
         public static string ThemeFileName
         {
             get
@@ -34,7 +37,8 @@ namespace TD.SandDock.Rendering
             }
         }
 
-        public static string ThemeColorName
+        [Naming(NamingType.FromOldVersion)]
+        public static string ColorScheme
         {
             get
             {
@@ -90,7 +94,7 @@ namespace TD.SandDock.Rendering
             switch (_colorScheme)
             {
                 case WindowsColorScheme.Automatic:
-                    var text = Native.IsMono() ? "none" : WhidbeyRenderer.IsSupported() && WindowsThemeHelper.HasLunaMsStyles ? WindowsThemeHelper.ThemeColorName : "none";
+                    var text = Native.IsMono() ? "none" : WhidbeyRenderer.IsSupported() && WindowsThemeHelper.OriginalTheme ? WindowsThemeHelper.ColorScheme : "none";
                     switch (text ?? "")
                     {
                         case "NormalColor":

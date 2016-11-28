@@ -25,7 +25,7 @@ namespace TD.SandDock
         public int Index;
     }
 
-    internal class Class24 : TypeConverter
+    internal class SplitLayoutSystemConverter : TypeConverter
     {
         public override bool CanConvertTo(ITypeDescriptorContext context, Type destinationType)
         {
@@ -55,7 +55,7 @@ namespace TD.SandDock
 
         private Type MakeArrayType(Type firstType) => firstType.Assembly.GetType(firstType.FullName + "[]");
     }
-    [TypeConverter(typeof(Class24))]
+    [TypeConverter(typeof(SplitLayoutSystemConverter))]
 	public class SplitLayoutSystem : LayoutSystemBase
 	{
 		public SplitLayoutSystem()
@@ -87,112 +87,109 @@ namespace TD.SandDock
 		{
 			base.Layout(renderer, graphics, bounds, floating);
 			int num;
-			LayoutSystemBase[] array = method_9(out num);
-			if (num != 0)
-			{
-				if (num > 1)
-				{
-					floating = false;
-				}
-				int num2 = (_splitMode == Orientation.Horizontal) ? (bounds.Height - (num - 1) * 4) : (bounds.Width - (num - 1) * 4);
-				float num3 = 0f;
-				for (int i = 0; i < num; i++)
-				{
-					num3 += ((_splitMode == Orientation.Horizontal) ? array[i].WorkingSize.Height : array[i].WorkingSize.Width);
-				}
-				_splitterRects.Clear();
-				if (num2 > 0)
-				{
-					SizeF[] array2 = new SizeF[num];
-					for (int j = 0; j < num; j++)
-					{
-						array2[j] = array[j].WorkingSize;
-					}
-					if (num2 != num3)
-					{
-						float num4 = num2 - num3;
-						for (int k = 0; k < num; k++)
-						{
-							float num5 = (_splitMode != Orientation.Horizontal) ? array2[k].Width : array2[k].Height;
-							num5 += num4 * (num5 / num3);
-							if (_splitMode != Orientation.Horizontal)
-							{
-								array2[k].Width = num5;
-							}
-							else
-							{
-								array2[k].Height = num5;
-							}
-						}
-						num3 = 0f;
-						for (int l = 0; l < num; l++)
-						{
-							num3 += ((_splitMode == Orientation.Horizontal) ? array2[l].Height : array2[l].Width);
-						}
-						num4 = num2 - num3;
-						if (_splitMode != Orientation.Horizontal)
-						{
-							SizeF[] expr_1AE_cp_0 = array2;
-							int expr_1AE_cp_1 = 0;
-							expr_1AE_cp_0[expr_1AE_cp_1].Width = expr_1AE_cp_0[expr_1AE_cp_1].Width + num4;
-						}
-						else
-						{
-							SizeF[] expr_1C6_cp_0 = array2;
-							int expr_1C6_cp_1 = 0;
-							expr_1C6_cp_0[expr_1C6_cp_1].Height = expr_1C6_cp_0[expr_1C6_cp_1].Height + num4;
-						}
-					}
-					int num6 = (_splitMode != Orientation.Horizontal) ? bounds.X : bounds.Y;
-					for (int m = 0; m < num; m++)
-					{
-						int num7 = (_splitMode != Orientation.Horizontal) ? Convert.ToInt32(array2[m].Width) : Convert.ToInt32(array2[m].Height);
-						num7 = Math.Max(num7, 4);
-						if (_splitMode == Orientation.Horizontal)
-						{
-							if (m == num - 1)
-							{
-								num7 = bounds.Bottom - num6;
-							}
-							array[m].Layout(renderer, graphics, new Rectangle(bounds.X, num6, bounds.Width, num7), floating);
-						}
-						else
-						{
-							if (m == num - 1)
-							{
-								num7 = bounds.Right - num6;
-							}
-							array[m].Layout(renderer, graphics, new Rectangle(num6, bounds.Y, num7, bounds.Height), floating);
-						}
-						num6 += num7 + 4;
-					}
-					for (int n = 0; n < num - 1; n++)
-					{
-						bounds = array[n].Bounds;
-						if (_splitMode != Orientation.Horizontal)
-						{
-							bounds.Offset(bounds.Width, 0);
-							bounds.Width = 4;
-						}
-						else
-						{
-							bounds.Offset(0, bounds.Height);
-							bounds.Height = 4;
-						}
-						_splitterRects.Add(bounds);
-					}
-				}
-			}
+			var array = method_9(out num);
+		    if (num == 0) return;
+
+		    if (num > 1)
+		        floating = false;
+
+		    int num2 = _splitMode == Orientation.Horizontal ? bounds.Height - (num - 1) * 4 : bounds.Width - (num - 1) * 4;
+		    float num3 = 0f;
+		    for (int i = 0; i < num; i++)
+		    {
+		        num3 += _splitMode == Orientation.Horizontal ? array[i].WorkingSize.Height : array[i].WorkingSize.Width;
+		    }
+		    _splitterRects.Clear();
+		    if (num2 <= 0) return;
+
+		    var array2 = new SizeF[num];
+		    for (int j = 0; j < num; j++)
+		    {
+		        array2[j] = array[j].WorkingSize;
+		    }
+		    if (num2 != num3)
+		    {
+		        float num4 = num2 - num3;
+		        for (int k = 0; k < num; k++)
+		        {
+		            float num5 = (_splitMode != Orientation.Horizontal) ? array2[k].Width : array2[k].Height;
+		            num5 += num4 * (num5 / num3);
+		            if (_splitMode != Orientation.Horizontal)
+		            {
+		                array2[k].Width = num5;
+		            }
+		            else
+		            {
+		                array2[k].Height = num5;
+		            }
+		        }
+		        num3 = 0f;
+		        for (int l = 0; l < num; l++)
+		        {
+		            num3 += ((_splitMode == Orientation.Horizontal) ? array2[l].Height : array2[l].Width);
+		        }
+		        num4 = num2 - num3;
+		        if (_splitMode != Orientation.Horizontal)
+		        {
+		            SizeF[] expr_1AE_cp_0 = array2;
+		            int expr_1AE_cp_1 = 0;
+		            expr_1AE_cp_0[expr_1AE_cp_1].Width = expr_1AE_cp_0[expr_1AE_cp_1].Width + num4;
+		        }
+		        else
+		        {
+		            SizeF[] expr_1C6_cp_0 = array2;
+		            int expr_1C6_cp_1 = 0;
+		            expr_1C6_cp_0[expr_1C6_cp_1].Height = expr_1C6_cp_0[expr_1C6_cp_1].Height + num4;
+		        }
+		    }
+		    int num6 = _splitMode != Orientation.Horizontal ? bounds.X : bounds.Y;
+		    for (int m = 0; m < num; m++)
+		    {
+		        int num7 = (_splitMode != Orientation.Horizontal) ? Convert.ToInt32(array2[m].Width) : Convert.ToInt32(array2[m].Height);
+		        num7 = Math.Max(num7, 4);
+		        if (_splitMode == Orientation.Horizontal)
+		        {
+		            if (m == num - 1)
+		            {
+		                num7 = bounds.Bottom - num6;
+		            }
+		            array[m].Layout(renderer, graphics, new Rectangle(bounds.X, num6, bounds.Width, num7), floating);
+		        }
+		        else
+		        {
+		            if (m == num - 1)
+		            {
+		                num7 = bounds.Right - num6;
+		            }
+		            array[m].Layout(renderer, graphics, new Rectangle(num6, bounds.Y, num7, bounds.Height), floating);
+		        }
+		        num6 += num7 + 4;
+		    }
+		    for (int n = 0; n < num - 1; n++)
+		    {
+		        bounds = array[n].Bounds;
+		        if (_splitMode != Orientation.Horizontal)
+		        {
+		            bounds.Offset(bounds.Width, 0);
+		            bounds.Width = 4;
+		        }
+		        else
+		        {
+		            bounds.Offset(0, bounds.Height);
+		            bounds.Height = 4;
+		        }
+		        _splitterRects.Add(bounds);
+		    }
 		}
 
 		private void method_10()
 		{
-			_splittingManager.Cancalled -= method_11;
+			_splittingManager.Cancalled -= OnSplittingManagerCancalled;
 			_splittingManager.SplittingManagerFinished -= OnSplittingManagerFinished;
 			_splittingManager = null;
 		}
 
-		private void method_11(object sender, EventArgs e)
+		private void OnSplittingManagerCancalled(object sender, EventArgs e)
 		{
 			method_10();
 		}
@@ -232,8 +229,7 @@ namespace TD.SandDock
 					{
 						if (((SplitLayoutSystem)layoutSystemBase).method_13())
 						{
-							result = true;
-							return result;
+						    return true;
 						}
 					}
 					else
@@ -241,8 +237,7 @@ namespace TD.SandDock
 						ControlLayoutSystem controlLayoutSystem = (ControlLayoutSystem)layoutSystemBase;
 						if (!controlLayoutSystem.Collapsed || (IsInContainer && !DockContainer.CanShowCollapsed))
 						{
-							result = true;
-							return result;
+						    return true;
 						}
 					}
 				}
@@ -266,23 +261,29 @@ namespace TD.SandDock
 				{
 				    if (layoutSystemBase is ControlLayoutSystem)
 				    {
-				        IEnumerator enumerator2 = ((ControlLayoutSystem) layoutSystemBase).Controls.GetEnumerator();
-				        try
+				        foreach (var dockControl in ((ControlLayoutSystem)layoutSystemBase).Controls)
 				        {
-				            while (enumerator2.MoveNext())
-				            {
-				                DockControl value = (DockControl) enumerator2.Current;
-				                arrayList_1.Add(value);
-				            }
-				        }
-				        finally
-				        {
-				            IDisposable disposable = enumerator2 as IDisposable;
-				            if (disposable != null)
-				            {
-				                disposable.Dispose();
-				            }
-				        }
+                            arrayList_1.Add(dockControl);
+                        }
+				        
+
+            //            IEnumerator enumerator2 = ((ControlLayoutSystem) layoutSystemBase).Controls.GetEnumerator();
+				        //try
+				        //{
+				        //    while (enumerator2.MoveNext())
+				        //    {
+				        //        DockControl value = (DockControl) enumerator2.Current;
+				        //        arrayList_1.Add(value);
+				        //    }
+				        //}
+				        //finally
+				        //{
+				        //    IDisposable disposable = enumerator2 as IDisposable;
+				        //    if (disposable != null)
+				        //    {
+				        //        disposable.Dispose();
+				        //    }
+				        //}
 				    }
 				    continue;
 				}
@@ -326,9 +327,9 @@ namespace TD.SandDock
 		    DockContainer?.Invalidate(Bounds);
 		}
 
-		private LayoutSystemBase[] method_9(out int int_3)
+		private LayoutSystemBase[] method_9(out int index)
 		{
-			int_3 = 0;
+			index = 0;
 			var array = new LayoutSystemBase[LayoutSystems.Count];
 			foreach (LayoutSystemBase layoutSystemBase in LayoutSystems)
 			{
@@ -339,16 +340,16 @@ namespace TD.SandDock
 						SplitLayoutSystem splitLayoutSystem = (SplitLayoutSystem)layoutSystemBase;
 						if (splitLayoutSystem.method_13())
 						{
-							array[int_3++] = layoutSystemBase;
+							array[index++] = layoutSystemBase;
 						}
 					}
 				}
 				else
 				{
-					ControlLayoutSystem controlLayoutSystem = (ControlLayoutSystem)layoutSystemBase;
+					var controlLayoutSystem = (ControlLayoutSystem)layoutSystemBase;
 					if (!controlLayoutSystem.Collapsed || (IsInContainer && !DockContainer.CanShowCollapsed))
 					{
-						array[int_3++] = layoutSystemBase;
+						array[index++] = layoutSystemBase;
 					}
 				}
 			}
@@ -388,7 +389,7 @@ namespace TD.SandDock
 		    _splittingManager?.Dispose();
 		    var dockingHints = DockContainer.Manager?.DockingHints ?? DockingHints.TranslucentFill;
 		    _splittingManager = new SplittingManager(DockContainer, this, aboveLayout, belowLayout, new Point(e.X, e.Y), dockingHints);
-		    _splittingManager.Cancalled += method_11;
+		    _splittingManager.Cancalled += OnSplittingManagerCancalled;
 		    _splittingManager.SplittingManagerFinished += OnSplittingManagerFinished;
 		}
 
@@ -498,9 +499,9 @@ namespace TD.SandDock
 		    return false;
 		}
 
-		internal override void OnDockingManagerFinished(Class7.DockTarget dockTarget_0)
+		internal override void OnCommitted(Class7.DockTarget dockTarget_0)
 		{
-			base.OnDockingManagerFinished(dockTarget_0);
+			base.OnCommitted(dockTarget_0);
 			if (dockTarget_0 == null || dockTarget_0.type == Class7.DockTargetType.None || dockTarget_0.type == Class7.DockTargetType.AlreadyActioned)
 			{
 				return;
@@ -571,7 +572,7 @@ namespace TD.SandDock
 		        layoutSystemBase.SetDockContainer(container);
 		}
 
-		internal override bool vmethod_3(ContainerDockLocation location) => LayoutSystems.Cast<LayoutSystemBase>().All(layout => layout.vmethod_3(location));
+		internal override bool AllowDock(ContainerDockLocation location) => LayoutSystems.Cast<LayoutSystemBase>().All(layout => layout.AllowDock(location));
 
 	    internal override void vmethod_4(RendererBase renderer, Graphics g, Font font)
 		{
@@ -581,13 +582,14 @@ namespace TD.SandDock
 		        renderer.DrawSplitter(container, DockContainer, g, bounds, _splitMode);
 		    foreach (LayoutSystemBase layoutSystem in LayoutSystems)
 			{
-				if (!(layoutSystem is ControlLayoutSystem) || !((ControlLayoutSystem)layoutSystem).Collapsed || !DockContainer.CanShowCollapsed)
-				{
-					var clip = g.Clip;
-					g.SetClip(layoutSystem.Bounds);
-					layoutSystem.vmethod_4(renderer, g, font);
-					g.Clip = clip;
-				}
+			    if (!(layoutSystem is ControlLayoutSystem) || !((ControlLayoutSystem) layoutSystem).Collapsed ||
+			        !DockContainer.CanShowCollapsed)
+			    {
+			        var clip = g.Clip;
+			        g.SetClip(layoutSystem.Bounds);
+			        layoutSystem.vmethod_4(renderer, g, font);
+			        g.Clip = clip;
+			    }
 			}
 		}
 

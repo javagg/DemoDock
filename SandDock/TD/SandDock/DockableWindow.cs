@@ -1,4 +1,3 @@
-using System;
 using System.ComponentModel;
 using System.ComponentModel.Design;
 using System.Drawing;
@@ -10,20 +9,19 @@ namespace TD.SandDock
 	{
 		public DockableWindow()
 		{
-			this.method_18();
+			Init();
 		}
 
 		public DockableWindow(SandDockManager manager, Control control, string text) : base(manager, control, text)
 		{
-			this.method_18();
+			Init();
 		}
 
 		protected override DockingRules CreateDockingRules() => new DockingRules(true, false, true);
 
-	    private void method_18()
+	    private void Init()
 		{
-		    if (Text.Length == 0)
-		        Text = "Dockable Window";
+		    if (Text.Length == 0) Text = "Dockable Window";
 		    SetPositionMetaData(DockSituation.Docked, ContainerDockLocation.Right);
 		}
 

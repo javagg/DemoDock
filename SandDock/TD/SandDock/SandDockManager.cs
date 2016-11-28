@@ -102,11 +102,11 @@ namespace TD.SandDock
                 }
                 if (xmlNode_0.Attributes["LastDockContainerCount"] != null)
                 {
-                    dockControl.MetaData.DockedState.Int32_3 = (int)converter2.ConvertFromString(xmlNode_0.Attributes["LastDockContainerCount"].Value);
+                    dockControl.MetaData.DockedState.Count = (int)converter2.ConvertFromString(xmlNode_0.Attributes["LastDockContainerCount"].Value);
                 }
                 if (xmlNode_0.Attributes["LastDockContainerIndex"] != null)
                 {
-                    dockControl.MetaData.DockedState.Int32_2 = (int)converter2.ConvertFromString(xmlNode_0.Attributes["LastDockContainerIndex"].Value);
+                    dockControl.MetaData.DockedState.Index = (int)converter2.ConvertFromString(xmlNode_0.Attributes["LastDockContainerIndex"].Value);
                 }
                 Class22.smethod_1(dockControl, xmlNode_0, dockControl.MetaData.DockedState, "Docked");
                 Class22.smethod_1(dockControl, xmlNode_0, dockControl.MetaData.DocumentState, "Document");
@@ -124,7 +124,7 @@ namespace TD.SandDock
             }
             if (xmlNode_0.Attributes[string_0 + "WindowGroupGuid"] != null)
             {
-                dockingState0.Guid = new Guid(xmlNode_0.Attributes[string_0 + "WindowGroupGuid"].Value);
+                dockingState0.LastLayoutSystemGuid = new Guid(xmlNode_0.Attributes[string_0 + "WindowGroupGuid"].Value);
             }
             if (xmlNode_0.Attributes[string_0 + "IndexInWindowGroup"] != null)
             {
@@ -168,8 +168,8 @@ namespace TD.SandDock
             xmlTextWriter_0.WriteAttributeString("LastFixedDockSituation", dockControl_0.MetaData.LastFixedDockSituation.ToString());
             xmlTextWriter_0.WriteAttributeString("LastFixedDockLocation", dockControl_0.MetaData.LastFixedDockSide.ToString());
             xmlTextWriter_0.WriteAttributeString("LastFloatingWindowGuid", dockControl_0.MetaData.LastFloatingWindowGuid.ToString());
-            xmlTextWriter_0.WriteAttributeString("LastDockContainerCount", converter2.ConvertToString(null, CultureInfo.InvariantCulture, dockControl_0.MetaData.DockedState.Int32_3));
-            xmlTextWriter_0.WriteAttributeString("LastDockContainerIndex", converter2.ConvertToString(null, CultureInfo.InvariantCulture, dockControl_0.MetaData.DockedState.Int32_2));
+            xmlTextWriter_0.WriteAttributeString("LastDockContainerCount", converter2.ConvertToString(null, CultureInfo.InvariantCulture, dockControl_0.MetaData.DockedState.Count));
+            xmlTextWriter_0.WriteAttributeString("LastDockContainerIndex", converter2.ConvertToString(null, CultureInfo.InvariantCulture, dockControl_0.MetaData.DockedState.Index));
             Class22.smethod_4(dockControl_0, xmlTextWriter_0, dockControl_0.MetaData.DockedState, "Docked");
             Class22.smethod_4(dockControl_0, xmlTextWriter_0, dockControl_0.MetaData.DocumentState, "Document");
             Class22.smethod_4(dockControl_0, xmlTextWriter_0, dockControl_0.MetaData.FloatingState, "Floating");
@@ -180,7 +180,7 @@ namespace TD.SandDock
         {
             TypeConverter converter = TypeDescriptor.GetConverter(typeof(int));
             xmlTextWriter_0.WriteAttributeString(string_0 + "WorkingSize", SandDockManager.ConvertSizeFToString(dockingState0.Size));
-            xmlTextWriter_0.WriteAttributeString(string_0 + "WindowGroupGuid", dockingState0.Guid.ToString());
+            xmlTextWriter_0.WriteAttributeString(string_0 + "WindowGroupGuid", dockingState0.LastLayoutSystemGuid.ToString());
             xmlTextWriter_0.WriteAttributeString(string_0 + "IndexInWindowGroup", converter.ConvertToString(null, CultureInfo.InvariantCulture, dockingState0.Int32_1));
             xmlTextWriter_0.WriteAttributeString(string_0 + "SplitPath", smethod_5(dockingState0.Int32_0));
         }
@@ -578,7 +578,7 @@ namespace TD.SandDock
                         return;
                 }
             }
-            var rectangle = Class7.smethod_1(DockSystemContainer);
+            var rectangle = Class7.GetDockingBounds(DockSystemContainer);
             int num = -rectangle.Width;
             int num2 = -rectangle.Height;
             if (this.DockSystemContainer is ToolStripContentPanel && (rectangle.Width <= 0 || rectangle.Height <= 0))
@@ -900,34 +900,28 @@ namespace TD.SandDock
 
         private void SaveContainerLayout(DockContainer container, XmlTextWriter writer)
         {
-            if (container is FloatingContainer)
+            if (!(container is FloatingContainer))
             {
-                FloatingContainer @class = (FloatingContainer)container;
-                writer.WriteStartElement("FloatingContainer");
-                writer.WriteAttributeString("Bounds", this.ConvertRectangleToString(@class.FloatingBounds));
-                writer.WriteAttributeString("Guid", @class.Guid.ToString());
-                this.SaveLayoutSystem(container.LayoutSystem, writer);
+                if (container is DocumentContainer)
+                    writer.WriteStartElement("DocumentContainer");
+                else
+                    writer.WriteStartElement("Container");
+
+                writer.WriteAttributeString("Dock", ((int) container.Dock).ToString());
+                if (container.Dock != DockStyle.Fill && container.Dock != DockStyle.None)
+                    writer.WriteAttributeString("ContentSize", container.ContentSize.ToString());
+                SaveLayoutSystem(container.LayoutSystem, writer);
                 writer.WriteEndElement();
-                return;
-            }
-            if (!(container is DocumentContainer))
-            {
-                writer.WriteStartElement("Container");
             }
             else
             {
-                writer.WriteStartElement("DocumentContainer");
+                var @class = (FloatingContainer) container;
+                writer.WriteStartElement("FloatingContainer");
+                writer.WriteAttributeString("Bounds", this.ConvertRectangleToString(@class.FloatingBounds));
+                writer.WriteAttributeString("Guid", @class.Guid.ToString());
+                SaveLayoutSystem(container.LayoutSystem, writer);
+                writer.WriteEndElement();
             }
-            writer.WriteAttributeString("Dock", ((int)container.Dock).ToString());
-            if (container.Dock != DockStyle.Fill)
-            {
-                if (container.Dock != DockStyle.None)
-                {
-                    writer.WriteAttributeString("ContentSize", container.ContentSize.ToString());
-                }
-            }
-            SaveLayoutSystem(container.LayoutSystem, writer);
-            writer.WriteEndElement();
         }
 
         public void SaveLayout()

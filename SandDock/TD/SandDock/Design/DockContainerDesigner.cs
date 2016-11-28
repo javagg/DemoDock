@@ -72,11 +72,11 @@ namespace TD.SandDock.Design
 	    private void method_1()
 		{
 			class11_0.Cancalled -= method_3;
-			class11_0.ResizingManagerFinished -= OnResizingManagerFinished;
+			class11_0.Committed -= OnCommitted;
 			class11_0 = null;
 		}
 
-		private void OnResizingManagerFinished(int newSize)
+		private void OnCommitted(int newSize)
 		{
 			method_1();
 			DesignerTransaction designerTransaction = _idesignerHost.CreateTransaction("Resize Docked Windows");
@@ -99,7 +99,7 @@ namespace TD.SandDock.Design
 				ControlLayoutSystem controlLayoutSystem = (ControlLayoutSystem)layout;
 				DockControl controlAt = controlLayoutSystem.GetControlAt(point_1);
 				class7_0 = new Class8(_dockContainer.Manager, _dockContainer, controlLayoutSystem, controlAt, controlLayoutSystem.SelectedControl.MetaData.DockedContentSize, point_1, DockingHints.TranslucentFill);
-				class7_0.DockingManagerFinished += vmethod_0;
+				class7_0.Committed += vmethod_0;
 				class7_0.Cancalled += vmethod_1;
 				_dockContainer.Capture = true;
 			}
@@ -107,7 +107,7 @@ namespace TD.SandDock.Design
 
 		private void method_5()
 		{
-			class7_0.DockingManagerFinished -= vmethod_0;
+			class7_0.Committed -= vmethod_0;
 			class7_0.Cancalled -= vmethod_1;
 			class7_0 = null;
 		}
@@ -126,7 +126,7 @@ namespace TD.SandDock.Design
 
 		private void method_8(LayoutSystemBase aboveLayout, LayoutSystemBase belowLayout, float aboveSize, float belowSize)
 		{
-			SplitLayoutSystem splitLayoutSystem_ = class10_0.SplitLayout;
+			SplitLayoutSystem splitLayoutSystem_ = class10_0.SplitLayoutSystem;
 			method_6();
 			DesignerTransaction designerTransaction = _idesignerHost.CreateTransaction("Resize Docked Windows");
 			IComponentChangeService componentChangeService = (IComponentChangeService)GetService(typeof(IComponentChangeService));
@@ -190,7 +190,7 @@ namespace TD.SandDock.Design
 				{
 					class11_0 = new Class11(_dockContainer.Manager, _dockContainer, point);
 					class11_0.Cancalled += method_3;
-					class11_0.ResizingManagerFinished += OnResizingManagerFinished;
+					class11_0.Committed += OnCommitted;
 					_dockContainer.Capture = true;
 					return;
 				}
@@ -208,7 +208,7 @@ namespace TD.SandDock.Design
 							componentChangeService.OnComponentChanged(_dockContainer, TypeDescriptor.GetProperties(_dockContainer)["LayoutSystem"], null, null);
 						}
 					}
-					if (!controlLayoutSystem.rectangle_1.Contains(point) && controlAt == null)
+					if (!controlLayoutSystem.TitleBarBounds.Contains(point) && controlAt == null)
 					{
 						selectionService.SetSelectedComponents(new object[]
 						{

@@ -17,7 +17,8 @@ namespace TD.SandDock
             ShowInTaskbar = false;
         }
 
-        private bool method_0()
+        [Naming]
+        private bool ShowContextMenu()
         {
             if (!_parent.HasSingleControlLayoutSystem) return false;
             var layoutSystem = (ControlLayoutSystem)_parent.LayoutSystem.LayoutSystems[0];
@@ -43,7 +44,7 @@ namespace TD.SandDock
             r.Offset(-SystemInformation.DragSize.Width / 2, -SystemInformation.DragSize.Height / 2);
             if (r.Contains(e.X, e.Y)) return;
             _dragPoint.Y = _dragPoint.Y + SystemInformation.ToolWindowCaptionHeight + SystemInformation.FrameBorderSize.Height;
-            _parent.LayoutSystem.method_0(_parent.Manager, _parent, _parent.LayoutSystem, null, _parent.SelectedControl.MetaData.DockedContentSize, _dragPoint, _parent.Manager.DockingHints, this._parent.Manager.DockingManager);
+            _parent.LayoutSystem.method_0(_parent.Manager, _parent, _parent.LayoutSystem, null, _parent.SelectedControl.MetaData.DockedContentSize, _dragPoint, _parent.Manager.DockingHints, _parent.Manager.DockingManager);
             _parent._layoutSystem = _parent.LayoutSystem;
             Capture = false;
             _parent.Capture = true;
@@ -74,7 +75,7 @@ namespace TD.SandDock
 
         protected override void WndProc(ref Message m)
         {
-            if (m.Msg == WMConstants.WM_NCLBUTTONDOWN && m.WParam.ToInt32() == WMConstants.MK_RBUTTON)
+            if (m.Msg == WMConstants.WM_NCLBUTTONDOWN && m.WParam.ToInt32() == WMConstants.HTCAPTION)
             {
                 Native.ReleaseCapture();
                 Activate();
@@ -83,7 +84,7 @@ namespace TD.SandDock
                 m.Result = IntPtr.Zero;
                 return;
             }
-            if (m.Msg == WMConstants.WM_NCLBUTTONDBLCLK && m.WParam.ToInt32() == WMConstants.MK_RBUTTON)
+            if (m.Msg == WMConstants.WM_NCLBUTTONDBLCLK && m.WParam.ToInt32() == WMConstants.HTCAPTION)
             {
 
                 OnDoubleClick(EventArgs.Empty);
@@ -93,7 +94,7 @@ namespace TD.SandDock
             if (m.Msg == WMConstants.WM_NCRBUTTONDOWN)
             {
                 Capture = false;
-                if (method_0())
+                if (ShowContextMenu())
                 {
                     m.Result = IntPtr.Zero;
                     return;
@@ -119,8 +120,8 @@ namespace TD.SandDock
             FloatingForm.Deactivate += OnDeactivate;
             FloatingForm.Closing += OnClosing;
             FloatingForm.DoubleClick += OnDoubleClick;
-            LayoutSystem.LayoutSystemsChanged += this.method_22;
-            this.method_22(LayoutSystem, EventArgs.Empty);
+            LayoutSystem.LayoutSystemsChanged += OnLayoutSystemsChanged;
+            OnLayoutSystemsChanged(LayoutSystem, EventArgs.Empty);
             Manager = manager;
             Guid = guid;
             FloatingForm.Controls.Add(this);
@@ -131,7 +132,7 @@ namespace TD.SandDock
         {
             if (disposing && !IsDisposed)
             {
-                this.LayoutSystem.LayoutSystemsChanged -= this.method_22;
+                LayoutSystem.LayoutSystemsChanged -= OnLayoutSystemsChanged;
                 FloatingForm.Activated -= OnActivated;
                 FloatingForm.Deactivate -= OnDeactivate;
                 FloatingForm.Closing -= OnClosing;
@@ -144,7 +145,7 @@ namespace TD.SandDock
 
         private void OnClosing(object sender, CancelEventArgs e)
         {
-            if (!this.bool_2) return;
+            if (!bool_2) return;
             var controls = LayoutSystem.AllControls;
             if (controls.All(control => control.AllowClose))
             {
@@ -163,9 +164,9 @@ namespace TD.SandDock
         {
             var controls = LayoutSystem.AllControls;
             var selected = SelectedControl;
-            if (controls[0].MetaData.LastFixedDockSituation == DockSituation.Docked && !LayoutSystem.vmethod_3(selected.MetaData.LastFixedDockSide))
+            if (controls[0].MetaData.LastFixedDockSituation == DockSituation.Docked && !LayoutSystem.AllowDock(selected.MetaData.LastFixedDockSide))
                 return;
-            if (controls[0].MetaData.LastFixedDockSituation == DockSituation.Document && !LayoutSystem.vmethod_3(ContainerDockLocation.Center))
+            if (controls[0].MetaData.LastFixedDockSituation == DockSituation.Document && !LayoutSystem.AllowDock(ContainerDockLocation.Center))
                 return;
             LayoutSystem = new SplitLayoutSystem();
             Dispose();
@@ -212,25 +213,25 @@ namespace TD.SandDock
 
         public void method_21()
         {
-            this.method_22(null, null);
+            OnLayoutSystemsChanged(null, null);
         }
 
-        private void method_22(object sender, EventArgs e)
+        private void OnLayoutSystemsChanged(object sender, EventArgs e)
         {
-            if (this.controlLayoutSystem_0 != null)
+            if (controlLayoutSystem_0 != null)
             {
-                this.controlLayoutSystem_0.SelectedControlChanged -= OnSelectedControlChanged;
+                controlLayoutSystem_0.SelectedControlChanged -= OnSelectedControlChanged;
             }
             if (HasSingleControlLayoutSystem)
             {
-                this.controlLayoutSystem_0 = (ControlLayoutSystem) LayoutSystem.LayoutSystems[0];
-                this.controlLayoutSystem_0.SelectedControlChanged += OnSelectedControlChanged;
+                controlLayoutSystem_0 = (ControlLayoutSystem) LayoutSystem.LayoutSystems[0];
+                controlLayoutSystem_0.SelectedControlChanged += OnSelectedControlChanged;
                 OnSelectedControlChanged(null, controlLayoutSystem_0.SelectedControl);
             }
             else
             {
                 FloatingForm.Text = "";
-                this.controlLayoutSystem_0 = null;
+                controlLayoutSystem_0 = null;
             }
         }
 
@@ -247,8 +248,7 @@ namespace TD.SandDock
             get
             {
                 var layoutSystem = LayoutUtilities.FindControlLayoutSystem(this);
-                if (layoutSystem == null)
-                    throw new InvalidOperationException("A docking operation was started while the window hierarchy is in an invalid state.");
+                if (layoutSystem == null) throw new InvalidOperationException("A docking operation was started while the window hierarchy is in an invalid state.");
                 return layoutSystem.SelectedControl;
             }
         }
@@ -268,10 +268,10 @@ namespace TD.SandDock
             }
             set
             {
-                LayoutSystem.LayoutSystemsChanged -= method_22;
+                LayoutSystem.LayoutSystemsChanged -= OnLayoutSystemsChanged;
                 base.LayoutSystem = value;
-                LayoutSystem.LayoutSystemsChanged += method_22;
-                this.method_22(LayoutSystem, EventArgs.Empty);
+                LayoutSystem.LayoutSystemsChanged += OnLayoutSystemsChanged;
+                OnLayoutSystemsChanged(LayoutSystem, EventArgs.Empty);
             }
         }
 

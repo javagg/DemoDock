@@ -6,9 +6,26 @@ using System.Windows.Forms;
 using TD.Util;
 namespace TD.SandDock
 {
-	internal static class Native
+    internal class K
+    {
+        public static Color ActiveCaptionColor2
+        {
+            get
+            {
+                var win32Color = Native.GetSysColor(WMConstants.COLOR_GRADIENTACTIVECAPTION);
+                return ColorTranslator.FromWin32(win32Color);
+            }
+        }
+
+        public const int A = -1;
+
+        public const int a = 33;
+    }
+    internal static class Native
 	{
-	    [DllImport("gdi32.dll", ExactSpelling = true, SetLastError = true)]
+       
+
+        [DllImport("gdi32.dll", ExactSpelling = true, SetLastError = true)]
 	    public static extern IntPtr CreateCompatibleDC(IntPtr hDC);
 
 	    [DllImport("gdi32.dll", ExactSpelling = true, SetLastError = true)]
@@ -92,8 +109,8 @@ namespace TD.SandDock
         [DllImport("user32.dll")]
         public static extern int GetSystemMetrics(int smIndex);
 
-        [DllImport("user32.dll")]
-        public static extern bool ReleaseCapture();
+        [DllImport("user32.dll",EntryPoint = "ReleaseCapture")]
+        public static extern bool ReleaseCaptureWin();
 
         [DllImport("uxtheme.dll", CharSet = CharSet.Auto)]
         public static extern int GetCurrentThemeName(StringBuilder pszThemeFileName, int dwMaxNameChars, StringBuilder pszColorBuff, int dwMaxColorChars, StringBuilder pszSizeBuff, int cchMaxSizeChars);
@@ -114,7 +131,7 @@ namespace TD.SandDock
 		private static extern bool PatBlt(HandleRef hdc, int left, int top, int width, int height, int rop);
 
 		[DllImport("user32.dll")]
-		private static extern int ReleaseDC(HandleRef hWnd, HandleRef hDC);
+		public static extern int ReleaseDC(HandleRef hWnd, HandleRef hDC);
 
 		[DllImport("gdi32.dll")]
 		private static extern IntPtr SelectObject(HandleRef hDC, HandleRef hObject);
@@ -122,28 +139,28 @@ namespace TD.SandDock
         [DllImport("user32.dll")]
         public static extern bool SystemParametersInfo(int nAction, int nParam, ref int i, int nUpdate);
 
-        public static void DrawIndicators(Control control, Rectangle bounds, bool bool_0, int size)
+        public static void DrawRubberBands(Control control, Rectangle bounds, bool bool_0, int size)
 		{
-			DrawIndicator(control, new Rectangle(bounds.X, bounds.Y, bounds.Width, 4));
+			DrawRubberBand(control, new Rectangle(bounds.X, bounds.Y, bounds.Width, 4));
 		    if (bool_0)
 		    {
-		        DrawIndicator(control, new Rectangle(bounds.X, bounds.Y + 4, 4, bounds.Height - 4 - size));
-		        DrawIndicator(control, new Rectangle(bounds.Right - 4, bounds.Y + 4, 4, bounds.Height - 4 - size));
-		        DrawIndicator(control, new Rectangle(bounds.X, bounds.Bottom - size, 10, 4));
-		        DrawIndicator(control, new Rectangle(bounds.X + 80, bounds.Bottom - size, bounds.Width - 80, 4));
-		        DrawIndicator(control, new Rectangle(bounds.X + 10, bounds.Bottom - 4, 70, 4));
-		        DrawIndicator(control, new Rectangle(bounds.X + 10, bounds.Bottom - size, 4, size - 4));
-		        DrawIndicator(control, new Rectangle(bounds.X + 76, bounds.Bottom - size, 4, size - 4));
+		        DrawRubberBand(control, new Rectangle(bounds.X, bounds.Y + 4, 4, bounds.Height - 4 - size));
+		        DrawRubberBand(control, new Rectangle(bounds.Right - 4, bounds.Y + 4, 4, bounds.Height - 4 - size));
+		        DrawRubberBand(control, new Rectangle(bounds.X, bounds.Bottom - size, 10, 4));
+		        DrawRubberBand(control, new Rectangle(bounds.X + 80, bounds.Bottom - size, bounds.Width - 80, 4));
+		        DrawRubberBand(control, new Rectangle(bounds.X + 10, bounds.Bottom - 4, 70, 4));
+		        DrawRubberBand(control, new Rectangle(bounds.X + 10, bounds.Bottom - size, 4, size - 4));
+		        DrawRubberBand(control, new Rectangle(bounds.X + 76, bounds.Bottom - size, 4, size - 4));
 		    }
 		    else
 		    {
-		        DrawIndicator(control, new Rectangle(bounds.X, bounds.Y + 4, 4, bounds.Height - 8));
-		        DrawIndicator(control, new Rectangle(bounds.Right - 4, bounds.Y + 4, 4, bounds.Height - 8));
-		        DrawIndicator(control, new Rectangle(bounds.X, bounds.Bottom - 4, bounds.Width, 4));
+		        DrawRubberBand(control, new Rectangle(bounds.X, bounds.Y + 4, 4, bounds.Height - 8));
+		        DrawRubberBand(control, new Rectangle(bounds.Right - 4, bounds.Y + 4, 4, bounds.Height - 8));
+		        DrawRubberBand(control, new Rectangle(bounds.X, bounds.Bottom - 4, bounds.Width, 4));
 		    }
 		}
 
-		public static void DrawIndicator(Control control, Rectangle bounds)
+		public static void DrawRubberBand(Control control, Rectangle bounds)
 		{
 		    if (bounds == Rectangle.Empty) return;
             var handle = control?.Handle ?? IntPtr.Zero;
@@ -180,5 +197,11 @@ namespace TD.SandDock
         {
             return Type.GetType("Mono.Runtime") != null;
         }
-    }
+
+	    public static bool ReleaseCapture()
+	    {
+	        return true;
+	       // return IsMono() || ReleaseCaptureWin();
+	    }
+}
 }

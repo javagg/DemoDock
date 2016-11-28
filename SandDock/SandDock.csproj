@@ -48,7 +48,9 @@
     <Compile Include="TD\SandDock\FloatingContainer.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="TD\SandDock\AutoHideBar.cs" />
+    <Compile Include="TD\SandDock\AutoHideBar.cs">
+      <SubType>Component</SubType>
+    </Compile>
     <Compile Include="TD\SandDock\PopupContainer.cs">
       <SubType>Component</SubType>
     </Compile>
@@ -93,7 +95,7 @@
     <Compile Include="TD\SandDock\Rendering\RendererBase.cs" />
     <Compile Include="TD\SandDock\Rendering\ThemeAwareRendererBase.cs" />
     <Compile Include="TD\SandDock\Rendering\WhidbeyRenderer.cs" />
-    <Compile Include="TD\Util\ToolTips.cs" />
+    <Compile Include="TD\Util\Tooltip.cs" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Properties\" />

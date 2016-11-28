@@ -22,17 +22,20 @@ namespace TD.SandDock
 
         public void method_0(Rectangle bounds, bool bool_1)
         {
-            Native.SetWindowPos(Handle, WMConstants.HWND_TOP, bounds.X, bounds.Y, bounds.Width, bounds.Height, WMConstants.SWP_SHOWWINDOW + WMConstants.SWP_NOACTIVATE);
+           // Native.SetWindowPos(Handle, WMConstants.HWND_TOP, bounds.X, bounds.Y, bounds.Width, bounds.Height, WMConstants.SWP_SHOWWINDOW + WMConstants.SWP_NOACTIVATE);
            Location = bounds.Location;
-            Size = bounds.Size;
-          Visible = true;
+           Size = bounds.Size;
+           Visible = true;
         }
+
+        protected override bool ShowWithoutActivation => true;
 
         protected override void OnHandleCreated(EventArgs e)
         {
             base.OnHandleCreated(e);
             TransparencyKey = BackColor;
-            //Native.SetLayeredWindowAttributes(Handle, 0, Alpha, LWA_ALPHA);
+            if (!Native.IsMono())
+                Native.SetLayeredWindowAttributes(Handle, 0, Alpha, WMConstants.LWA_ALPHA);
         }
 
         protected override void OnPaint(PaintEventArgs e)
@@ -53,10 +56,10 @@ namespace TD.SandDock
         {
             get
             {
-                var createParams = base.CreateParams;
-                createParams.Style = WMConstants.WS_OVERLAPPED; //- 2147483648;
-                createParams.ExStyle |= WMConstants.WS_SYSMENU;
-                return createParams;
+                var cp = base.CreateParams;
+                cp.Style = WMConstants.WS_OVERLAPPED; //- 2147483648;
+                cp.ExStyle |=  WMConstants.WS_EX_NOACTIVATE | WMConstants.WS_EX_TOOLWINDOW | WMConstants.WS_EX_TOPMOST;
+                return cp;
             }
         }
 
@@ -156,14 +159,16 @@ namespace TD.SandDock
             if (_dockingHints == DockingHints.RubberBand)
             {
                 if (_hollow)
-                    Native.DrawIndicators(null, bounds, bool_2, _tabStripSize);
+                    Native.DrawRubberBands(null, bounds, bool_2, _tabStripSize);
                 else
-                    Native.DrawIndicator(null, bounds);
+                    Native.DrawRubberBand(null, bounds);
                 _hintRect = bounds;
                 bool_0 = bool_2;
-                return;
             }
-            _translucentForm.method_0(bounds, bool_2);
+            else
+            {
+                _translucentForm.method_0(bounds, bool_2);
+            }
         }
 
         [Naming]
@@ -181,9 +186,9 @@ namespace TD.SandDock
             if (_hintRect != Rectangle.Empty)
             {
                 if (_hollow)
-                    Native.DrawIndicators(null, _hintRect, bool_0, _tabStripSize);
+                    Native.DrawRubberBands(null, _hintRect, bool_0, _tabStripSize);
                 else
-                    Native.DrawIndicator(null, _hintRect);
+                    Native.DrawRubberBand(null, _hintRect);
             }
             _hintRect = Rectangle.Empty;
         }
@@ -279,7 +284,7 @@ namespace TD.SandDock
             point_0 = sourceControl == null ? new Point(startPoint.X, startPoint.Y - bounds.Top) : new Point(startPoint.X, size_0.Height - (bounds.Bottom - startPoint.Y));
             point_0.Y = Math.Max(point_0.Y, 0);
             point_0.Y = Math.Min(point_0.Y, size_0.Height);
-            ControlLayoutSystem_0 = method_10();
+            CheckableControlLayoutSystems = method_10();
             Container.OnDockingStarted(EventArgs.Empty);
         }
 
@@ -289,7 +294,7 @@ namespace TD.SandDock
             LayoutUtilities.Increase();
             try
             {
-                DockingManagerFinished?.Invoke(Target);
+                Committed?.Invoke(Target);
             }
             finally
             {
@@ -325,7 +330,7 @@ namespace TD.SandDock
                     }
                 }
             }
-            ControlLayoutSystem[] array = ControlLayoutSystem_0;
+            ControlLayoutSystem[] array = CheckableControlLayoutSystems;
             foreach (var controlLayoutSystem in array)
             {
                 if (new Rectangle(controlLayoutSystem.DockContainer.PointToScreen(controlLayoutSystem.Bounds.Location), controlLayoutSystem.Bounds.Size).Contains(position))
@@ -343,23 +348,23 @@ namespace TD.SandDock
             for (int j = 1; j <= 4; j++)
             {
                 ContainerDockLocation containerDockLocation = (ContainerDockLocation)j;
-                if (method_5(containerDockLocation))
+                if (AllowDock(containerDockLocation))
                 {
-                    if (smethod_2(method_7(containerDockLocation, true), Manager.DockSystemContainer).Contains(position))
+                    if (ToControlBounds(method_7(containerDockLocation, true), Manager.DockSystemContainer).Contains(position))
                     {
                         return new DockTarget(DockTargetType.CreateNewContainer)
                         {
                             DockLocation = containerDockLocation,
-                            Bounds = smethod_2(method_8(containerDockLocation, DockedSize, true), Manager.DockSystemContainer),
+                            Bounds = ToControlBounds(method_8(containerDockLocation, DockedSize, true), Manager.DockSystemContainer),
                             middle = true
                         };
                     }
-                    if (smethod_2(method_7(containerDockLocation, false), Manager.DockSystemContainer).Contains(position))
+                    if (ToControlBounds(method_7(containerDockLocation, false), Manager.DockSystemContainer).Contains(position))
                     {
                         return new DockTarget(DockTargetType.CreateNewContainer)
                         {
                             DockLocation = containerDockLocation,
-                            Bounds = smethod_2(method_8(containerDockLocation, DockedSize, false), Manager.DockSystemContainer)
+                            Bounds = ToControlBounds(method_8(containerDockLocation, DockedSize, false), Manager.DockSystemContainer)
                         };
                     }
                 }
@@ -379,7 +384,7 @@ namespace TD.SandDock
                 if ((!isFloating || SourceControlSystem.DockContainer != dockContainer ||
                      !(SourceControlSystem is SplitLayoutSystem)) &&
                     (!isFloating || AllowFloat || SourceControlSystem.DockContainer == dockContainer) &&
-                    (isFloating || method_5(LayoutUtilities.Convert(dockContainer.Dock))) && (!flag || flag2) &&
+                    (isFloating || AllowDock(LayoutUtilities.Convert(dockContainer.Dock))) && (!flag || flag2) &&
                     (!flag2 || Container == dockContainer))
                     method_11(dockContainer, arrayList);
             }
@@ -437,7 +442,7 @@ namespace TD.SandDock
             Point point = dockContainer_1.PointToClient(point_1);
             if (SourceControl != null || controlLayoutSystem_1 != SourceControlSystem)
             {
-                if (controlLayoutSystem_1.JoinCatchmentBounds.Contains(point) || controlLayoutSystem_1.rectangle_2.Contains(point))
+                if (controlLayoutSystem_1.JoinCatchmentBounds.Contains(point) || controlLayoutSystem_1.TabstripBounds.Contains(point))
                 {
                     dockTarget = new DockTarget(DockTargetType.JoinExistingSystem)
                     {
@@ -447,7 +452,7 @@ namespace TD.SandDock
                         Bounds = new Rectangle(dockContainer_1.PointToScreen(controlLayoutSystem_1.Bounds.Location),
                                 controlLayoutSystem_1.Bounds.Size)
                     };
-                    dockTarget.index = !controlLayoutSystem_1.rectangle_2.Contains(point) ? controlLayoutSystem_1.Controls.Count : controlLayoutSystem_1.method_15(point);
+                    dockTarget.index = !controlLayoutSystem_1.TabstripBounds.Contains(point) ? controlLayoutSystem_1.Controls.Count : controlLayoutSystem_1.method_15(point);
                 }
                 if (dockTarget.type == DockTargetType.Undefined && bool_2)
                 {
@@ -462,7 +467,7 @@ namespace TD.SandDock
         {
             DockTarget dockTarget = null;
             Point point = dockContainer_1.PointToClient(point_1);
-            var rectangle_ = controlLayoutSystem_1.rectangle_3;
+            var rectangle_ = controlLayoutSystem_1.ClientBounds;
             if (new Rectangle(rectangle_.Left, rectangle_.Top, rectangle_.Width, 30).Contains(point))
             {
                 dockTarget = method_21(dockContainer_1, controlLayoutSystem_1);
@@ -636,9 +641,9 @@ namespace TD.SandDock
             };
         }
 
-        public bool method_5(ContainerDockLocation location)
+        public bool AllowDock(ContainerDockLocation location)
         {
-            return SourceControl?.GetDockingRulesFrom(location) ?? SourceControlSystem.vmethod_3(location);
+            return SourceControl?.AllowDock(location) ?? SourceControlSystem.AllowDock(location);
         }
 
         private Rectangle method_6(Rectangle rect)
@@ -677,8 +682,8 @@ namespace TD.SandDock
 
         protected Rectangle method_8(ContainerDockLocation location, int int_8, bool bool_2)
         {
-            var rectangle = smethod_1(Manager.DockSystemContainer);
-            Rectangle result = rectangle;
+            var rectangle = GetDockingBounds(Manager.DockSystemContainer);
+            var result = rectangle;
             if (!bool_2)
             {
                 result = Manager.DockSystemContainer.ClientRectangle;
@@ -720,35 +725,25 @@ namespace TD.SandDock
             }
             if (dockTarget.type == DockTargetType.Float)
             {
-                dockTarget.Bounds = new Rectangle(Point_0, size_0);
+                dockTarget.Bounds = new Rectangle(DragPoint, size_0);
                 dockTarget.Bounds = method_6(dockTarget.Bounds);
             }
-            if (dockTarget.layoutSystem == SourceControlSystem && SourceControl != null)
+            if (dockTarget.layoutSystem == SourceControlSystem && SourceControl != null &&
+                dockTarget.DockSide == DockSide.None)
             {
-                if (dockTarget.DockSide == DockSide.None)
-                {
-                    UpdateHintForm();
-                    ControlLayoutSystem controlLayoutSystem = (ControlLayoutSystem)SourceControlSystem;
-                    if (dockTarget.index != controlLayoutSystem.Controls.IndexOf(SourceControl))
-                    {
-                        if (dockTarget.index != controlLayoutSystem.Controls.IndexOf(SourceControl) + 1)
-                        {
-                            controlLayoutSystem.Controls.SetChildIndex(SourceControl, dockTarget.index);
-                        }
-                    }
-                    dockTarget.type = DockTargetType.AlreadyActioned;
-                    goto IL_147;
-                }
-            }
-            if (dockTarget.type != DockTargetType.None)
-            {
-                method_1(dockTarget.Bounds, dockTarget.type == DockTargetType.JoinExistingSystem);
+                UpdateHintForm();
+                var controlLayoutSystem = (ControlLayoutSystem) SourceControlSystem;
+                if (dockTarget.index != controlLayoutSystem.Controls.IndexOf(SourceControl) && dockTarget.index != controlLayoutSystem.Controls.IndexOf(SourceControl) + 1)
+                    controlLayoutSystem.Controls.SetChildIndex(SourceControl, dockTarget.index);
+                dockTarget.type = DockTargetType.AlreadyActioned;
             }
             else
             {
-                UpdateHintForm();
+                if (dockTarget.type == DockTargetType.None)
+                    UpdateHintForm();
+                else
+                    method_1(dockTarget.Bounds, dockTarget.type == DockTargetType.JoinExistingSystem);
             }
-            IL_147:
             if (Container is DocumentContainer)
             {
                 if (dockTarget.type == DockTargetType.AlreadyActioned)
@@ -767,7 +762,7 @@ namespace TD.SandDock
             Target = dockTarget;
         }
 
-        public static Rectangle smethod_1(Control parentControl)
+        public static Rectangle GetDockingBounds(Control parentControl)
         {
             var x = 0;
             var y = 0;
@@ -798,23 +793,25 @@ namespace TD.SandDock
             return new Rectangle(x, y, w - x, h - y);
         }
 
-        public static Rectangle smethod_2(Rectangle bounds, Control control)
+        public static Rectangle ToControlBounds(Rectangle bounds, Control control)
         {
             return new Rectangle(control.PointToScreen(bounds.Location), bounds.Size);
         }
 
-        public bool IsInDesign => Container.FriendDesignMode;
+        [Naming(NamingType.FromOldVersion)]
+        public bool DesignMode => Container.FriendDesignMode;
 
+        [Naming(NamingType.FromOldVersion)]
         public bool AllowFloat
         {
             get
             {
-                if (IsInDesign) return false;
+                if (DesignMode) return false;
                 return SourceControl?.DockingRules.AllowFloat ?? SourceControlSystem.AllowFloat;
             }
         }
-
-        protected ControlLayoutSystem[] ControlLayoutSystem_0 { get; }
+        [Naming(NamingType.FromOldVersion)]
+        protected ControlLayoutSystem[] CheckableControlLayoutSystems { get; }
 
         public DockContainer Container { get; }
 
@@ -825,12 +822,12 @@ namespace TD.SandDock
         public int DockedSize { get; }
 
         public LayoutSystemBase SourceControlSystem { get; }
-
-        private Point Point_0 => new Point(Cursor.Position.X - point_0.X, Cursor.Position.Y - point_0.Y);
+        [Naming(NamingType.FromOldVersion)]
+        private Point DragPoint => new Point(Cursor.Position.X - point_0.X, Cursor.Position.Y - point_0.Y);
 
         public SandDockManager Manager { get; }
 
-        public event DockingManagerFinishedEventHandler DockingManagerFinished;
+        public event CommittedEventHandler Committed;
 
         private Cursor cursor_0;
 
@@ -842,7 +839,7 @@ namespace TD.SandDock
 
         private Size size_0 = Size.Empty;
 
-        public delegate void DockingManagerFinishedEventHandler(DockTarget target);
+        public delegate void CommittedEventHandler(DockTarget target);
 
         public class DockTarget
         {
@@ -935,7 +932,7 @@ namespace TD.SandDock
                 }
                 else
                 {
-                    form.method_13();
+                    form.UpdateWindow();
                 }
                 IL_A5:
                 i++;
@@ -951,7 +948,7 @@ namespace TD.SandDock
                 }
                 if (flag)
                 {
-                    form.method_13();
+                    form.UpdateWindow();
                     goto IL_A5;
                 }
                 form.method_12();
@@ -960,7 +957,7 @@ namespace TD.SandDock
             bool_2 = flag;
             bool_3 = flag2;
             IL_C1:
-            ControlLayoutSystem controlLayoutSystem = method_23(position, out target);
+            var controlLayoutSystem = method_23(position, out target);
             if (controlLayoutSystem == SourceControlSystem && SourceControl == null)
             {
                 controlLayoutSystem = null;
@@ -976,7 +973,7 @@ namespace TD.SandDock
                 if (controlLayoutSystem_1 != null)
                 {
                     _dockingIndicatorForm = new DockingIndicatorForm(this, controlLayoutSystem_1);
-                    _dockingIndicatorForm.method_13();
+                    _dockingIndicatorForm.UpdateWindow();
                 }
             }
             if (target != null && target.type == DockTargetType.Undefined)
@@ -999,27 +996,27 @@ namespace TD.SandDock
 
         private void method_22()
         {
-            rectangle_1 = smethod_2(Manager.DockSystemContainer.ClientRectangle, Manager.DockSystemContainer);
-            rectangle_2 = smethod_2(smethod_1(Manager.DockSystemContainer), Manager.DockSystemContainer);
-            if (method_5(ContainerDockLocation.Top))
+            rectangle_1 = ToControlBounds(Manager.DockSystemContainer.ClientRectangle, Manager.DockSystemContainer);
+            rectangle_2 = ToControlBounds(GetDockingBounds(Manager.DockSystemContainer), Manager.DockSystemContainer);
+            if (AllowDock(ContainerDockLocation.Top))
             {
                 _indicators.Add(new DockingIndicatorForm(this, rectangle_1, DockStyle.Top));
             }
-            if (method_5(ContainerDockLocation.Left))
+            if (AllowDock(ContainerDockLocation.Left))
             {
                 _indicators.Add(new DockingIndicatorForm(this, rectangle_1, DockStyle.Left));
             }
-            if (method_5(ContainerDockLocation.Bottom))
+            if (AllowDock(ContainerDockLocation.Bottom))
             {
                 _indicators.Add(new DockingIndicatorForm(this, rectangle_1, DockStyle.Bottom));
             }
-            if (method_5(ContainerDockLocation.Right))
+            if (AllowDock(ContainerDockLocation.Right))
             {
                 _indicators.Add(new DockingIndicatorForm(this, rectangle_1, DockStyle.Right));
             }
             bool flag = Container.Dock == DockStyle.Fill && !Container.IsFloating;
-            bool flag2 = method_5(ContainerDockLocation.Left) || method_5(ContainerDockLocation.Right) || method_5(ContainerDockLocation.Top) || method_5(ContainerDockLocation.Bottom);
-            if (!flag && (method_5(ContainerDockLocation.Center) || flag2))
+            bool flag2 = AllowDock(ContainerDockLocation.Left) || AllowDock(ContainerDockLocation.Right) || AllowDock(ContainerDockLocation.Top) || AllowDock(ContainerDockLocation.Bottom);
+            if (!flag && (AllowDock(ContainerDockLocation.Center) || flag2))
                 _indicators.Add(new DockingIndicatorForm(this, rectangle_2, DockStyle.Fill));
             if (Manager?.OwnerForm != null)
             {
@@ -1033,7 +1030,7 @@ namespace TD.SandDock
             target = null;
             for (int i = 1; i >= 0; i--)
             {
-                foreach (var controlLayoutSystem in ControlLayoutSystem_0)
+                foreach (var controlLayoutSystem in CheckableControlLayoutSystems)
                 {
                     if (controlLayoutSystem.DockContainer.IsFloating == Convert.ToBoolean(i))
                     {
@@ -1120,9 +1117,9 @@ namespace TD.SandDock
                 FormBorderStyle = FormBorderStyle.None;
                 ShowInTaskbar = false;
                 StartPosition = FormStartPosition.Manual;
-                _timer = new Timer { Interval = 50 };
-                _timer.Tick += OnTimerTick;
-                _bitmap = new Bitmap(88, 88, PixelFormat.Format32bppArgb);
+                _indicatorAnimationTimer = new Timer { Interval = 50 };
+                _indicatorAnimationTimer.Tick += OnIndicatorAnimationTimerTick;
+                _bitmap = new Bitmap(IndicatorWidth, IndicatorHeight, PixelFormat.Format32bppArgb);
             }
 
             public DockingIndicatorForm(Class8 manager, ControlLayoutSystem layoutSystem) : this()
@@ -1130,7 +1127,7 @@ namespace TD.SandDock
                 _manager = manager;
                 _layoutSystem = layoutSystem;
                 IndicatorBounds = new Rectangle(layoutSystem.DockContainer.PointToScreen(layoutSystem.Bounds.Location), layoutSystem.Bounds.Size);
-                IndicatorBounds = new Rectangle(IndicatorBounds.X + IndicatorBounds.Width / 2 - 44, IndicatorBounds.Y + IndicatorBounds.Height / 2 - 44, 88, 88);
+                IndicatorBounds = new Rectangle(IndicatorBounds.X + IndicatorBounds.Width / 2 - 44, IndicatorBounds.Y + IndicatorBounds.Height / 2 - 44, IndicatorWidth, IndicatorHeight);
                 PrepareIndicator();
             }
 
@@ -1164,8 +1161,8 @@ namespace TD.SandDock
                 if (disposing)
                 {
                     _bitmap.Dispose();
-                    _timer.Tick -= OnTimerTick;
-                    _timer.Dispose();
+                    _indicatorAnimationTimer.Tick -= OnIndicatorAnimationTimerTick;
+                    _indicatorAnimationTimer.Dispose();
                 }
                 base.Dispose(disposing);
             }
@@ -1324,24 +1321,24 @@ namespace TD.SandDock
 
             public void method_12()
             {
-                if (Visible || (!bool_1 && _timer.Enabled))
+                if (Visible || (!bool_1 && _indicatorAnimationTimer.Enabled))
                 {
                     int_5 = Environment.TickCount;
                     bool_1 = true;
-                    _timer.Start();
+                    _indicatorAnimationTimer.Start();
                 }
             }
 
-            public void method_13()
+            public void UpdateWindow()
             {
                 method_0(_bitmap, 0);
-                method_14();
+                SetIndicatorPosition();
                 int_5 = Environment.TickCount;
                 bool_1 = false;
-                _timer.Start();
+                _indicatorAnimationTimer.Start();
             }
 
-            private void method_14()
+            private void SetIndicatorPosition()
             {
                 Native.SetWindowPos(Handle, WMConstants.HWND_TOPMOST, IndicatorBounds.X, IndicatorBounds.Y, IndicatorBounds.Width, IndicatorBounds.Height, WMConstants.SWP_SHOWWINDOW + WMConstants.SWP_NOACTIVATE);
                 Location = IndicatorBounds.Location;
@@ -1401,7 +1398,7 @@ namespace TD.SandDock
                     layoutSystem = _layoutSystem,
                     dockContainer = _layoutSystem?.DockContainer
                 };
-                if (IsInRectangle(Rectangle_1, point) && _manager.method_5(ContainerDockLocation.Top))
+                if (IsInRectangle(Rectangle_1, point) && _manager.AllowDock(ContainerDockLocation.Top))
                 {
                     if (DockStyle != DockStyle.Top)
                     {
@@ -1415,7 +1412,7 @@ namespace TD.SandDock
                     goto IL_178;
                 }
                 IL_75:
-                if (IsInRectangle(Rectangle_2, point) && _manager.method_5(ContainerDockLocation.Right))
+                if (IsInRectangle(Rectangle_2, point) && _manager.AllowDock(ContainerDockLocation.Right))
                 {
                     if (DockStyle != DockStyle.Right)
                     {
@@ -1429,7 +1426,7 @@ namespace TD.SandDock
                     goto IL_178;
                 }
                 IL_B9:
-                if (IsInRectangle(Rectangle_3, point) && _manager.method_5(ContainerDockLocation.Bottom))
+                if (IsInRectangle(Rectangle_3, point) && _manager.AllowDock(ContainerDockLocation.Bottom))
                 {
                     if (DockStyle == DockStyle.Bottom || DockStyle == DockStyle.Fill)
                     {
@@ -1438,9 +1435,9 @@ namespace TD.SandDock
                         goto IL_178;
                     }
                 }
-                if (!IsInRectangle(Rectangle_4, point) || !_manager.method_5(ContainerDockLocation.Left) || (DockStyle != DockStyle.Left && DockStyle != DockStyle.Fill))
+                if (!IsInRectangle(Rectangle_4, point) || !_manager.AllowDock(ContainerDockLocation.Left) || (DockStyle != DockStyle.Left && DockStyle != DockStyle.Fill))
                 {
-                    if (IsInRectangle(Rectangle_0, point) && _manager.method_5(ContainerDockLocation.Center))
+                    if (IsInRectangle(Rectangle_0, point) && _manager.AllowDock(ContainerDockLocation.Center))
                     {
                         if (DockStyle == DockStyle.Fill)
                         {
@@ -1461,7 +1458,7 @@ namespace TD.SandDock
                 {
                     dockTarget.type = DockTargetType.CreateNewContainer;
                     dockTarget.middle = DockStyle == DockStyle.Fill;
-                    dockTarget.Bounds = smethod_2(_manager.method_8(dockTarget.DockLocation, _manager.DockedSize, dockTarget.middle), _manager.Manager.DockSystemContainer);
+                    dockTarget.Bounds = ToControlBounds(_manager.method_8(dockTarget.DockLocation, _manager.DockedSize, dockTarget.middle), _manager.Manager.DockSystemContainer);
                 }
                 return dockTarget;
             }
@@ -1527,26 +1524,26 @@ namespace TD.SandDock
                 }
             }
 
-            private void OnTimerTick(object sender, EventArgs e)
+            private void OnIndicatorAnimationTimerTick(object sender, EventArgs e)
             {
                 int num = Environment.TickCount - int_5;
                 if (num > 200)
                 {
                     num = 200;
                 }
-                double num2 = num / 200.0;
+                var alpha = num / 200.0;
                 if (bool_1)
                 {
-                    num2 = (1.0 - num2) * 255.0;
+                    alpha = (1.0 - alpha) * 255.0;
                 }
                 else
                 {
-                    num2 *= 255.0;
+                    alpha *= 255.0;
                 }
-                method_0(_bitmap, (byte)num2);
+                method_0(_bitmap, (byte)alpha);
                 if (num >= 200)
                 {
-                    _timer.Stop();
+                    _indicatorAnimationTimer.Stop();
                     Visible = !bool_1;
                     if (bool_2)
                     {
@@ -1583,9 +1580,9 @@ namespace TD.SandDock
 
             private DockSide _dockSide = DockSide.None;
 
-            private const int int_0 = 88;
+            private const int IndicatorWidth = 88;
 
-            private const int int_1 = 88;
+            private const int IndicatorHeight = 88;
 
             private const int int_2 = 200;
 
@@ -1595,7 +1592,7 @@ namespace TD.SandDock
 
             private int int_5;
 
-            private readonly Timer _timer;
+            private readonly Timer _indicatorAnimationTimer;
         }
     }
 
@@ -1603,9 +1600,9 @@ namespace TD.SandDock
     {
         public ResizingManager(AutoHideBar bar, PopupContainer popupContainer, Point startPoint) : base(bar, bar.Manager?.DockingHints ?? DockingHints.TranslucentFill, false)
         {
-            control0_0 = bar;
-            control1_0 = popupContainer;
-            point_0 = startPoint;
+            _autoHideBar = bar;
+            _popupContainer = popupContainer;
+            _startPoint = startPoint;
             int num = bar.Manager?.MinimumDockContainerSize ?? 30;
             int num2 = bar.Manager?.MaximumDockContainerSize ?? 500;
             int_6 = popupContainer.PopupSize;
@@ -1650,55 +1647,52 @@ namespace TD.SandDock
         public override void Commit()
         {
             base.Commit();
-            ResizingManagerFinished?.Invoke(int_9);
+            Committed?.Invoke(int_9);
         }
 
         public override void OnMouseMove(Point position)
         {
             Rectangle empty = Rectangle.Empty;
-            if (!control0_0.Vertical)
+            if (!_autoHideBar.Vertical)
             {
                 if (position.Y < int_7)
                     position.Y = int_7;
                 if (position.Y > int_8)
                     position.Y = int_8;
-                empty = new Rectangle(0, position.Y - 2, control1_0.Width, 4);
+                empty = new Rectangle(0, position.Y - 2, _popupContainer.Width, 4);
             }
             else
             {
                 if (position.X < int_7)
-                {
                     position.X = int_7;
-                }
                 if (position.X > int_8)
-                {
                     position.X = int_8;
-                }
-                empty = new Rectangle(position.X - 2, 0, 4, control1_0.Height);
+                empty = new Rectangle(position.X - 2, 0, 4, _popupContainer.Height);
             }
-            switch (control0_0.Dock)
+            switch (_autoHideBar.Dock)
             {
                 case DockStyle.Top:
-                    int_9 = int_6 + (position.Y - point_0.Y);
+                    int_9 = int_6 + (position.Y - _startPoint.Y);
                     break;
                 case DockStyle.Bottom:
-                    int_9 = int_6 + (point_0.Y - position.Y);
+                    int_9 = int_6 + (_startPoint.Y - position.Y);
                     break;
                 case DockStyle.Left:
-                    int_9 = int_6 + (position.X - point_0.X);
+                    int_9 = int_6 + (position.X - _startPoint.X);
                     break;
                 case DockStyle.Right:
-                    int_9 = int_6 + (point_0.X - position.X);
+                    int_9 = int_6 + (_startPoint.X - position.X);
                     break;
             }
-            method_1(new Rectangle(control1_0.PointToScreen(empty.Location), empty.Size), false);
+            method_1(new Rectangle(_popupContainer.PointToScreen(empty.Location), empty.Size), false);
         }
 
-        public event ResizingManagerFinishedEventHandler ResizingManagerFinished;
+        [Naming(NamingType.FromOldVersion)]
+        public event CommittedEventHandler Committed;
 
-        private AutoHideBar control0_0;
+        private readonly AutoHideBar _autoHideBar;
 
-        private PopupContainer control1_0;
+        private readonly PopupContainer _popupContainer;
 
         private int int_6;
 
@@ -1708,21 +1702,22 @@ namespace TD.SandDock
 
         private int int_9;
 
-        private Point point_0;
+        private Point _startPoint;
 
-        public delegate void ResizingManagerFinishedEventHandler(int newSize);
+        [Naming(NamingType.FromOldVersion)]
+        public delegate void CommittedEventHandler(int newSize);
     }
 
     internal class SplittingManager : AbstractManager
     {
-        public SplittingManager(DockContainer container, SplitLayoutSystem splitLayout, LayoutSystemBase aboveLayout, LayoutSystemBase belowLayout, Point startPoint, DockingHints dockingHints) : base(container, dockingHints, false)
+        public SplittingManager(DockContainer container, SplitLayoutSystem splitLayoutSystem, LayoutSystemBase aboveLayout, LayoutSystemBase belowLayout, Point startPoint, DockingHints dockingHints) : base(container, dockingHints, false)
         {
-            this.container = container;
-            SplitLayout = splitLayout;
-            this.aboveLayout = aboveLayout;
-            this.belowLayout = belowLayout;
-            this.startPoint = startPoint;
-            if (splitLayout.SplitMode != Orientation.Horizontal)
+            _container = container;
+            SplitLayoutSystem = splitLayoutSystem;
+            _aboveLayout = aboveLayout;
+            _belowLayout = belowLayout;
+            _startPoint = startPoint;
+            if (splitLayoutSystem.SplitMode != Orientation.Horizontal)
             {
                 int_7 = aboveLayout.Bounds.X + 25;
                 int_8 = belowLayout.Bounds.Right - 25;
@@ -1740,57 +1735,57 @@ namespace TD.SandDock
         public override void Commit()
         {
             base.Commit();
-            SplittingManagerFinished?.Invoke(aboveLayout, belowLayout, aboveSize, belowSize);
+            SplittingManagerFinished?.Invoke(_aboveLayout, _belowLayout, _aboveSize, _belowSize);
         }
 
         public override void OnMouseMove(Point position)
         {
             Rectangle empty = Rectangle.Empty;
-            if (SplitLayout.SplitMode != Orientation.Horizontal)
+            if (SplitLayoutSystem.SplitMode != Orientation.Horizontal)
             {
-                empty = new Rectangle(position.X - 2, SplitLayout.Bounds.Y, 4, SplitLayout.Bounds.Height);
+                empty = new Rectangle(position.X - 2, SplitLayoutSystem.Bounds.Y, 4, SplitLayoutSystem.Bounds.Height);
                 empty.X = Math.Max(empty.X, int_7);
                 empty.X = Math.Min(empty.X, int_8 - 4);
-                float num = belowLayout.Bounds.Right - aboveLayout.Bounds.Left - 4;
-                aboveSize = (empty.X - aboveLayout.Bounds.Left) / num * float_2;
-                belowSize = float_2 - aboveSize;
+                float num = _belowLayout.Bounds.Right - _aboveLayout.Bounds.Left - 4;
+                _aboveSize = (empty.X - _aboveLayout.Bounds.Left) / num * float_2;
+                _belowSize = float_2 - _aboveSize;
             }
             else
             {
-                empty = new Rectangle(SplitLayout.Bounds.X, position.Y - 2, SplitLayout.Bounds.Width, 4);
+                empty = new Rectangle(SplitLayoutSystem.Bounds.X, position.Y - 2, SplitLayoutSystem.Bounds.Width, 4);
                 empty.Y = Math.Max(empty.Y, int_7);
                 empty.Y = Math.Min(empty.Y, int_8 - 4);
-                float num2 = belowLayout.Bounds.Bottom - aboveLayout.Bounds.Top - 4;
-                aboveSize = (empty.Y - aboveLayout.Bounds.Top) / num2 * float_2;
-                belowSize = float_2 - aboveSize;
+                float num2 = _belowLayout.Bounds.Bottom - _aboveLayout.Bounds.Top - 4;
+                _aboveSize = (empty.Y - _aboveLayout.Bounds.Top) / num2 * float_2;
+                _belowSize = float_2 - _aboveSize;
             }
-            method_1(new Rectangle(container.PointToScreen(empty.Location), empty.Size), false);
-            Cursor.Current = SplitLayout.SplitMode != Orientation.Horizontal ? Cursors.VSplit : Cursors.HSplit;
+            method_1(new Rectangle(_container.PointToScreen(empty.Location), empty.Size), false);
+            Cursor.Current = SplitLayoutSystem.SplitMode != Orientation.Horizontal ? Cursors.VSplit : Cursors.HSplit;
         }
 
-        public SplitLayoutSystem SplitLayout { get; }
+        public SplitLayoutSystem SplitLayoutSystem { get; }
 
         public event SplittingManagerFinishedEventHandler SplittingManagerFinished;
 
-        private DockContainer container;
+        private readonly DockContainer _container;
 
-        private float aboveSize;
+        private float _aboveSize;
 
-        private float belowSize;
+        private float _belowSize;
 
         private float float_2;
 
-        internal const int int_6 = 25;
+        private const int int_6 = 25;
 
         private int int_7;
 
         private int int_8;
 
-        private LayoutSystemBase aboveLayout;
+        private readonly LayoutSystemBase _aboveLayout;
 
-        private LayoutSystemBase belowLayout;
+        private readonly LayoutSystemBase _belowLayout;
 
-        private Point startPoint = Point.Empty;
+        private Point _startPoint = Point.Empty;
 
         public delegate void SplittingManagerFinishedEventHandler(LayoutSystemBase aboveLayout, LayoutSystemBase belowLayout, float aboveSize, float belowSize);
     }
@@ -1801,7 +1796,7 @@ namespace TD.SandDock
         {
             _container = container;
             Rectangle rectangle = Rectangle.Empty;
-            rectangle = Class7.smethod_2(Class7.smethod_1(container.Parent), container.Parent);
+            rectangle = Class7.ToControlBounds(Class7.GetDockingBounds(container.Parent), container.Parent);
             rectangle = new Rectangle(container.PointToClient(rectangle.Location), rectangle.Size);
             int num = manager?.MinimumDockContainerSize ?? 30;
             num = Math.Max(num, LayoutUtilities.smethod_12(container));
@@ -1836,7 +1831,7 @@ namespace TD.SandDock
         public override void Commit()
         {
             base.Commit();
-            ResizingManagerFinished?.Invoke(int_8);
+            Committed?.Invoke(int_8);
         }
 
         public override void OnMouseMove(Point position)
@@ -1885,7 +1880,8 @@ namespace TD.SandDock
             Cursor.Current = _container.Dock != DockStyle.Left && _container.Dock != DockStyle.Right ? Cursors.HSplit : Cursors.VSplit;
         }
 
-        public event ResizingManagerFinishedEventHandler ResizingManagerFinished;
+        [Naming(NamingType.FromOldVersion)]
+        public event CommittedEventHandler Committed;
 
         private readonly DockContainer _container;
 
@@ -1897,7 +1893,8 @@ namespace TD.SandDock
 
         private int int_9;
 
-        public delegate void ResizingManagerFinishedEventHandler(int newSize);
+        [Naming(NamingType.FromOldVersion)]
+        public delegate void CommittedEventHandler(int newSize);
     }
 
     public abstract class LayoutSystemBase
@@ -1921,38 +1918,29 @@ namespace TD.SandDock
             {
                 class7_0 = new Class7(manager, DockContainer, this, control, dockedSize, startPoint, dockingHints);
             }
-            class7_0.DockingManagerFinished += OnDockingManagerFinished;
+            class7_0.Committed += OnCommitted;
             class7_0.Cancalled += OnCancalled;
             class7_0.OnMouseMove(Cursor.Position);
         }
 
         private void method_1()
         {
-            class7_0.DockingManagerFinished -= OnDockingManagerFinished;
+            class7_0.Committed -= OnCommitted;
             class7_0.Cancalled -= OnCancalled;
             class7_0 = null;
         }
 
-        internal void method_2(SandDockManager sandDockManager_0, ContainerDockLocation containerDockLocation_0, ContainerDockEdge containerDockEdge_0)
+        internal void method_2(SandDockManager manager, ContainerDockLocation dockLocation, ContainerDockEdge dockEdge)
         {
-            DockControl[] dockControl_ = AllControls;
-            int num = 0;
-            if (dockControl_.Length > 0)
+            var num = AllControls.Length > 0 ? AllControls[0].MetaData.DockedContentSize: 0;
+            var rectangle = Class7.GetDockingBounds(manager.DockSystemContainer);
+            if (dockLocation != ContainerDockLocation.Left && dockLocation != ContainerDockLocation.Right)
             {
-                num = dockControl_[0].MetaData.DockedContentSize;
-            }
-            Rectangle rectangle = Class7.smethod_1(sandDockManager_0.DockSystemContainer);
-            if (containerDockLocation_0 != ContainerDockLocation.Left)
-            {
-                if (containerDockLocation_0 != ContainerDockLocation.Right)
+                if (dockLocation == ContainerDockLocation.Top || dockLocation == ContainerDockLocation.Bottom)
                 {
-                    if (containerDockLocation_0 != ContainerDockLocation.Top && containerDockLocation_0 != ContainerDockLocation.Bottom)
-                    {
-                        goto IL_7C;
-                    }
-                    num = Math.Min(num, Convert.ToInt32(rectangle.Height * 0.9));
-                    goto IL_7C;
+                    num = Math.Min(num, Convert.ToInt32(rectangle.Height*0.9));
                 }
+                goto IL_7C;
             }
             num = Math.Min(num, Convert.ToInt32(rectangle.Width * 0.9));
             IL_7C:
@@ -1964,20 +1952,20 @@ namespace TD.SandDock
             {
                 LayoutUtilities.smethod_10((ControlLayoutSystem)this);
             }
-            DockContainer dockContainer = sandDockManager_0.CreateNewDockContainer(containerDockLocation_0, containerDockEdge_0, num);
+            var dockContainer = manager.CreateNewDockContainer(dockLocation, dockEdge, num);
             if (!(dockContainer is DocumentContainer))
             {
                 dockContainer.LayoutSystem.LayoutSystems.Add(this);
-                return;
             }
-            var controlLayoutSystem = dockContainer.CreateNewLayoutSystem(WorkingSize);
-            dockContainer.LayoutSystem.LayoutSystems.Add(controlLayoutSystem);
-            if (this is SplitLayoutSystem)
+            else
             {
-                ((SplitLayoutSystem)this).MoveToLayoutSystem(controlLayoutSystem);
-                return;
+                var controlLayoutSystem = dockContainer.CreateNewLayoutSystem(WorkingSize);
+                dockContainer.LayoutSystem.LayoutSystems.Add(controlLayoutSystem);
+                if (this is SplitLayoutSystem)
+                    ((SplitLayoutSystem) this).MoveToLayoutSystem(controlLayoutSystem);
+                else
+                    controlLayoutSystem.Controls.AddRange(AllControls);
             }
-            controlLayoutSystem.Controls.AddRange(AllControls);
         }
 
         private void method_3()
@@ -2010,7 +1998,7 @@ namespace TD.SandDock
         {
         }
 
-        internal virtual void OnDockingManagerFinished(Class7.DockTarget target)
+        internal virtual void OnCommitted(Class7.DockTarget target)
         {
             method_1();
         }
@@ -2026,7 +2014,7 @@ namespace TD.SandDock
             DockContainer = container;
         }
 
-        internal abstract bool vmethod_3(ContainerDockLocation location);
+        internal abstract bool AllowDock(ContainerDockLocation location);
 
         internal abstract void vmethod_4(RendererBase renderer, Graphics g, Font font);
 
@@ -2058,19 +2046,18 @@ namespace TD.SandDock
             }
             set
             {
-                if (value.Width <= 0f || value.Height <= 0f)
-                    throw new ArgumentException("value");
+                if (value.Width <= 0f || value.Height <= 0f) throw new ArgumentException("value");
                 _workingSize = value;
             }
         }
 
         internal Class7 class7_0;
 
-        internal const int int_0 = 250;
+        private const int DefaultWidth = 250;
 
-        internal const int int_1 = 400;
+        private const int DefaultHeight = 400;
 
-        private SizeF _workingSize = new SizeF(250f, 400f);
+        private SizeF _workingSize = new SizeF(DefaultWidth, DefaultHeight);
 
         internal SplitLayoutSystem _parent;
     }
