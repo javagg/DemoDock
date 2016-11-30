@@ -245,9 +245,9 @@ namespace TD.SandDock
         private Rectangle _hintRect = Rectangle.Empty;
     }
 
-    internal class Class7 : AbstractManager
+    internal class StandardDockingManager : AbstractManager
     {
-        public Class7(SandDockManager manager, DockContainer container, LayoutSystemBase sourceControlSystem, DockControl sourceControl, int dockedSize, Point startPoint, DockingHints dockingHints) : base(container, dockingHints, true, container.WorkingRenderer.TabStripMetrics.Height)
+        public StandardDockingManager(SandDockManager manager, DockContainer container, LayoutSystemBase sourceControlSystem, DockControl sourceControl, int dockedSize, Point startPoint, DockingHints dockingHints) : base(container, dockingHints, true, container.WorkingRenderer.TabStripMetrics.Height)
         {
             Manager = manager;
             Container = container;
@@ -877,9 +877,9 @@ namespace TD.SandDock
         }
     }
 
-    internal class Class8 : Class7
+    internal class WhidbeyDockingManager : StandardDockingManager
     {
-        public Class8(SandDockManager manager, DockContainer container, LayoutSystemBase sourceControlSystem, DockControl sourceControl, int dockedSize, Point startPoint, DockingHints dockingHints) : base(manager, container, sourceControlSystem, sourceControl, dockedSize, startPoint, dockingHints)
+        public WhidbeyDockingManager(SandDockManager manager, DockContainer container, LayoutSystemBase sourceControlSystem, DockControl sourceControl, int dockedSize, Point startPoint, DockingHints dockingHints) : base(manager, container, sourceControlSystem, sourceControl, dockedSize, startPoint, dockingHints)
         {
             _indicators = new ArrayList();
             if (Manager?.DockSystemContainer != null)
@@ -1152,7 +1152,7 @@ namespace TD.SandDock
               
                 base.OnPaint(e);
             }
-            public DockingIndicatorForm(Class8 manager, ControlLayoutSystem layoutSystem) : this()
+            public DockingIndicatorForm(WhidbeyDockingManager manager, ControlLayoutSystem layoutSystem) : this()
             {
                 _manager = manager;
                 _layoutSystem = layoutSystem;
@@ -1161,7 +1161,7 @@ namespace TD.SandDock
                 DrawDockingIndicators();
             }
 
-            public DockingIndicatorForm(Class8 manager, Rectangle fc, DockStyle dockStyle) : this()
+            public DockingIndicatorForm(WhidbeyDockingManager manager, Rectangle fc, DockStyle dockStyle) : this()
             {
                 _manager = manager;
                 DockStyle = dockStyle;
@@ -1544,7 +1544,7 @@ namespace TD.SandDock
 
             private bool bool_2;
 
-            private readonly Class8 _manager;
+            private readonly WhidbeyDockingManager _manager;
 
             private readonly ControlLayoutSystem _layoutSystem;
 
@@ -1766,7 +1766,7 @@ namespace TD.SandDock
         {
             _container = container;
             Rectangle rectangle = Rectangle.Empty;
-            rectangle = Class7.ToControlBounds(Class7.GetDockingBounds(container.Parent), container.Parent);
+            rectangle = StandardDockingManager.ToControlBounds(StandardDockingManager.GetDockingBounds(container.Parent), container.Parent);
             rectangle = new Rectangle(container.PointToClient(rectangle.Location), rectangle.Size);
             int minContainerSize = manager?.MinimumDockContainerSize ?? 30;
             minContainerSize = Math.Max(minContainerSize, LayoutUtilities.GetDockedSize(container));
@@ -1878,67 +1878,58 @@ namespace TD.SandDock
             Bounds = bounds;
         }
 
-        internal void method_0(SandDockManager manager, DockContainer container, LayoutSystemBase layoutSystem, DockControl control, int dockedSize, Point startPoint, DockingHints dockingHints, DockingManager dockingManager_0)
+        internal void StartDockingSession(SandDockManager manager, DockContainer container, LayoutSystemBase layoutSystem, DockControl control, int dockedSize, Point startPoint, DockingHints dockingHints, DockingManager dockingManager)
         {
-            if (dockingManager_0 == DockingManager.Whidbey && AbstractManager.WhidbeySupported())
-            {
-                class7_0 = new Class8(manager, DockContainer, this, control, dockedSize, startPoint, dockingHints);
-            }
+            if (dockingManager == DockingManager.Whidbey && AbstractManager.WhidbeySupported())
+                _dockingManager = new WhidbeyDockingManager(manager, DockContainer, this, control, dockedSize, startPoint, dockingHints);
             else
-            {
-                class7_0 = new Class7(manager, DockContainer, this, control, dockedSize, startPoint, dockingHints);
-            }
-            class7_0.Committed += OnCommitted;
-            class7_0.Cancalled += OnCancalled;
-            class7_0.OnMouseMove(Cursor.Position);
+                _dockingManager = new StandardDockingManager(manager, DockContainer, this, control, dockedSize, startPoint, dockingHints);
+            _dockingManager.Committed += OnCommitted;
+            _dockingManager.Cancalled += OnCancalled;
+            _dockingManager.OnMouseMove(Cursor.Position);
         }
 
-        private void method_1()
+        private void FinishDockingSession()
         {
-            class7_0.Committed -= OnCommitted;
-            class7_0.Cancalled -= OnCancalled;
-            class7_0 = null;
+            _dockingManager.Committed -= OnCommitted;
+            _dockingManager.Cancalled -= OnCancalled;
+            _dockingManager = null;
         }
 
-        internal void method_2(SandDockManager manager, ContainerDockLocation dockLocation, ContainerDockEdge dockEdge)
+        internal void method_2(SandDockManager manager, ContainerDockLocation dockLocation, ContainerDockEdge edge)
         {
-            var num = AllControls.Length > 0 ? AllControls[0].MetaData.DockedContentSize : 0;
-            var rectangle = Class7.GetDockingBounds(manager.DockSystemContainer);
+            var contentSize = AllControls.Length > 0 ? AllControls[0].MetaData.DockedContentSize : 0;
+            var rectangle = StandardDockingManager.GetDockingBounds(manager.DockSystemContainer);
             if (dockLocation != ContainerDockLocation.Left && dockLocation != ContainerDockLocation.Right)
             {
                 if (dockLocation == ContainerDockLocation.Top || dockLocation == ContainerDockLocation.Bottom)
                 {
-                    num = Math.Min(num, Convert.ToInt32(rectangle.Height * 0.9));
+                    contentSize = Math.Min(contentSize, Convert.ToInt32(rectangle.Height * 0.9));
                 }
-                goto IL_7C;
-            }
-            num = Math.Min(num, Convert.ToInt32(rectangle.Width * 0.9));
-            IL_7C:
-            if (!(this is ControlLayoutSystem))
-            {
-                Parent?.LayoutSystems.Remove(this);
             }
             else
+                contentSize = Math.Min(contentSize, Convert.ToInt32(rectangle.Width * 0.9));
+            if (this is ControlLayoutSystem)
+                LayoutUtilities.smethod_10((ControlLayoutSystem) this);
+            else
+                Parent?.LayoutSystems.Remove(this);
+            var dockContainer = manager.CreateNewDockContainer(dockLocation, edge, contentSize);
+            if (dockContainer is DocumentContainer)
             {
-                LayoutUtilities.smethod_10((ControlLayoutSystem)this);
+                var layoutSystem = dockContainer.CreateNewLayoutSystem(WorkingSize);
+                dockContainer.LayoutSystem.LayoutSystems.Add(layoutSystem);
+                if (this is SplitLayoutSystem)
+                    ((SplitLayoutSystem) this).MoveToLayoutSystem(layoutSystem);
+                else
+                    layoutSystem.Controls.AddRange(AllControls);
             }
-            var dockContainer = manager.CreateNewDockContainer(dockLocation, dockEdge, num);
-            if (!(dockContainer is DocumentContainer))
+            else
             {
                 dockContainer.LayoutSystem.LayoutSystems.Add(this);
             }
-            else
-            {
-                var controlLayoutSystem = dockContainer.CreateNewLayoutSystem(WorkingSize);
-                dockContainer.LayoutSystem.LayoutSystems.Add(controlLayoutSystem);
-                if (this is SplitLayoutSystem)
-                    ((SplitLayoutSystem)this).MoveToLayoutSystem(controlLayoutSystem);
-                else
-                    controlLayoutSystem.Controls.AddRange(AllControls);
-            }
         }
 
-        private void method_3()
+        private void EnsureSandDockManagerExists()
         {
             if (Manager == null)
                 throw new InvalidOperationException("No SandDockManager is associated with this ControlLayoutSystem.");
@@ -1968,14 +1959,14 @@ namespace TD.SandDock
         {
         }
 
-        internal virtual void OnCommitted(Class7.DockTarget target)
+        internal virtual void OnCommitted(StandardDockingManager.DockTarget target)
         {
-            method_1();
+            FinishDockingSession();
         }
 
         internal virtual void OnCancalled(object sender, EventArgs e)
         {
-            method_1();
+            FinishDockingSession();
         }
 
         [Naming]
@@ -1986,7 +1977,7 @@ namespace TD.SandDock
 
         internal abstract bool AllowDock(ContainerDockLocation location);
 
-        internal abstract void vmethod_4(RendererBase renderer, Graphics g, Font font);
+        internal abstract void DrawDocumentStrip(RendererBase renderer, Graphics g, Font font);
 
         [Naming(NamingType.FromOldVersion)]
         internal abstract bool ContainsPersistableDockControls { get; }
@@ -2021,7 +2012,7 @@ namespace TD.SandDock
             }
         }
 
-        internal Class7 class7_0;
+        internal StandardDockingManager _dockingManager;
 
         private const int DefaultWidth = 250;
 

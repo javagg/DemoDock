@@ -60,11 +60,8 @@ namespace TD.SandDock
 
 		public override DockControl GetControlAt(Point position)
 		{
-			if (TabstripBounds.Contains(position) && (position.X < TabstripBounds.X + LeftPadding || position.X > TabstripBounds.Right - RightPadding))
-			{
-				return null;
-			}
-			return base.GetControlAt(position);
+		    return TabstripBounds.Contains(position) && (position.X < TabstripBounds.X + LeftPadding || position.X > TabstripBounds.Right - RightPadding)
+		        ? null : base.GetControlAt(position);
 		}
 
 		protected internal override void Layout(RendererBase renderer, Graphics graphics, Rectangle bounds, bool floating)
@@ -74,50 +71,50 @@ namespace TD.SandDock
 			method_22(renderer, graphics, TabstripBounds);
 		}
 
-		private void method_20(RendererBase renderer, Graphics graphics, Font font_0, DockControl dockControl_2)
+		private void method_20(RendererBase renderer, Graphics graphics, Font font_0, DockControl control)
 		{
-			DrawItemState drawItemState = DrawItemState.Default;
-			if (SelectedControl == dockControl_2)
+			var state = DrawItemState.Default;
+			if (SelectedControl == control)
 			{
-				drawItemState |= DrawItemState.Selected;
+				state |= DrawItemState.Selected;
 				if (DockContainer.Manager != null)
 				{
-					if (DockContainer.Manager.ActiveTabbedDocument == dockControl_2)
+					if (DockContainer.Manager.ActiveTabbedDocument == control)
 					{
-						drawItemState |= DrawItemState.Focus;
+						state |= DrawItemState.Focus;
 					}
 				}
 			}
-			if (dockControl_1 == dockControl_2)
+			if (dockControl_1 == control)
 			{
-				drawItemState |= DrawItemState.HotLight;
+				state |= DrawItemState.HotLight;
 			}
-			if (!dockControl_2.Enabled)
+			if (!control.Enabled)
 			{
-				drawItemState |= DrawItemState.Disabled;
+				state |= DrawItemState.Disabled;
 			}
 			bool drawSeparator = true;
 			if (SelectedControl != null)
 			{
-				if (Controls.IndexOf(dockControl_2) == Controls.IndexOf(SelectedControl) - 1)
+				if (Controls.IndexOf(control) == Controls.IndexOf(SelectedControl) - 1)
 				{
 					drawSeparator = false;
 				}
 			}
-			Rectangle tabBounds = dockControl_2.TabBounds;
-			if (IntegralClose && dockControl_2.AllowClose)
+			Rectangle tabBounds = control.TabBounds;
+			if (IntegralClose && control.AllowClose)
 			{
 				tabBounds.Width -= 17;
 			}
-			if ((drawItemState & DrawItemState.Focus) != DrawItemState.Focus)
+			if ((state & DrawItemState.Focus) != DrawItemState.Focus)
 			{
-				renderer.DrawDocumentStripTab(graphics, dockControl_2.TabBounds, tabBounds, dockControl_2.TabImage, dockControl_2.TabText, font_0, dockControl_2.BackColor, dockControl_2.ForeColor, drawItemState, drawSeparator);
+				renderer.DrawDocumentStripTab(graphics, control.TabBounds, tabBounds, control.TabImage, control.TabText, font_0, control.BackColor, control.ForeColor, state, drawSeparator);
 			}
 			else
 			{
-				using (Font font = new Font(font_0, FontStyle.Bold))
+				using (var font = new Font(font_0, FontStyle.Bold))
 				{
-					renderer.DrawDocumentStripTab(graphics, dockControl_2.TabBounds, tabBounds, dockControl_2.TabImage, dockControl_2.TabText, font, dockControl_2.BackColor, dockControl_2.ForeColor, drawItemState, drawSeparator);
+					renderer.DrawDocumentStripTab(graphics, control.TabBounds, tabBounds, control.TabImage, control.TabText, font, control.BackColor, control.ForeColor, state, drawSeparator);
 				}
 			}
 		}
@@ -204,8 +201,8 @@ namespace TD.SandDock
 			{
 				int_7 = int_8;
 			}
-			_leftScrollButton.bool_1 = (int_7 > 0);
-			_rightScrollButton.bool_1 = (int_7 < int_8);
+			_leftScrollButton.Enabled = (int_7 > 0);
+			_rightScrollButton.Enabled = (int_7 < int_8);
 			foreach (DockControl dockControl2 in Controls)
 			{
 				var rectangle = dockControl2.TabBounds;
@@ -312,45 +309,39 @@ namespace TD.SandDock
 			method_27(15);
 		}
 
-		internal override void OnCommitted(Class7.DockTarget target)
+		internal override void OnCommitted(StandardDockingManager.DockTarget target)
 		{
 		    base.OnCommitted(target);
-		    if ((target != null && target.type != Class7.DockTargetType.None) || SelectedControl == null || !IsInContainer) return;
+		    if ((target != null && target.type != StandardDockingManager.DockTargetType.None) || SelectedControl == null || !IsInContainer) return;
 		    var position = SelectedControl.PointToClient(Cursor.Position);
 		    DockContainer.ShowControlContextMenu(new ShowControlContextMenuEventArgs(SelectedControl, position,ContextMenuContext.Other));
 		}
 
-		internal override void vmethod_4(RendererBase renderer, Graphics g, Font font)
+		internal override void DrawDocumentStrip(RendererBase renderer, Graphics g, Font font)
 		{
 			renderer.DrawDocumentStripBackground(g, TabstripBounds);
-		    renderer.DrawDocumentClientBackground(g, ClientBounds, SelectedControl == null ? SystemColors.Control : SelectedControl.BackColor);
-		    Region clip = g.Clip;
-			Rectangle rectangle_ = TabstripBounds;
-			rectangle_.X += LeftPadding;
-			rectangle_.Width -= LeftPadding;
-			rectangle_.Width -= RightPadding;
-			g.SetClip(rectangle_);
-			for (int i = Controls.Count - 1; i >= 0; i--)
+		    renderer.DrawDocumentClientBackground(g, ClientBounds, SelectedControl?.BackColor ?? SystemColors.Control);
+		    var clip = g.Clip;
+			var rect = TabstripBounds;
+			rect.X += LeftPadding;
+			rect.Width -= LeftPadding;
+			rect.Width -= RightPadding;
+			g.SetClip(rect);
+			for (var i = Controls.Count - 1; i >= 0; i--)
 			{
-				DockControl dockControl = Controls[i];
+				var dockControl = Controls[i];
 				method_20(renderer, g, dockControl.Font, dockControl);
 			}
-			if (SelectedControl != null)
-			{
-				method_20(renderer, g, SelectedControl.Font, SelectedControl);
-			}
-			if (IntegralClose)
-			{
-				method_10(g, renderer, _closeButton, SandDockButtonType.Close, true);
-			}
-			g.Clip = clip;
-			if (!IntegralClose)
-			{
-				method_10(g, renderer, _closeButton, SandDockButtonType.Close, true);
-			}
-			method_10(g, renderer, _rightScrollButton, SandDockButtonType.ScrollRight, _rightScrollButton.bool_1);
-			method_10(g, renderer, _leftScrollButton, SandDockButtonType.ScrollLeft, _leftScrollButton.bool_1);
-			method_10(g, renderer, _menuButton, SandDockButtonType.ActiveFiles, true);
+		    if (SelectedControl != null)
+		        method_20(renderer, g, SelectedControl.Font, SelectedControl);
+		    if (IntegralClose)
+		        DrawDocumentStripButton(g, renderer, _closeButton, SandDockButtonType.Close, true);
+		    g.Clip = clip;
+		    if (!IntegralClose)
+		        DrawDocumentStripButton(g, renderer, _closeButton, SandDockButtonType.Close, true);
+		    DrawDocumentStripButton(g, renderer, _rightScrollButton, SandDockButtonType.ScrollRight, _rightScrollButton.Enabled);
+			DrawDocumentStripButton(g, renderer, _leftScrollButton, SandDockButtonType.ScrollLeft, _leftScrollButton.Enabled);
+			DrawDocumentStripButton(g, renderer, _menuButton, SandDockButtonType.ActiveFiles, true);
 		}
 
 		internal override string GetDockButtonTextAt(Point point)
@@ -377,43 +368,43 @@ namespace TD.SandDock
 
 		internal override DockButtonInfo GetDockButtonAt(int x, int y)
 		{
-			if (_leftScrollButton.Visible && _leftScrollButton.bool_1 && _leftScrollButton.Bounds.Contains(x, y))
+			if (_leftScrollButton.Visible && _leftScrollButton.Enabled && _leftScrollButton.Bounds.Contains(x, y))
 			{
 				return _leftScrollButton;
 			}
-			if (_rightScrollButton.Visible && _rightScrollButton.bool_1 && _rightScrollButton.Bounds.Contains(x, y))
+			if (_rightScrollButton.Visible && _rightScrollButton.Enabled && _rightScrollButton.Bounds.Contains(x, y))
 			{
 				return _rightScrollButton;
 			}
-			if (_menuButton.Visible && _menuButton.bool_1 && _menuButton.Bounds.Contains(x, y))
+			if (_menuButton.Visible && _menuButton.Enabled && _menuButton.Bounds.Contains(x, y))
 			{
 				return _menuButton;
 			}
-			if (_closeButton.Visible && _closeButton.bool_1 && _closeButton.Bounds.Contains(x, y))
+			if (_closeButton.Visible && _closeButton.Enabled && _closeButton.Bounds.Contains(x, y))
 			{
 				return _closeButton;
 			}
 			return null;
 		}
 
-		internal override void vmethod_7(DockButtonInfo class17_8)
+		internal override void vmethod_7(DockButtonInfo button)
 		{
-			if (class17_8 == _leftScrollButton || class17_8 == _rightScrollButton)
+			if (button == _leftScrollButton || button == _rightScrollButton)
 			{
 				method_26();
 			}
 		}
 
-		internal override void vmethod_8(DockButtonInfo class17_8)
+		internal override void vmethod_8(DockButtonInfo button)
 		{
-			if (class17_8 == _closeButton)
+			if (button == _closeButton)
 			{
 				OnCloseButtonClick(new CancelEventArgs());
 				return;
 			}
-			if (class17_8 != _leftScrollButton && class17_8 != _rightScrollButton)
+			if (button != _leftScrollButton && button != _rightScrollButton)
 			{
-				if (class17_8 == _menuButton && DockContainer?.Manager != null)
+				if (button == _menuButton && DockContainer?.Manager != null)
 				{
 					var array = new DockControl[Controls.Count];
 					Controls.CopyTo(array, 0);

@@ -388,7 +388,7 @@ namespace TD.SandDock
             }
         }
 
-        internal void method_10(Graphics g, RendererBase renderer, DockButtonInfo class17_4, SandDockButtonType buttonType, bool bool_7)
+        internal void DrawDocumentStripButton(Graphics g, RendererBase renderer, DockButtonInfo class17_4, SandDockButtonType buttonType, bool bool_7)
         {
             if (!class17_4.Visible) return;
 
@@ -408,9 +408,9 @@ namespace TD.SandDock
             renderer.DrawDocumentStripButton(g, class17_4.Bounds, buttonType, state);
         }
 
-        internal void method_11(SandDockManager manager, DockControl dockControl_1, bool bool_7, Class7.DockTarget dockTarget_0)
+        internal void method_11(SandDockManager manager, DockControl dockControl_1, bool bool_7, StandardDockingManager.DockTarget dockTarget_0)
         {
-            if (dockTarget_0.type == Class7.DockTargetType.JoinExistingSystem)
+            if (dockTarget_0.type == StandardDockingManager.DockTargetType.JoinExistingSystem)
             {
                 if (!bool_7)
                 {
@@ -421,9 +421,9 @@ namespace TD.SandDock
             }
             else
             {
-                if (dockTarget_0.type != Class7.DockTargetType.CreateNewContainer)
+                if (dockTarget_0.type != StandardDockingManager.DockTargetType.CreateNewContainer)
                 {
-                    if (dockTarget_0.type == Class7.DockTargetType.SplitExistingSystem)
+                    if (dockTarget_0.type == StandardDockingManager.DockTargetType.SplitExistingSystem)
                     {
                         ControlLayoutSystem controlLayoutSystem = dockTarget_0.dockContainer.CreateNewLayoutSystem(bool_7 ? AllControls : new[]
                         {
@@ -779,9 +779,9 @@ namespace TD.SandDock
             }
             if ((e.Button & MouseButtons.Left) == MouseButtons.Left)
             {
-                if (class7_0 != null)
+                if (_dockingManager != null)
                 {
-                    class7_0.OnMouseMove(Cursor.Position);
+                    _dockingManager.OnMouseMove(Cursor.Position);
                     return;
                 }
                 Rectangle rectangle = new Rectangle(_dragPoint, new Size(0, 0));
@@ -792,7 +792,7 @@ namespace TD.SandDock
                     bool_5 = control == null;
                     var dockingHints_ = DockContainer.Manager?.DockingHints ?? DockingHints.TranslucentFill;
                     var dockingManager_ = DockContainer.Manager?.DockingManager ?? DockingManager.Standard;
-                    method_0(DockContainer.Manager, DockContainer, this, control, SelectedControl.MetaData.DockedContentSize, _dragPoint, dockingHints_, dockingManager_);
+                    StartDockingSession(DockContainer.Manager, DockContainer, this, control, SelectedControl.MetaData.DockedContentSize, _dragPoint, dockingHints_, dockingManager_);
                     return;
                 }
             }
@@ -807,9 +807,9 @@ namespace TD.SandDock
             base.OnMouseUp(e);
             _dragPoint = Point.Empty;
             _captured = false;
-            if (class7_0 != null)
+            if (_dockingManager != null)
             {
-                class7_0.Commit();
+                _dockingManager.Commit();
                 return;
             }
             if ((e.Button & MouseButtons.Right) == MouseButtons.Right)
@@ -889,10 +889,10 @@ namespace TD.SandDock
                 method_12(layoutSystem, side == DockSide.Top ? parent.LayoutSystems.IndexOf(this) : parent.LayoutSystems.IndexOf(this) + 1, true);
         }
 
-        internal override void OnCommitted(Class7.DockTarget dockTarget_0)
+        internal override void OnCommitted(StandardDockingManager.DockTarget dockTarget_0)
         {
             base.OnCommitted(dockTarget_0);
-            if (dockTarget_0 == null || dockTarget_0.type == Class7.DockTargetType.None || dockTarget_0.type == Class7.DockTargetType.AlreadyActioned)
+            if (dockTarget_0 == null || dockTarget_0.type == StandardDockingManager.DockTargetType.None || dockTarget_0.type == StandardDockingManager.DockTargetType.AlreadyActioned)
             {
                 return;
             }
@@ -906,9 +906,9 @@ namespace TD.SandDock
             {
                 LayoutUtilities.smethod_10(this);
             }
-            if (dockTarget_0.type != Class7.DockTargetType.Float)
+            if (dockTarget_0.type != StandardDockingManager.DockTargetType.Float)
             {
-                if (dockTarget_0.dockContainer != null || dockTarget_0.type == Class7.DockTargetType.CreateNewContainer)
+                if (dockTarget_0.dockContainer != null || dockTarget_0.type == StandardDockingManager.DockTargetType.CreateNewContainer)
                 {
                     method_11(manager, selectedControl, bool_5, dockTarget_0);
                     selectedControl?.Activate();
@@ -978,7 +978,7 @@ namespace TD.SandDock
 
         internal override bool AllowDock(ContainerDockLocation location) => Controls.Cast<DockControl>().All(control => control.AllowDock(location));
 
-        internal override void vmethod_4(RendererBase renderer, Graphics g, Font font)
+        internal override void DrawDocumentStrip(RendererBase renderer, Graphics g, Font font)
         {
             if (DockContainer == null) return;
             var container = DockContainer.IsFloating || DockContainer.Manager?.DockSystemContainer == null ? DockContainer : DockContainer.Manager.DockSystemContainer;

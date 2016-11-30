@@ -22,7 +22,7 @@ namespace TD.SandDock
     {
         public bool Visible;
 
-        public bool bool_1 = true;
+        public bool Enabled = true;
 
         public Rectangle Bounds = Rectangle.Empty;
     }
@@ -122,11 +122,11 @@ namespace TD.SandDock
 
 		private DockButtonInfo method_11(int x, int y)
 		{
-			if (_leftScrollButton.Visible && _leftScrollButton.bool_1 && _leftScrollButton.Bounds.Contains(x, y))
+			if (_leftScrollButton.Visible && _leftScrollButton.Enabled && _leftScrollButton.Bounds.Contains(x, y))
 			{
 				return _leftScrollButton;
 			}
-			if (_rightScrollButton.Visible && _rightScrollButton.bool_1 && _rightScrollButton.Bounds.Contains(x, y))
+			if (_rightScrollButton.Visible && _rightScrollButton.Enabled && _rightScrollButton.Bounds.Contains(x, y))
 			{
 				return _rightScrollButton;
 			}
@@ -385,8 +385,8 @@ namespace TD.SandDock
 			{
 				int_2 = int_3;
 			}
-			_leftScrollButton.bool_1 = int_2 > 0;
-			_rightScrollButton.bool_1 = int_2 < int_3;
+			_leftScrollButton.Enabled = int_2 > 0;
+			_rightScrollButton.Enabled = int_2 < int_3;
 			foreach (TabPage page in Controls)
 			{
 				var rectangle = page.TabBounds;
@@ -634,8 +634,8 @@ namespace TD.SandDock
 			}
 			if (TabLayout == TabLayout.SingleLineScrollable)
 			{
-				DrawButton(e.Graphics, Renderer, _rightScrollButton, SandDockButtonType.ScrollRight, _rightScrollButton.bool_1);
-				DrawButton(e.Graphics, Renderer, _leftScrollButton, SandDockButtonType.ScrollLeft, _leftScrollButton.bool_1);
+				DrawButton(e.Graphics, Renderer, _rightScrollButton, SandDockButtonType.ScrollRight, _rightScrollButton.Enabled);
+				DrawButton(e.Graphics, Renderer, _leftScrollButton, SandDockButtonType.ScrollLeft, _leftScrollButton.Enabled);
 			}
 			Renderer.FinishRenderSession();
 		    using (var brush = new SolidBrush(Color.FromArgb(30, Color.Black)))

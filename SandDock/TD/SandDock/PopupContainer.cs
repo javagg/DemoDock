@@ -190,7 +190,7 @@ namespace TD.SandDock
 		protected override void OnPaint(PaintEventArgs e)
 		{
 			_autoHideBar.Manager.Renderer.StartRenderSession(HotkeyPrefix.None);
-		    _layoutSystem?.vmethod_4(_autoHideBar.Manager.Renderer, e.Graphics, Font);
+		    _layoutSystem?.DrawDocumentStrip(_autoHideBar.Manager.Renderer, e.Graphics, Font);
 		    if (Resizable)
 			{
 				_autoHideBar.Manager.Renderer.DrawSplitter(null, this, e.Graphics, rectangle_1, (_autoHideBar.Dock == DockStyle.Top || _autoHideBar.Dock == DockStyle.Bottom) ? Orientation.Horizontal : Orientation.Vertical);

@@ -578,7 +578,7 @@ namespace TD.SandDock
                         return;
                 }
             }
-            var rectangle = Class7.GetDockingBounds(DockSystemContainer);
+            var rectangle = StandardDockingManager.GetDockingBounds(DockSystemContainer);
             int num = -rectangle.Width;
             int num2 = -rectangle.Height;
             if (this.DockSystemContainer is ToolStripContentPanel && (rectangle.Width <= 0 || rectangle.Height <= 0))

@@ -94,22 +94,22 @@ namespace TD.SandDock.Design
 		private void method_4(Point point_1)
 		{
 			var layout = _dockContainer.GetLayoutSystemAt(point_1);
-			if (layout is ControlLayoutSystem && class7_0 == null)
+			if (layout is ControlLayoutSystem && StandardDockingManager0 == null)
 			{
 				ControlLayoutSystem controlLayoutSystem = (ControlLayoutSystem)layout;
 				DockControl controlAt = controlLayoutSystem.GetControlAt(point_1);
-				class7_0 = new Class8(_dockContainer.Manager, _dockContainer, controlLayoutSystem, controlAt, controlLayoutSystem.SelectedControl.MetaData.DockedContentSize, point_1, DockingHints.TranslucentFill);
-				class7_0.Committed += vmethod_0;
-				class7_0.Cancalled += vmethod_1;
+				StandardDockingManager0 = new WhidbeyDockingManager(_dockContainer.Manager, _dockContainer, controlLayoutSystem, controlAt, controlLayoutSystem.SelectedControl.MetaData.DockedContentSize, point_1, DockingHints.TranslucentFill);
+				StandardDockingManager0.Committed += vmethod_0;
+				StandardDockingManager0.Cancalled += vmethod_1;
 				_dockContainer.Capture = true;
 			}
 		}
 
 		private void method_5()
 		{
-			class7_0.Committed -= vmethod_0;
-			class7_0.Cancalled -= vmethod_1;
-			class7_0 = null;
+			StandardDockingManager0.Committed -= vmethod_0;
+			StandardDockingManager0.Cancalled -= vmethod_1;
+			StandardDockingManager0 = null;
 		}
 
 		private void method_6()
@@ -264,9 +264,9 @@ namespace TD.SandDock.Design
 					class11_0.Commit();
 					_dockContainer.Capture = false;
 				}
-				else if (class7_0 != null)
+				else if (StandardDockingManager0 != null)
 				{
-					class7_0.Commit();
+					StandardDockingManager0.Commit();
 					_dockContainer.Capture = false;
 				}
 				else if (GetDockControlAt(_dockContainer.PointToClient(Cursor.Position)) == null)
@@ -299,7 +299,7 @@ namespace TD.SandDock.Design
 				class11_0.OnMouseMove(position);
 				return;
 			}
-			if (class7_0 == null)
+			if (StandardDockingManager0 == null)
 			{
 				if (point_0 != Point.Empty)
 				{
@@ -313,8 +313,8 @@ namespace TD.SandDock.Design
 				}
 				return;
 			}
-			class7_0.OnMouseMove(Cursor.Position);
-			if (class7_0.Target != null && class7_0.Target.type != Class7.DockTargetType.None)
+			StandardDockingManager0.OnMouseMove(Cursor.Position);
+			if (StandardDockingManager0.Target != null && StandardDockingManager0.Target.type != StandardDockingManager.DockTargetType.None)
 			{
 				Cursor.Current = Cursors.Default;
 				return;
@@ -352,16 +352,16 @@ namespace TD.SandDock.Design
 			}
 		}
 
-		internal virtual void vmethod_0(Class7.DockTarget target)
+		internal virtual void vmethod_0(StandardDockingManager.DockTarget target)
 		{
 			IComponentChangeService componentChangeService = (IComponentChangeService)GetService(typeof(IComponentChangeService));
 			IDesignerHost designerHost = (IDesignerHost)GetService(typeof(IDesignerHost));
 			ISelectionService selectionService = (ISelectionService)GetService(typeof(ISelectionService));
-			ControlLayoutSystem controlLayoutSystem = (ControlLayoutSystem)class7_0.SourceControlSystem;
-			bool flag = class7_0.SourceControl == null;
+			ControlLayoutSystem controlLayoutSystem = (ControlLayoutSystem)StandardDockingManager0.SourceControlSystem;
+			bool flag = StandardDockingManager0.SourceControl == null;
 			DockControl selectedControl = controlLayoutSystem.SelectedControl;
 			method_5();
-			if (target != null && target.type != Class7.DockTargetType.None && target.type != Class7.DockTargetType.AlreadyActioned)
+			if (target != null && target.type != StandardDockingManager.DockTargetType.None && target.type != StandardDockingManager.DockTargetType.AlreadyActioned)
 			{
 				DesignerTransaction designerTransaction = designerHost.CreateTransaction("Move DockControl");
 				try
@@ -403,7 +403,7 @@ namespace TD.SandDock.Design
 					}
 					if (target.dockContainer == null)
 					{
-						if (target.type == Class7.DockTargetType.CreateNewContainer)
+						if (target.type == StandardDockingManager.DockTargetType.CreateNewContainer)
 						{
 							if (control != null)
 							{
@@ -456,7 +456,7 @@ namespace TD.SandDock.Design
 
 		private Class11 class11_0;
 
-		private Class7 class7_0;
+		private StandardDockingManager StandardDockingManager0;
 
 		private DockContainer _dockContainer;
 

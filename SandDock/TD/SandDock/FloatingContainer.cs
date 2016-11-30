@@ -44,7 +44,7 @@ namespace TD.SandDock
             r.Offset(-SystemInformation.DragSize.Width / 2, -SystemInformation.DragSize.Height / 2);
             if (r.Contains(e.X, e.Y)) return;
             _dragPoint.Y = _dragPoint.Y + SystemInformation.ToolWindowCaptionHeight + SystemInformation.FrameBorderSize.Height;
-            _parent.LayoutSystem.method_0(_parent.Manager, _parent, _parent.LayoutSystem, null, _parent.SelectedControl.MetaData.DockedContentSize, _dragPoint, _parent.Manager.DockingHints, _parent.Manager.DockingManager);
+            _parent.LayoutSystem.StartDockingSession(_parent.Manager, _parent, _parent.LayoutSystem, null, _parent.SelectedControl.MetaData.DockedContentSize, _dragPoint, _parent.Manager.DockingHints, _parent.Manager.DockingManager);
             _parent._layoutSystem = _parent.LayoutSystem;
             Capture = false;
             _parent.Capture = true;

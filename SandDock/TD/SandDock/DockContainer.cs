@@ -444,7 +444,7 @@ namespace TD.SandDock
                 return;
             var container = Manager?.DockSystemContainer;
             WorkingRenderer.StartRenderSession(HotkeyPrefix.None);
-            LayoutSystem.vmethod_4(WorkingRenderer, e.Graphics, Font);
+            LayoutSystem.DrawDocumentStrip(WorkingRenderer, e.Graphics, Font);
             if (AllowResize)
                 WorkingRenderer.DrawSplitter(container, this, e.Graphics, rectangle_0,Dock == DockStyle.Top || Dock == DockStyle.Bottom? Orientation.Horizontal: Orientation.Vertical);
             WorkingRenderer.FinishRenderSession();

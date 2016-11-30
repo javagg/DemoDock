@@ -380,9 +380,9 @@ namespace TD.SandDock
         {
             if (e.Button == MouseButtons.Left)
             {
-                if (class7_0 != null)
+                if (_dockingManager != null)
                 {
-                    class7_0.OnMouseMove(Cursor.Position);
+                    _dockingManager.OnMouseMove(Cursor.Position);
                     return;
                 }
                 if (_splittingManager != null)
@@ -409,8 +409,8 @@ namespace TD.SandDock
         protected internal override void OnMouseUp(MouseEventArgs e)
         {
             base.OnMouseUp(e);
-            if (class7_0 != null)
-                class7_0.Commit();
+            if (_dockingManager != null)
+                _dockingManager.Commit();
             else
                 _splittingManager?.Commit();
         }
@@ -482,16 +482,16 @@ namespace TD.SandDock
             return false;
         }
 
-        internal override void OnCommitted(Class7.DockTarget dockTarget_0)
+        internal override void OnCommitted(StandardDockingManager.DockTarget dockTarget_0)
         {
             base.OnCommitted(dockTarget_0);
-            if (dockTarget_0 == null || dockTarget_0.type == Class7.DockTargetType.None || dockTarget_0.type == Class7.DockTargetType.AlreadyActioned)
+            if (dockTarget_0 == null || dockTarget_0.type == StandardDockingManager.DockTargetType.None || dockTarget_0.type == StandardDockingManager.DockTargetType.AlreadyActioned)
             {
                 return;
             }
             var @class = (FloatingContainer)DockContainer;
             var manager = DockContainer.Manager;
-            if (dockTarget_0.type == Class7.DockTargetType.Float)
+            if (dockTarget_0.type == StandardDockingManager.DockTargetType.Float)
             {
                 @class.method_19(dockTarget_0.Bounds, true, true);
                 return;
@@ -502,7 +502,7 @@ namespace TD.SandDock
             @class.Dispose();
             try
             {
-                if (dockTarget_0.type == Class7.DockTargetType.CreateNewContainer)
+                if (dockTarget_0.type == StandardDockingManager.DockTargetType.CreateNewContainer)
                 {
                     DockContainer dockContainer = manager.FindDockContainer(dockTarget_0.DockLocation);
                     if (dockTarget_0.DockLocation == ContainerDockLocation.Center && dockContainer != null)
@@ -515,9 +515,9 @@ namespace TD.SandDock
                         method_2(manager, dockTarget_0.DockLocation, dockTarget_0.middle ? ContainerDockEdge.Inside : ContainerDockEdge.Outside);
                     }
                 }
-                else if (dockTarget_0.type != Class7.DockTargetType.JoinExistingSystem)
+                else if (dockTarget_0.type != StandardDockingManager.DockTargetType.JoinExistingSystem)
                 {
-                    if (dockTarget_0.type == Class7.DockTargetType.SplitExistingSystem)
+                    if (dockTarget_0.type == StandardDockingManager.DockTargetType.SplitExistingSystem)
                     {
                         if (dockTarget_0.dockContainer is DocumentContainer)
                         {
@@ -557,7 +557,7 @@ namespace TD.SandDock
 
         internal override bool AllowDock(ContainerDockLocation location) => LayoutSystems.Cast<LayoutSystemBase>().All(layout => layout.AllowDock(location));
 
-        internal override void vmethod_4(RendererBase renderer, Graphics g, Font font)
+        internal override void DrawDocumentStrip(RendererBase renderer, Graphics g, Font font)
         {
             if (DockContainer == null) return;
             var container = DockContainer.Manager?.DockSystemContainer;
@@ -570,7 +570,7 @@ namespace TD.SandDock
                 {
                     var clip = g.Clip;
                     g.SetClip(layoutSystem.Bounds);
-                    layoutSystem.vmethod_4(renderer, g, font);
+                    layoutSystem.DrawDocumentStrip(renderer, g, font);
                     g.Clip = clip;
                 }
             }
