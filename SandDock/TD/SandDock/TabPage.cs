@@ -38,8 +38,7 @@ namespace TD.SandDock
 
 		protected override void OnPaintBackground(PaintEventArgs pevent)
 		{
-		    if (ClientRectangle == Rectangle.Empty)
-		        return;
+		    if (ClientRectangle == Rectangle.Empty) return;
 		    var parent = Parent as TabControl;
 		    if (parent != null && parent.Renderer.ShouldDrawTabControlBackground)
 		        parent.Renderer.DrawTabControlBackground(pevent.Graphics, ClientRectangle, BackColor, true);
@@ -135,7 +134,7 @@ namespace TD.SandDock
 			    if (value < 0)
 			        throw new ArgumentException("Value must be greater than or equal to zero.");
 			    _maximumTabWidth = value;
-			    (Parent as TabControl)?.method_3();
+			    (Parent as TabControl)?.MeasureTabStripBounds();
 			}
 		}
 
@@ -152,7 +151,7 @@ namespace TD.SandDock
 			set
 			{
 				_tabImage = value;
-			    (Parent as TabControl)?.method_3();
+			    (Parent as TabControl)?.MeasureTabStripBounds();
 			}
 		}
 
@@ -204,7 +203,7 @@ namespace TD.SandDock
 			set
 			{
 				base.Text = value;
-			    (Parent as TabControl)?.method_3();
+			    (Parent as TabControl)?.MeasureTabStripBounds();
 			}
 		}
 
@@ -225,12 +224,12 @@ namespace TD.SandDock
 
 		internal bool bool_0;
 
-		internal double double_0tw;
+		internal double TabWidth;
 
 		private Image _tabImage;
 
 		private int _maximumTabWidth;
 
-		internal int int_1;
+		internal int Index;
 	}
 }

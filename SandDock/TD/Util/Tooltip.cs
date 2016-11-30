@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Specialized;
 using System.Drawing;
 using System.Windows.Forms;
 using System.Windows.Forms.VisualStyles;
@@ -348,7 +347,10 @@ namespace TD.Util
 				}
 			}
 
-			protected override CreateParams CreateParams
+            // This truely prevents focus stealing
+            protected override bool ShowWithoutActivation => true;
+
+            protected override CreateParams CreateParams
 			{
 				get
 				{
@@ -359,9 +361,6 @@ namespace TD.Util
                     return cp;
 				}
 			}
-
-            // This truely prevents focus stealing
-            protected override bool ShowWithoutActivation => true;
 
 		    private readonly Tooltip _parent;
 

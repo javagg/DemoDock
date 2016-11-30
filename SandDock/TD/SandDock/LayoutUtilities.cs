@@ -63,9 +63,9 @@ namespace TD.SandDock
             }
         }
 
-        internal static int smethod_12(DockContainer container)
+        internal static int GetDockedSize(DockContainer container)
         {
-            int num = container.AllowResize ? 4 : 0;
+            var num = container.AllowResize ? 4 : 0;
             return num + smethod_13(container.LayoutSystem, container.Vertical ? Orientation.Vertical : Orientation.Horizontal) * 5;
         }
 

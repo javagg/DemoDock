@@ -27,7 +27,7 @@ namespace TD.SandDock
         public Rectangle Bounds = Rectangle.Empty;
     }
 
-    [DefaultEvent("SelectedPageChanged"), DefaultProperty("TabLayout"), Designer("TD.SandDock.Design.TabControlDesigner, SandDock.Design"), ToolboxItem(true), ToolboxBitmap(typeof(TabControl))]
+    [DefaultEvent("SelectedPageChanged"), DefaultProperty("TabLayout"), Designer("Design.TabControlDesigner"), ToolboxItem(true), ToolboxBitmap(typeof(TabControl))]
 	public class TabControl : Control
 	{
 		public TabControl()
@@ -37,19 +37,19 @@ namespace TD.SandDock
 			SetStyle(ControlStyles.SupportsTransparentBackColor, true);
 			_renderer = new MilborneRenderer();
 			TabPages = new TabPageCollection(this);
-			class17_0 = new DockButtonInfo();
-			class17_1 = new DockButtonInfo();
+			_leftScrollButton = new DockButtonInfo();
+			_rightScrollButton = new DockButtonInfo();
 		    _timer = new Timer {Interval = 20};
 		    _timer.Tick += OnTimerTick;
 		}
 
-		protected override ControlCollection CreateControlsInstance() => new Control2(this);
+		protected override ControlCollection CreateControlsInstance() => new TabPageControls(this);
 
         protected override void Dispose(bool disposing)
 		{
 			if (disposing)
 			{
-			    (_renderer as IDisposable)?.Dispose();
+			    (Renderer as IDisposable)?.Dispose();
 			    _timer.Dispose();
 			}
 			base.Dispose(disposing);
@@ -62,56 +62,51 @@ namespace TD.SandDock
             return keyData == Keys.Left || keyData == Keys.Up || keyData == Keys.Right || keyData == Keys.Down || base.IsInputKey(keyData);
         }
 
-		private void method_0(Graphics g, ITabControlRenderer renderer, DockButtonInfo class17_3, SandDockButtonType buttonType, bool bool_2)
+		private void DrawButton(Graphics g, ITabControlRenderer renderer, DockButtonInfo button, SandDockButtonType buttonType, bool enabled)
 		{
-			if (class17_3.Visible)
-			{
-				DrawItemState drawItemState = DrawItemState.Default;
-				if (HighlightedButton == class17_3)
-				{
-					drawItemState |= DrawItemState.HotLight;
-					if (bool_1)
-					{
-						drawItemState |= DrawItemState.Selected;
-					}
-				}
-				if (!bool_2)
-				{
-					drawItemState |= DrawItemState.Disabled;
-				}
-				renderer.DrawTabControlButton(g, class17_3.Bounds, buttonType, drawItemState);
-			}
+		    if (!button.Visible) return;
+
+		    var state = DrawItemState.Default;
+		    if (HighlightedButton == button)
+		    {
+		        state |= DrawItemState.HotLight;
+		        if (_canFocus)
+		            state |= DrawItemState.Selected;
+		    }
+		    if (!enabled)
+		        state |= DrawItemState.Disabled;
+		    renderer.DrawTabControlButton(g, button.Bounds, buttonType, state);
 		}
 
-		private void method_1(Graphics g)
+		private void DrawPages(Graphics g)
 		{
-            var array = Controls.Cast<TabPage>().Select(p => p.int_1).Distinct().ToArray();
+            var array = Controls.Cast<TabPage>().Select(p => p.Index).Distinct().ToArray();
             Array.Sort(array);
 			for (var i = 0; i < array.Length; i++)
 			{
 				for (var j = Controls.Count - 1; j >= 0; j--)
 				{
-					TabPage tabPage2 = (TabPage)Controls[j];
-					if (tabPage2.int_1 == array[i])
+					var page = (TabPage)Controls[j];
+					if (page.Index == array[i])
 					{
-						method_2(g, tabPage2);
+						DrawPage(g, page);
 						if (i < array.Length - 1)
 						{
-							var bounds = tabPage2.TabBounds;
+							var bounds = page.TabBounds;
 							bounds.X = TabStripBounds.X;
 							bounds.Width = TabStripBounds.Width;
 							bounds.Y = bounds.Bottom - 1;
 							bounds.Height = rectangle_1.Y - bounds.Y - 2;
-							_renderer.DrawFakeTabControlBackgroundExtension(g, bounds, tabPage2.BackColor);
+                            Renderer.DrawFakeTabControlBackgroundExtension(g, bounds, page.BackColor);
 						}
 					}
 				}
 			}
 		}
 
-		private void method_10(int int_4)
+		private void method_10(int offset)
 		{
-			int_2 += int_4;
+			int_2 += offset;
 			if (int_2 > int_3)
 			{
 				int_2 = int_3;
@@ -122,33 +117,33 @@ namespace TD.SandDock
 				int_2 = 0;
 				method_8();
 			}
-			method_3();
+			MeasureTabStripBounds();
 		}
 
-		private DockButtonInfo method_11(int int_4, int int_5)
+		private DockButtonInfo method_11(int x, int y)
 		{
-			if (class17_0.Visible && class17_0.bool_1 && class17_0.Bounds.Contains(int_4, int_5))
+			if (_leftScrollButton.Visible && _leftScrollButton.bool_1 && _leftScrollButton.Bounds.Contains(x, y))
 			{
-				return class17_0;
+				return _leftScrollButton;
 			}
-			if (class17_1.Visible && class17_1.bool_1 && class17_1.Bounds.Contains(int_4, int_5))
+			if (_rightScrollButton.Visible && _rightScrollButton.bool_1 && _rightScrollButton.Bounds.Contains(x, y))
 			{
-				return class17_1;
+				return _rightScrollButton;
 			}
 			return null;
 		}
 
-		private void method_12(DockButtonInfo class17_3)
+		private void method_12(DockButtonInfo button)
 		{
-			if (class17_3 == class17_0 || class17_3 == class17_1)
+			if (button == _leftScrollButton || button == _rightScrollButton)
 			{
 				method_9();
 			}
 		}
 
-		private void method_13(DockButtonInfo class17_3)
+		private void method_13(DockButtonInfo button)
 		{
-			if (class17_3 == class17_0 || class17_3 == class17_1)
+			if (button == _leftScrollButton || button == _rightScrollButton)
 			{
 				method_8();
 			}
@@ -161,7 +156,7 @@ namespace TD.SandDock
 		        SelectedPage.SelectNextControl(null, true, true, true, true);
 		    if (TabLayout != TabLayout.SingleLineScrollable) return;
 		    var stripBounds = TabStripBounds;
-		    stripBounds.Width -= TabStripBounds.Right - class17_0.Bounds.Left;
+		    stripBounds.Width -= TabStripBounds.Right - _leftScrollButton.Bounds.Left;
 		    var bounds = page.TabBounds;
 		    if (stripBounds.Contains(bounds)) return;
 		    var num = 0;
@@ -182,16 +177,16 @@ namespace TD.SandDock
 		    if (SelectedPage == null) return;
 		    var bounds = SelectedPage.TabBounds;
 		    int num = bounds.X + bounds.Width / 2;
-		    int num2 = SelectedPage.int_1;
+		    int num2 = SelectedPage.Index;
 		    num2 += int_4;
-		    foreach (TabPage tabPage in Controls)
+		    foreach (TabPage page in Controls)
 		    {
-		        bounds = tabPage.TabBounds;
-		        if (tabPage.int_1 == num2)
+		        bounds = page.TabBounds;
+		        if (page.Index == num2)
 		        {
 		            if (bounds.X <= num && bounds.Right >= num)
 		            {
-		                method_14(tabPage, bool_2);
+		                method_14(page, bool_2);
 		                break;
 		            }
 		        }
@@ -206,60 +201,58 @@ namespace TD.SandDock
 		    i += int_4;
 		    if (i > Controls.Count - 1)
 		    {
-		        i = (bool_3 ? 0 : (Controls.Count - 1));
+		        i = bool_3 ? 0 : Controls.Count - 1;
 		    }
 		    if (i < 0)
 		    {
-		        i = ((!bool_3) ? 0 : (Controls.Count - 1));
+		        i = bool_3 ? Controls.Count - 1 : 0;
 		    }
 		    method_14((TabPage)Controls[i], bool_2);
 		}
 
-		private void method_17(object sender, EventArgs e)
+		private void OnMetricsChanged(object sender, EventArgs e)
 		{
-			method_3();
+			MeasureTabStripBounds();
 			PerformLayout();
 		}
 
-		private void method_2(Graphics g, TabPage page)
+        [Naming]
+		private void DrawPage(Graphics g, TabPage page)
 		{
 			var state = DrawItemState.Default;
 			if (page == SelectedPage)
 			{
 				state |= DrawItemState.Selected;
-				if (Focused && ShowFocusCues)
-				{
-					state |= DrawItemState.Checked;
-				}
+			    if (Focused && ShowFocusCues)
+			        state |= DrawItemState.Checked;
 			}
 			Renderer.DrawTabControlTab(g, page.TabBounds, page.TabImage, page.Text, Font, page.BackColor, page.ForeColor, state, true);
 		}
-
-		internal void method_3()
+        [Naming]
+        internal void MeasureTabStripBounds()
 		{
 		    if (!IsHandleCreated) return;
-		    var renderer = Renderer;
-			using (var graphics = CreateGraphics())
+
+            using (var g = CreateGraphics())
 			{
-				renderer.StartRenderSession(HotkeyPrefix.Hide);
+                Renderer.StartRenderSession(HotkeyPrefix.Hide);
 				foreach (TabPage page in Controls)
 				{
 					page.bool_0 = false;
-					var state = page != SelectedPage ? DrawItemState.Default : DrawItemState.Selected;
-					page.double_0tw = renderer.MeasureTabControlTab(graphics, page.TabImage, page.Text, Font, state).Width;
-					if (page.MaximumTabWidth != 0 && page.MaximumTabWidth < page.double_0tw)
+					var state = page == SelectedPage ? DrawItemState.Selected : DrawItemState.Default;
+					page.TabWidth = Renderer.MeasureTabControlTab(g, page.TabImage, page.Text, Font, state).Width;
+					if (page.MaximumTabWidth != 0 && page.MaximumTabWidth < page.TabWidth)
 					{
-						page.double_0tw = page.MaximumTabWidth;
+						page.TabWidth = page.MaximumTabWidth;
 						page.bool_0 = true;
 					}
 				}
-				renderer.FinishRenderSession();
+                Renderer.FinishRenderSession();
 			}
-			var tabLayout = TabLayout;
-			if (tabLayout != TabLayout.MultipleLine)
+            if (TabLayout != TabLayout.MultipleLine)
 			{
                 _tabStripBounds = DisplayRectangle;
-                _tabStripBounds.Height = renderer.TabControlTabStripHeight;
+                _tabStripBounds.Height = Renderer.TabControlTabStripHeight;
 			}
 			else
 			{
@@ -268,15 +261,15 @@ namespace TD.SandDock
 				int num2 = 0;
 				foreach (TabPage page in Controls)
 				{
-					num2 += (int)page.double_0tw;
-				    if (num2 > width && num2 != (int) page.double_0tw)
+					num2 += (int)page.TabWidth;
+				    if (num2 > width && num2 != (int) page.TabWidth)
 				    {
 				        num++;
-				        num2 = (int) page.double_0tw;
+				        num2 = (int) page.TabWidth;
 				    }
-				    num2 -= renderer.TabControlTabExtra;
+				    num2 -= Renderer.TabControlTabExtra;
 				}
-				int num3 = (renderer.TabControlTabHeight - 2) * num + (renderer.TabControlTabStripHeight - renderer.TabControlTabHeight);
+				int num3 = (Renderer.TabControlTabHeight - 2) * num + (Renderer.TabControlTabStripHeight - Renderer.TabControlTabHeight);
 				num3 += 2;
                 _tabStripBounds = DisplayRectangle;
 			    _tabStripBounds.Height = num3;
@@ -285,23 +278,23 @@ namespace TD.SandDock
 			rectangle_1.Offset(0, TabStripBounds.Height);
 			rectangle_1.Height = rectangle_1.Height - TabStripBounds.Height;
 			rectangle_2 = rectangle_1;
-			rectangle_2.Inflate(-renderer.TabControlPadding.Width, -renderer.TabControlPadding.Height);
+            rectangle_2.Inflate(-Renderer.TabControlPadding.Width, -Renderer.TabControlPadding.Height);
 			switch (TabLayout)
 			{
 			case TabLayout.SingleLineScrollable:
-				method_5();
+				MeasureSingleLineScrollableTabPageBounds();
 				break;
 			case TabLayout.SingleLineFixed:
-				method_6();
+				MeasureSingleLineFixedTabPageBounds();
 				break;
 			case TabLayout.MultipleLine:
-				method_4();
+				MeasureMultipleLineTabPageBounds();
 				break;
 			}
-			Invalidate(renderer.ShouldDrawTabControlBackground);
+            Invalidate(Renderer.ShouldDrawTabControlBackground);
 		}
-
-		private void method_4()
+        [Naming]
+        private void MeasureMultipleLineTabPageBounds()
 		{
 			ArrayList arrayList = new ArrayList();
 			int arg_14_0 = DisplayRectangle.Width;
@@ -311,7 +304,7 @@ namespace TD.SandDock
 			bool flag = false;
 			foreach (TabPage tabPage in Controls)
 			{
-				if ((arrayList3.Count != 0 || flag) && num + tabPage.double_0tw > TabStripBounds.Right)
+				if ((arrayList3.Count != 0 || flag) && num + tabPage.TabWidth > TabStripBounds.Right)
 				{
 					arrayList.Add(arrayList3);
 					arrayList3 = new ArrayList();
@@ -330,7 +323,7 @@ namespace TD.SandDock
 						arrayList2 = arrayList3;
 					}
 				}
-				num += (int)tabPage.double_0tw - _renderer.TabControlTabExtra;
+				num += (int)tabPage.TabWidth - Renderer.TabControlTabExtra;
 			}
 			if (arrayList3.Count != 0)
 			{
@@ -341,7 +334,7 @@ namespace TD.SandDock
 				arrayList.Remove(arrayList2);
 				arrayList.Add(arrayList2);
 			}
-			int num2 = TabStripBounds.Top + (_renderer.TabControlTabStripHeight - _renderer.TabControlTabHeight);
+			int num2 = TabStripBounds.Top + (Renderer.TabControlTabStripHeight - Renderer.TabControlTabHeight);
 			foreach (ArrayList arrayList4 in arrayList)
 			{
 				int num3 = arrayList.IndexOf(arrayList4);
@@ -352,37 +345,37 @@ namespace TD.SandDock
 				num = TabStripBounds.Left;
 				foreach (TabPage tabPage2 in arrayList4)
 				{
-					tabPage2.int_1 = num3;
-					int num4 = (int)Math.Round(tabPage2.double_0tw, 0);
-					tabPage2.TabBounds = new Rectangle(num, num2, num4, _renderer.TabControlTabHeight);
-					num += num4 - _renderer.TabControlTabExtra;
+					tabPage2.Index = num3;
+					int num4 = (int)Math.Round(tabPage2.TabWidth, 0);
+					tabPage2.TabBounds = new Rectangle(num, num2, num4, Renderer.TabControlTabHeight);
+					num += num4 - Renderer.TabControlTabExtra;
 				}
-				num2 += _renderer.TabControlTabHeight - 2;
+				num2 += Renderer.TabControlTabHeight - 2;
 			}
 		}
-
-		private void method_5()
+        [Naming]
+        private void MeasureSingleLineScrollableTabPageBounds()
 		{
 			int y = TabStripBounds.Top + TabStripBounds.Height / 2 - 7;
 			int num = TabStripBounds.Right - 2;
-			class17_1.Visible = true;
-			class17_1.Bounds = new Rectangle(num - 14, y, 14, 15);
-			num -= 15;
-			class17_0.Visible = true;
-			class17_0.Bounds = new Rectangle(num - 14, y, 14, 15);
-			num -= 15;
+			_rightScrollButton.Visible = true;
+			_rightScrollButton.Bounds = new Rectangle(num - 14, y, 14, 15);
+			num -= _scrollStepLength;
+			_leftScrollButton.Visible = true;
+			_leftScrollButton.Bounds = new Rectangle(num - 14, y, 14, 15);
+			num -= _scrollStepLength;
 			int num2 = TabStripBounds.Left;
 			foreach (TabPage tabPage in Controls)
 			{
-				int num3 = (int)Math.Round(tabPage.double_0tw, 0);
-				tabPage.TabBounds = new Rectangle(num2, TabStripBounds.Bottom - _renderer.TabControlTabHeight, num3, _renderer.TabControlTabHeight);
-				num2 += num3 - _renderer.TabControlTabExtra;
+				int num3 = (int)Math.Round(tabPage.TabWidth, 0);
+				tabPage.TabBounds = new Rectangle(num2, TabStripBounds.Bottom - Renderer.TabControlTabHeight, num3, Renderer.TabControlTabHeight);
+				num2 += num3 - Renderer.TabControlTabExtra;
 			}
 			if (Controls.Count != 0)
 			{
-				num2 += _renderer.TabControlTabExtra;
+				num2 += Renderer.TabControlTabExtra;
 			}
-			int num4 = class17_0.Bounds.Left - TabStripBounds.Left;
+			int num4 = _leftScrollButton.Bounds.Left - TabStripBounds.Left;
 			int_3 = num2 - num4;
 			if (int_3 < 0)
 			{
@@ -392,25 +385,25 @@ namespace TD.SandDock
 			{
 				int_2 = int_3;
 			}
-			class17_0.bool_1 = (int_2 > 0);
-			class17_1.bool_1 = (int_2 < int_3);
-			foreach (TabPage tabPage2 in Controls)
+			_leftScrollButton.bool_1 = int_2 > 0;
+			_rightScrollButton.bool_1 = int_2 < int_3;
+			foreach (TabPage page in Controls)
 			{
-				Rectangle rectangle = tabPage2.TabBounds;
+				var rectangle = page.TabBounds;
 				rectangle.Offset(-int_2, 0);
-				tabPage2.TabBounds = rectangle;
+				page.TabBounds = rectangle;
 			}
 		}
-
-		private void method_6()
+        [Naming]
+        private void MeasureSingleLineFixedTabPageBounds()
 		{
 			method_7(Controls, false);
-			int num = TabStripBounds.Left;
+			var left = TabStripBounds.Left;
 			foreach (TabPage tabPage in Controls)
 			{
-				int num2 = (int)Math.Round(tabPage.double_0tw, 0);
-				tabPage.TabBounds = new Rectangle(num, TabStripBounds.Bottom - _renderer.TabControlTabHeight, num2, _renderer.TabControlTabHeight);
-				num += num2 - _renderer.TabControlTabExtra;
+				int width = (int)Math.Round(tabPage.TabWidth, 0);
+				tabPage.TabBounds = new Rectangle(left, TabStripBounds.Bottom - Renderer.TabControlTabHeight, width, Renderer.TabControlTabHeight);
+				left += width - Renderer.TabControlTabExtra;
 			}
 		}
 
@@ -420,11 +413,11 @@ namespace TD.SandDock
 			double num = 0.0;
 			foreach (TabPage tabPage in ilist_0)
 			{
-				num += tabPage.double_0tw;
+				num += tabPage.TabWidth;
 			}
 			if (ilist_0.Count >= 1)
 			{
-				num -= (ilist_0.Count - 1) * _renderer.TabControlTabExtra;
+				num -= (ilist_0.Count - 1) * Renderer.TabControlTabExtra;
 			}
 			if (num > width)
 			{
@@ -432,11 +425,11 @@ namespace TD.SandDock
 				for (int i = 0; i < ilist_0.Count; i++)
 				{
 					TabPage tabPage2 = (TabPage)ilist_0[i];
-					double num3 = (i != 0) ? (tabPage2.double_0tw - _renderer.TabControlTabExtra) : tabPage2.double_0tw;
+					double num3 = i != 0 ? tabPage2.TabWidth - Renderer.TabControlTabExtra : tabPage2.TabWidth;
 					double num4 = num3 / num;
 					num3 -= num2 * num4;
 					tabPage2.bool_0 = true;
-					tabPage2.double_0tw = ((i == 0) ? num3 : (num3 + _renderer.TabControlTabExtra));
+					tabPage2.TabWidth = i == 0 ? num3 : num3 + Renderer.TabControlTabExtra;
 				}
 				return;
 			}
@@ -446,10 +439,10 @@ namespace TD.SandDock
 				for (int j = 0; j < ilist_0.Count; j++)
 				{
 					TabPage tabPage3 = (TabPage)ilist_0[j];
-					double num6 = (j != 0) ? (tabPage3.double_0tw - _renderer.TabControlTabExtra) : tabPage3.double_0tw;
+					double num6 = j != 0 ? tabPage3.TabWidth - Renderer.TabControlTabExtra : tabPage3.TabWidth;
 					double num7 = num6 / num;
 					num6 += num5 * num7;
-					tabPage3.double_0tw = ((j == 0) ? num6 : (num6 + _renderer.TabControlTabExtra));
+					tabPage3.TabWidth = j == 0 ? num6 : num6 + Renderer.TabControlTabExtra;
 				}
 			}
 		}
@@ -458,7 +451,7 @@ namespace TD.SandDock
 		{
 			_timer.Enabled = false;
 			HighlightedButton = null;
-			bool_1 = false;
+			_canFocus = false;
 			Invalidate(TabStripBounds);
 		}
 
@@ -471,7 +464,7 @@ namespace TD.SandDock
 		protected override void OnControlAdded(ControlEventArgs e)
 		{
 			base.OnControlAdded(e);
-			method_3();
+			MeasureTabStripBounds();
 			PerformLayout();
 		}
 
@@ -490,13 +483,13 @@ namespace TD.SandDock
 					SelectedPage = TabPages[0];
 				}
 			}
-			method_3();
+			MeasureTabStripBounds();
 			PerformLayout();
 		}
 
 		protected override void OnFontChanged(EventArgs e)
 		{
-			method_3();
+			MeasureTabStripBounds();
 			PerformLayout();
 			base.OnFontChanged(e);
 		}
@@ -510,7 +503,7 @@ namespace TD.SandDock
 		protected override void OnHandleCreated(EventArgs e)
 		{
 			base.OnHandleCreated(e);
-			method_3();
+			MeasureTabStripBounds();
 			PerformLayout();
 		}
 
@@ -556,7 +549,7 @@ namespace TD.SandDock
 			{
 				if (HighlightedButton != null)
 				{
-					bool_1 = true;
+					_canFocus = true;
 					Invalidate(TabStripBounds);
 					method_12(HighlightedButton);
 					return;
@@ -579,7 +572,7 @@ namespace TD.SandDock
 		protected override void OnMouseLeave(EventArgs e)
 		{
 			HighlightedButton = null;
-			bool_1 = false;
+			_canFocus = false;
 			base.OnMouseLeave(e);
 		}
 
@@ -597,7 +590,7 @@ namespace TD.SandDock
 			if ((e.Button & MouseButtons.Left) == MouseButtons.Left && HighlightedButton != null)
 			{
 				method_13(HighlightedButton);
-				bool_1 = false;
+				_canFocus = false;
 				Invalidate(TabStripBounds);
 			}
 			base.OnMouseUp(e);
@@ -607,29 +600,29 @@ namespace TD.SandDock
 		{
 			Renderer.StartRenderSession(ShowKeyboardCues ? HotkeyPrefix.Show : HotkeyPrefix.Hide);
 			DockControl.DrawBorder(this, e.Graphics, _borderStyle);
-			_renderer.DrawTabControlTabStripBackground(e.Graphics, TabStripBounds, BackColor);
+			Renderer.DrawTabControlTabStripBackground(e.Graphics, TabStripBounds, BackColor);
 			Region clip = null;
 			if (TabLayout == TabLayout.SingleLineScrollable)
 			{
 				clip = e.Graphics.Clip;
-				Rectangle clip2 = TabStripBounds;
-				clip2.Width -= TabStripBounds.Right - class17_0.Bounds.Left;
+				var clip2 = TabStripBounds;
+				clip2.Width -= TabStripBounds.Right - _leftScrollButton.Bounds.Left;
 				e.Graphics.SetClip(clip2);
 			}
 			if (TabLayout != TabLayout.MultipleLine)
 			{
-				for (int i = Controls.Count - 1; i >= 0; i--)
+				for (var i = Controls.Count - 1; i >= 0; i--)
 				{
-					method_2(e.Graphics, (TabPage)Controls[i]);
+					DrawPage(e.Graphics, (TabPage)Controls[i]);
 				}
 			}
 			else
 			{
-				method_1(e.Graphics);
+				DrawPages(e.Graphics);
 			}
 			if (SelectedPage != null)
 			{
-				method_2(e.Graphics, SelectedPage);
+				DrawPage(e.Graphics, SelectedPage);
 			}
 			if (TabLayout == TabLayout.SingleLineScrollable)
 			{
@@ -637,12 +630,12 @@ namespace TD.SandDock
 			}
 			if (SelectedPage != null)
 			{
-				_renderer.DrawTabControlBackground(e.Graphics, rectangle_1, SelectedPage.BackColor, false);
+                Renderer.DrawTabControlBackground(e.Graphics, rectangle_1, SelectedPage.BackColor, false);
 			}
 			if (TabLayout == TabLayout.SingleLineScrollable)
 			{
-				method_0(e.Graphics, _renderer, class17_1, SandDockButtonType.ScrollRight, class17_1.bool_1);
-				method_0(e.Graphics, _renderer, class17_0, SandDockButtonType.ScrollLeft, class17_0.bool_1);
+				DrawButton(e.Graphics, Renderer, _rightScrollButton, SandDockButtonType.ScrollRight, _rightScrollButton.bool_1);
+				DrawButton(e.Graphics, Renderer, _leftScrollButton, SandDockButtonType.ScrollLeft, _leftScrollButton.bool_1);
 			}
 			Renderer.FinishRenderSession();
 		    using (var brush = new SolidBrush(Color.FromArgb(30, Color.Black)))
@@ -652,7 +645,7 @@ namespace TD.SandDock
 
 		protected override void OnResize(EventArgs e)
 		{
-			method_3();
+			MeasureTabStripBounds();
 			base.OnResize(e);
 		}
 
@@ -670,8 +663,9 @@ namespace TD.SandDock
 				case Keys.LButton | Keys.Space | Keys.Control:
 					break;
 				case Keys.RButton | Keys.Space | Keys.Control:
-					goto IL_3C;
-				default:
+                        method_16(1, true, true);
+                        return true;
+                    default:
 					if (keyData != (Keys.LButton | Keys.Back | Keys.Shift | Keys.Control))
 					{
 						return base.ProcessCmdKey(ref msg, keyData);
@@ -681,7 +675,6 @@ namespace TD.SandDock
 				method_16(-1, true, true);
 				return true;
 			}
-			IL_3C:
 			method_16(1, true, true);
 			return true;
 		}
@@ -692,46 +685,18 @@ namespace TD.SandDock
 		    if (page == null) return base.ProcessMnemonic(charCode);
 		    method_14(page, true);
 		    return true;
-
-		    IEnumerator enumerator = Controls.GetEnumerator();
-			bool result;
-			try
-			{
-				while (enumerator.MoveNext())
-				{
-					TabPage tabPage = (TabPage)enumerator.Current;
-					if (IsMnemonic(charCode, tabPage.Text))
-					{
-						method_14(tabPage, true);
-						result = true;
-						return result;
-					}
-				}
-				goto IL_52;
-			}
-			finally
-			{
-				IDisposable disposable = enumerator as IDisposable;
-				if (disposable != null)
-				{
-					disposable.Dispose();
-				}
-			}
-			return result;
-			IL_52:
-			return base.ProcessMnemonic(charCode);
 		}
 
 		private void OnTimerTick(object sender, EventArgs e)
 		{
-			if (HighlightedButton == class17_0)
+			if (HighlightedButton == _leftScrollButton)
 			{
-				method_10(-15);
+				method_10(-_scrollStepLength);
 				return;
 			}
-			if (HighlightedButton == class17_1)
+			if (HighlightedButton == _rightScrollButton)
 			{
-				method_10(15);
+				method_10(_scrollStepLength);
 				return;
 			}
 			method_8();
@@ -759,7 +724,7 @@ namespace TD.SandDock
 			set
 			{
 				_borderStyle = value;
-				method_3();
+				MeasureTabStripBounds();
 				PerformLayout();
 			}
 		}
@@ -769,16 +734,14 @@ namespace TD.SandDock
 		{
 			get
 			{
-				return class17_2;
+				return _highlightedButton;
 			}
 			set
 			{
-			    if (class17_2 == value) return;
-			    if (class17_2 != null)
-			        Invalidate(TabStripBounds);
-			    class17_2 = value;
-			    if (class17_2 != null)
-			        Invalidate(TabStripBounds);
+			    if (_highlightedButton == value) return;
+			    if (_highlightedButton != null) Invalidate(TabStripBounds);
+			    _highlightedButton = value;
+			    if (_highlightedButton != null) Invalidate(TabStripBounds);
 			}
 		}
 
@@ -826,28 +789,19 @@ namespace TD.SandDock
 			}
 			set
 			{
-			    if (value == null)
-			        throw new ArgumentNullException();
+			    if (value == null) throw new ArgumentNullException();
 			    (_renderer as IDisposable)?.Dispose();
 			    if (_renderer is RendererBase)
-				{
-					((RendererBase)_renderer).MetricsChanged -= method_17;
-				}
-				_renderer = value;
-				if (value.ShouldDrawControlBorder && BorderStyle == BorderStyle.None)
-				{
-					BorderStyle = BorderStyle.Flat;
-				}
-				else if (!value.ShouldDrawControlBorder && BorderStyle != BorderStyle.None)
-				{
-					BorderStyle = BorderStyle.None;
-				}
-			    var @base = _renderer as RendererBase;
-			    if (@base != null)
-				{
-					@base.MetricsChanged += method_17;
-				}
-				method_3();
+			        ((RendererBase) _renderer).MetricsChanged -= OnMetricsChanged;
+			    _renderer = value;
+			    if (value.ShouldDrawControlBorder && BorderStyle == BorderStyle.None)
+			        BorderStyle = BorderStyle.Flat;
+			    else if (!value.ShouldDrawControlBorder && BorderStyle != BorderStyle.None)
+			        BorderStyle = BorderStyle.None;
+			    var renderer = _renderer as RendererBase;
+			    if (renderer != null)
+			        renderer.MetricsChanged += OnMetricsChanged;
+			    MeasureTabStripBounds();
 				PerformLayout();
 			}
 		}
@@ -877,7 +831,7 @@ namespace TD.SandDock
 			    if (value == null) throw new ArgumentNullException();
 			    if (!Controls.Contains(value)) throw new ArgumentException("Specified TabPage does not belong to this TabControl.");
                 _selectedPage = value;
-			    method_3();
+			    MeasureTabStripBounds();
 			    SuspendLayout();
 			    foreach (var p in TabPages.Cast<TabPage>())
 			        p.Visible = p == _selectedPage;
@@ -896,7 +850,7 @@ namespace TD.SandDock
 			set
 			{
 				_tabLayout = value;
-				method_3();
+				MeasureTabStripBounds();
 				PerformLayout();
 			}
 		}
@@ -924,19 +878,19 @@ namespace TD.SandDock
 
 		private static bool bool_0;
 
-		private bool bool_1;
+		private bool _canFocus;
 
 		private BorderStyle _borderStyle = BorderStyle.Flat;
 
-		private DockButtonInfo class17_0;
+		private DockButtonInfo _leftScrollButton;
 
-		private DockButtonInfo class17_1;
+		private DockButtonInfo _rightScrollButton;
 
-		private DockButtonInfo class17_2;
+		private DockButtonInfo _highlightedButton;
 
 		private const int int_0 = 14;
 
-		private const int int_1 = 15;
+		private const int _scrollStepLength = 15;
 
 		private int int_2;
 
@@ -956,9 +910,9 @@ namespace TD.SandDock
 
 		private readonly Timer _timer;
 
-		internal class Control2 : ControlCollection
+		internal class TabPageControls : ControlCollection
 		{
-			public Control2(TabControl owner) : base(owner)
+			public TabPageControls(TabControl owner) : base(owner)
 			{
 				_owner = owner;
 			}
@@ -983,30 +937,30 @@ namespace TD.SandDock
 				_parent = parent;
 			}
 
-			public void Add(TabPage tabPage) => _parent.Controls.Add(tabPage);
+			public void Add(TabPage page) => _parent.Controls.Add(page);
 
-		    public void AddRange(TabPage[] tabPages) => _parent.Controls.AddRange(tabPages);
+		    public void AddRange(TabPage[] pages) => _parent.Controls.AddRange(pages);
 
 		    public void Clear() => _parent.Controls.Clear();
 
-		    public bool Contains(TabPage tabPage) => _parent.Controls.Contains(tabPage);
+		    public bool Contains(TabPage page) => _parent.Controls.Contains(page);
 
-		    public void CopyTo(TabPage[] array, int index) => _parent.Controls.CopyTo(array, index);
+		    public void CopyTo(TabPage[] pages, int index) => _parent.Controls.CopyTo(pages, index);
 
 		    public IEnumerator GetEnumerator()
 			{
-				var array = new TabPage[Count];
-				CopyTo(array, 0);
-				return array.GetEnumerator();
+				var pages = new TabPage[Count];
+				CopyTo(pages, 0);
+				return pages.GetEnumerator();
 			}
 
-			public int IndexOf(TabPage tabPage) => _parent.Controls.IndexOf(tabPage);
+			public int IndexOf(TabPage page) => _parent.Controls.IndexOf(page);
 
-		    public void Remove(TabPage tabPage) => _parent.Controls.Remove(tabPage);
+		    public void Remove(TabPage page) => _parent.Controls.Remove(page);
 
 		    public void RemoveAt(int index) => _parent.Controls.RemoveAt(index);
 
-		    public void SetChildIndex(TabPage tabPage, int index) => _parent.Controls.SetChildIndex(tabPage, index);
+		    public void SetChildIndex(TabPage page, int index) => _parent.Controls.SetChildIndex(page, index);
 
 		    void ICollection.CopyTo(Array array, int index)
 			{

@@ -1,5 +1,6 @@
 using System;
 using System.Drawing;
+using System.Drawing.Imaging;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Windows.Forms;
@@ -23,8 +24,7 @@ namespace TD.SandDock
     }
     internal static class Native
 	{
-       
-
+      
         [DllImport("gdi32.dll", ExactSpelling = true, SetLastError = true)]
 	    public static extern IntPtr CreateCompatibleDC(IntPtr hDC);
 
@@ -139,18 +139,19 @@ namespace TD.SandDock
         [DllImport("user32.dll")]
         public static extern bool SystemParametersInfo(int nAction, int nParam, ref int i, int nUpdate);
 
-        public static void DrawRubberBands(Control control, Rectangle bounds, bool bool_0, int size)
+        public static void DrawRubberBands(Control control, Rectangle bounds, bool bool_0, int tabStripSize)
 		{
-			DrawRubberBand(control, new Rectangle(bounds.X, bounds.Y, bounds.Width, 4));
+
+            DrawRubberBand(control, new Rectangle(bounds.X, bounds.Y, bounds.Width, 4));
 		    if (bool_0)
 		    {
-		        DrawRubberBand(control, new Rectangle(bounds.X, bounds.Y + 4, 4, bounds.Height - 4 - size));
-		        DrawRubberBand(control, new Rectangle(bounds.Right - 4, bounds.Y + 4, 4, bounds.Height - 4 - size));
-		        DrawRubberBand(control, new Rectangle(bounds.X, bounds.Bottom - size, 10, 4));
-		        DrawRubberBand(control, new Rectangle(bounds.X + 80, bounds.Bottom - size, bounds.Width - 80, 4));
+		        DrawRubberBand(control, new Rectangle(bounds.X, bounds.Y + 4, 4, bounds.Height - 4 - tabStripSize));
+		        DrawRubberBand(control, new Rectangle(bounds.Right - 4, bounds.Y + 4, 4, bounds.Height - 4 - tabStripSize));
+		        DrawRubberBand(control, new Rectangle(bounds.X, bounds.Bottom - tabStripSize, 10, 4));
+		        DrawRubberBand(control, new Rectangle(bounds.X + 80, bounds.Bottom - tabStripSize, bounds.Width - 80, 4));
 		        DrawRubberBand(control, new Rectangle(bounds.X + 10, bounds.Bottom - 4, 70, 4));
-		        DrawRubberBand(control, new Rectangle(bounds.X + 10, bounds.Bottom - size, 4, size - 4));
-		        DrawRubberBand(control, new Rectangle(bounds.X + 76, bounds.Bottom - size, 4, size - 4));
+		        DrawRubberBand(control, new Rectangle(bounds.X + 10, bounds.Bottom - tabStripSize, 4, tabStripSize - 4));
+		        DrawRubberBand(control, new Rectangle(bounds.X + 76, bounds.Bottom - tabStripSize, 4, tabStripSize - 4));
 		    }
 		    else
 		    {
@@ -160,26 +161,52 @@ namespace TD.SandDock
 		    }
 		}
 
-		public static void DrawRubberBand(Control control, Rectangle bounds)
-		{
+       public static void DrawRubberBand(Control control, Rectangle bounds)
+       {
+           const int PATINVERT = 5898313;
 		    if (bounds == Rectangle.Empty) return;
             var handle = control?.Handle ?? IntPtr.Zero;
             var dc = GetDC(new HandleRef(control, handle));
 		    var brush = CreateBrush();
 		    var handle3 = SelectObject(new HandleRef(control, dc), new HandleRef(null, brush));
-		    PatBlt(new HandleRef(control, dc), bounds.X, bounds.Y, bounds.Width, bounds.Height, 5898313);
+		    PatBlt(new HandleRef(control, dc), bounds.X, bounds.Y, bounds.Width, bounds.Height, PATINVERT);
 		    SelectObject(new HandleRef(control, dc), new HandleRef(null, handle3));
 		    DeleteObject(new HandleRef(null, brush));
 		    ReleaseDC(new HandleRef(control, handle), new HandleRef(null, dc));
 		}
 
+        public static void MyDrawRubberBand(Control control, Rectangle bounds)
+        {
+            if (bounds == Rectangle.Empty) return;
+            if (control == null) return;
+            var handle = control?.Handle ?? IntPtr.Zero;
+            using (var g= control.CreateGraphics())
+            using (var brush = MyCreateBrush())
+               g.FillRectangle(brush, bounds);
+        }
+
+        private static Brush MyCreateBrush()
+        {
+            var array = new short[8];
+            for (var i = 0; i < 8; i++)
+                array[i] = (short)(0x5555 << (i & 1)); // 21845
+
+            var data = new byte[16];
+            var bmp = Marshal.AllocHGlobal(data.Length);
+            Marshal.Copy(data, 0, bmp, data.Length);
+            var bm = new Bitmap(8, 8, 1, PixelFormat.Format1bppIndexed, bmp);
+            
+            Marshal.FreeHGlobal(bmp);
+            return new TextureBrush(bm);
+        }
+
         [Naming]
 		private static IntPtr CreateBrush()
 		{
-			var array = new short[8];
+            var array = new short[8];
 		    for (var i = 0; i < 8; i++)
-		        array[i] = (short) (21845 << (i & 1));
-		    var bitmap = CreateBitmap(8, 8, 1, 1, array);
+		        array[i] = (short) (0x5555 << (i & 1)); // 21845
+            var bitmap = CreateBitmap(8, 8, 1, 1, array);
 		    var brush = CreateBrushIndirect(new Logbrush {Color = ColorTranslator.ToWin32(Color.Black), Style = 3, Hatch = bitmap});
 			DeleteObject(new HandleRef(null, bitmap));
 			return brush;
